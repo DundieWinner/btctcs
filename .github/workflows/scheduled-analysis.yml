@@ -2,8 +2,7 @@ name: Scheduled Company Analysis
 
 on:
   schedule:
-    # Run daily at 9:00 AM UTC
-    - cron: '0 9 * * *'
+    - cron: '0 2,14,18 * * *'
   push:
     branches:
       - main
@@ -96,15 +95,3 @@ jobs:
             companies/${{ matrix.company }}/*.log
             companies/${{ matrix.company }}/*.png
           retention-days: 7
-
-  summary:
-    needs: [discover-companies, run-analysis]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Analysis Summary
-        run: |
-          echo "## Analysis Summary" >> $GITHUB_STEP_SUMMARY
-          echo "**Companies discovered:** ${{ needs.discover-companies.outputs.companies }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Run status:** ${{ needs.run-analysis.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
