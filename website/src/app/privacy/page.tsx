@@ -67,7 +67,7 @@ export default function PrivacyPolicy() {
                       Cookies and Web Beacons:
                     </h3>
                     <p>
-                      We use cookies to store visitors' preferences and record
+                      We use cookies to store visitors&apos; preferences and record
                       session information. Third party services like Google
                       AdSense may use cookies or other technologies like web
                       beacons to deliver relevant ads on our site and track
