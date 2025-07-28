@@ -5,9 +5,22 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import Button from "@/components/Button";
-import { getCompanyById } from "@/config/companies";
+import { getCompanyById, type GoogleSheetConfig, type GoogleSheetExtraction, type GoogleSheetData } from "@/config/companies";
 import { baseUrl } from "@/config/environment";
-import { s3AccessKey, s3Secret } from "@/config/environment-be";
+import { s3AccessKey, s3Secret, googleSheetsApiKey } from "@/config/environment-be";
+
+// Types for Google Sheets API response
+interface GoogleSheetApiData {
+  values: string[][];
+}
+
+// Processed extraction result
+interface ProcessedExtraction {
+  id: string;
+  title: string;
+  description?: string;
+  data: GoogleSheetData;
+}
 
 // Revalidate this page every 10 minutes (600 seconds)
 export const revalidate = 600;
@@ -177,6 +190,113 @@ const fetchCompanyImages = async (companyId: string): Promise<string[]> => {
   }
 };
 
+// Function to fetch multiple ranges from a single Google Sheet using batchGet
+async function fetchGoogleSheetDataBatch(
+  spreadsheetId: string,
+  ranges: string[]
+): Promise<(GoogleSheetData | null)[]> {
+  try {
+    // Build the batchGet URL with multiple ranges
+    const rangeParams = ranges.map(range => `ranges=${encodeURIComponent(range)}`).join('&');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${rangeParams}&key=${googleSheetsApiKey}`;
+    
+    const response = await fetch(url, {
+      next: { revalidate: 600 }, // Cache for 10 minutes
+    } as RequestInit & { next: { revalidate: number } });
+
+    if (!response.ok) {
+      console.error(`Google Sheets batchGet API error: ${response.status} ${response.statusText}`);
+      return ranges.map(() => null);
+    }
+
+    const batchResponse: {
+      spreadsheetId: string;
+      valueRanges: {
+        range: string;
+        majorDimension: string;
+        values?: string[][];
+      }[];
+    } = await response.json();
+    
+    // Process each range in the batch response
+    return batchResponse.valueRanges.map((valueRange) => {
+      if (!valueRange.values || valueRange.values.length === 0) {
+        console.warn(`No data found in range: ${valueRange.range}`);
+        return null;
+      }
+
+      // First row contains headers
+      const headers = valueRange.values[0];
+      const rows: { [key: string]: string | number }[] = [];
+
+      // Convert remaining rows to objects using headers as keys
+      for (let i = 1; i < valueRange.values.length; i++) {
+        const row: { [key: string]: string | number } = {};
+        const rowData = valueRange.values[i];
+        
+        headers.forEach((header: string, index: number) => {
+          const value = rowData[index] || '';
+          // Try to convert to number if it looks like a number
+          const numValue = parseFloat(value);
+          row[header] = !isNaN(numValue) && value !== '' ? numValue : value;
+        });
+        
+        rows.push(row);
+      }
+
+      return { headers, rows };
+    });
+  } catch (error) {
+    console.error('Error fetching Google Sheet batch data:', error);
+    return ranges.map(() => null);
+  }
+}
+
+// Function to process multiple Google Sheet extractions using batchGet
+async function processGoogleSheetExtractions(
+  extractions: GoogleSheetExtraction[]
+): Promise<ProcessedExtraction[]> {
+  if (extractions.length === 0) {
+    return [];
+  }
+
+  const results: ProcessedExtraction[] = [];
+
+  // Process each extraction individually (each extraction = one batchGet call)
+  for (const extraction of extractions) {
+    try {
+      // Fetch all ranges for this extraction in a single batchGet call
+      const batchData = await fetchGoogleSheetDataBatch(
+        extraction.spreadsheetId,
+        extraction.ranges
+      );
+
+      // Apply processor if provided, otherwise use the first range data
+      let processedData: GoogleSheetData;
+      if (extraction.processor) {
+        processedData = extraction.processor(batchData);
+      } else {
+        // Default behavior: use first range data if no processor
+        const firstRangeData = batchData[0];
+        processedData = firstRangeData || { headers: [], rows: [] };
+      }
+      
+      results.push({
+        id: extraction.id,
+        title: extraction.title,
+        description: extraction.description,
+        data: processedData
+      });
+    } catch (error) {
+      console.error(`Error processing extraction ${extraction.id}:`, error);
+    }
+  }
+  
+  return results;
+}
+
+
+
 // Loading component
 function LoadingDashboard({ companyName }: { companyName: string }) {
   return (
@@ -202,7 +322,15 @@ async function CompanyDashboard({ company }: { company: string }) {
   const companyName = companyData?.name.toUpperCase() || company.toUpperCase();
 
   try {
+    // Fetch both S3 images and Google Sheets data
     const images = await fetchCompanyImages(company);
+    
+    // Check if this company has Google Sheets configuration
+    let extractedData: ProcessedExtraction[] = [];
+    
+    if (companyData?.googleSheet?.extractions) {
+      extractedData = await processGoogleSheetExtractions(companyData.googleSheet.extractions);
+    }
 
     return (
       <div className="min-h-screen p-8">
@@ -262,6 +390,71 @@ async function CompanyDashboard({ company }: { company: string }) {
               </div>
             )}
           </header>
+
+          {/* Google Sheets Data Sections */}
+          {extractedData.length > 0 && (
+            <div className="mb-8 space-y-8">
+              {extractedData.map((extraction) => (
+                <div key={extraction.id} className="">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold mb-2" style={{ color: "rgb(249, 115, 22)" }}>
+                      {extraction.title}
+                    </h2>
+                    {extraction.description && (
+                      <p 
+                        className="text-gray-400 text-sm [&_a]:text-orange-500 [&_a]:underline [&_a:hover]:text-orange-400 [&_a]:transition-colors"
+                        dangerouslySetInnerHTML={{ __html: extraction.description }}
+                      />
+                    )}
+                  </div>
+                  
+                  <div 
+                    className="rounded-lg border border-gray-700 overflow-hidden"
+                    style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-700">
+                            {extraction.data.headers.map((header: string, index: number) => (
+                              <th 
+                                key={index} 
+                                className="px-4 py-3 text-left font-medium text-gray-300"
+                              >
+                                {header}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {extraction.data.rows.slice(0, 10).map((row: { [key: string]: string | number }, rowIndex: number) => (
+                            <tr 
+                              key={rowIndex} 
+                              className="border-b border-gray-800 hover:bg-gray-800/50"
+                            >
+                              {extraction.data.headers.map((header: string, colIndex: number) => (
+                                <td key={colIndex} className="px-4 py-3 text-gray-300">
+                                  {typeof row[header] === 'number' 
+                                    ? row[header].toLocaleString() 
+                                    : row[header] || '-'
+                                  }
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {extraction.data.rows.length > 10 && (
+                      <div className="px-4 py-3 text-center text-gray-400 text-sm border-t border-gray-700">
+                        Showing first 10 rows of {extraction.data.rows.length} total rows
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Images Grid */}
           {images.length === 0 ? (
