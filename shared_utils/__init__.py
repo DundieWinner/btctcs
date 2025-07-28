@@ -17,6 +17,11 @@ from .bitcoin_analysis import (
     print_detailed_summary
 )
 
+from .s3_uploader import (
+    upload_company_charts,
+    upload_multiple_companies
+)
+
 __all__ = [
     'load_strategy_tracker_stats',
     'setup_plotting',
@@ -29,5 +34,7 @@ __all__ = [
     'create_stock_nav_chart',
     'create_mnav_chart',
     'create_stacked_area_chart',
-    'print_detailed_summary'
+    'print_detailed_summary',
+    'upload_company_charts',
+    'upload_multiple_companies'
 ]
