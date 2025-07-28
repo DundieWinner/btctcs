@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-H100 Bitcoin Analysis
-====================
+Shared Bitcoin Treasury Analysis Module
+=====================================
+Provides reusable analysis functions for bitcoin treasury companies
 """
 
 # Import required libraries
@@ -13,23 +14,32 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from datetime import datetime, timedelta
 
-def main():
-    """Main analysis orchestrator function"""
-    # Step 1: Setup
-    setup_plotting()
-    
-    # Step 2: Load data
-    df = load_data()
-    
-    # Step 3: Run generalized analysis for H100
-    run_company_analysis(df, company_name="H100")
+
+def setup_plotting():
+    """Configure matplotlib plotting settings"""
+    plt.style.use('default')
+    plt.rcParams['figure.figsize'] = (12, 8)
+    plt.rcParams['font.size'] = 12
 
 
-def run_company_analysis(df, company_name="Company"):
-    """Run complete analysis pipeline for a given company"""
+def run_company_analysis(df, company_name="Company", chart_config=None):
+    """Run complete analysis pipeline for a given company with customizable chart options"""
     print(f"\n{'='*60}")
     print(f"RUNNING ANALYSIS FOR {company_name}")
     print(f"{'='*60}")
+    
+    # Default chart configuration
+    default_config = {
+        'nav_reference_levels': [3, 5, 7],  # Default NAV multiplier reference lines
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],  # Colors for 3x, 5x, 7x NAV lines
+        'projection_months': 2,  # Default projection period
+        'mnav_start_date': '2025-06-16',  # Default start date for mNAV chart
+    }
+    
+    # Merge user config with defaults
+    if chart_config is None:
+        chart_config = {}
+    config = {**default_config, **chart_config}
     
     # Step 1: Filter and deduplicate
     valid_data, unique_data, duplicates = filter_and_deduplicate_data(df)
@@ -48,9 +58,9 @@ def run_company_analysis(df, company_name="Company"):
                 log_btc_per_diluted_share_unique, y_pred_plot, unique_data, 
                 correlation, slope, a_coeff, r2, company_name)
     
-    create_stock_nav_chart(df, company_name)
+    create_stock_nav_chart(df, company_name, config)
     
-    create_mnav_chart(df, company_name)
+    create_mnav_chart(df, company_name, config)
     
     create_stacked_area_chart(df, company_name)
     
@@ -58,94 +68,67 @@ def run_company_analysis(df, company_name="Company"):
     print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
 
 
-def setup_plotting():
-    """Configure matplotlib plotting settings"""
-    plt.style.use('default')
-    plt.rcParams['figure.figsize'] = (12, 8)
-    plt.rcParams['font.size'] = 12
-
-
-def load_data(filename='data.json'):
-    """Load H100 data from JSON file and return DataFrame"""
-    print("Loading H100 Bitcoin data...")
-    with open(filename, 'r') as f:
-        data = json.load(f)
-
-    # Extract historical data
-    hist_data = data['historicalData']
-    df = pd.DataFrame({
-        'date': hist_data['dates'],
-        'btc_balance': hist_data['btc_balance'],
-        'btc_per_share': hist_data['btc_per_share'],
-        'btc_per_diluted_share': hist_data['btc_per_diluted_share'],
-        'diluted_shares_outstanding': hist_data['diluted_shares_outstanding'],
-        'stock_prices': hist_data['stock_prices'],
-        'btc_prices': hist_data['btc_prices'],
-        'market_cap_basic': hist_data['market_cap_basic']
-    })
-
-    print(f"Loaded {len(df)} records from {df['date'].min()} to {df['date'].max()}")
-    print("\nFirst 5 rows:")
-    print(df.head())
-
-    return df
-
-
 def filter_and_deduplicate_data(df):
     """Filter valid data and remove duplicates for analysis"""
-    # Filter valid data for log transformation (remove zeros/negatives)
-    valid_data = df[(df['btc_balance'] > 0) & (df['btc_per_diluted_share'] > 0)]
-    print(f"\nValid data points for log transformation: {len(valid_data)}")
-
-    # Check for duplicates
-    duplicates = valid_data.duplicated(subset=['btc_balance', 'btc_per_diluted_share'])
-    print(f"Duplicate datapoints found: {duplicates.sum()}")
-
-    # Remove duplicate datapoints for regression (keep unique combinations)
-    unique_data = valid_data.drop_duplicates(subset=['btc_balance', 'btc_per_diluted_share'])
+    print("Filtering and deduplicating data...")
+    
+    # Filter out rows with missing or zero values
+    valid_data = df[(df['btc_balance'] > 0) & 
+                   (df['btc_per_diluted_share'] > 0) & 
+                   (df['btc_balance'].notna()) & 
+                   (df['btc_per_diluted_share'].notna())].copy()
+    
+    # Remove duplicates based on btc_balance (keeping first occurrence)
+    unique_data = valid_data.drop_duplicates(subset=['btc_balance'], keep='first')
+    duplicates = len(valid_data) - len(unique_data)
+    
+    print(f"Valid data points for log transformation: {len(valid_data)}")
+    print(f"Duplicate datapoints found: {duplicates}")
     print(f"Unique data points for regression: {len(unique_data)}")
-
-    # Show the unique Bitcoin holding levels
-    print("\nUnique Bitcoin holding levels:")
-    print(sorted(unique_data['btc_balance'].unique()))
-
+    
     return valid_data, unique_data, duplicates
 
 
 def perform_log_transformation(valid_data, unique_data):
     """Apply log10 transformation to the data"""
-    # Calculate log10 values for all valid data (for plotting)
+    print("\nUnique Bitcoin holding levels:")
+    print(list(unique_data['btc_balance'].values))
+    
+    # Log transformation for all valid data
     log_btc_balance = np.log10(valid_data['btc_balance'])
     log_btc_per_diluted_share = np.log10(valid_data['btc_per_diluted_share'])
-
-    # Calculate log10 values for unique data (for regression)
+    
+    # Log transformation for unique data only
     log_btc_balance_unique = np.log10(unique_data['btc_balance'])
     log_btc_per_diluted_share_unique = np.log10(unique_data['btc_per_diluted_share'])
-
+    
     print("Log transformation completed for both all data and unique data")
-
+    
     return log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique, log_btc_per_diluted_share_unique
 
 
 def fit_power_law_regression(log_btc_balance, log_btc_balance_unique, log_btc_per_diluted_share_unique, unique_data):
     """Fit linear regression on log-log data to find power law relationship"""
-    print("\nFitting regression on unique datapoints only...")
+    print(f"\nFitting regression on unique datapoints only...")
+    
+    # Fit linear regression on log-log data (unique points only)
     X_unique = log_btc_balance_unique.values.reshape(-1, 1)
     y_unique = log_btc_per_diluted_share_unique.values
-
-    reg = LinearRegression().fit(X_unique, y_unique)
-
-    # Generate predictions for plotting (using full range for smooth line)
-    X_plot = log_btc_balance.values.reshape(-1, 1)
+    
+    reg = LinearRegression()
+    reg.fit(X_unique, y_unique)
+    
+    # Generate prediction line for plotting (using full range)
+    X_plot = np.linspace(log_btc_balance.min(), log_btc_balance.max(), 100).reshape(-1, 1)
     y_pred_plot = reg.predict(X_plot)
-
-    # Calculate R² using unique data
+    
+    # Calculate R² for unique data
     y_pred_unique = reg.predict(X_unique)
     r2 = r2_score(y_unique, y_pred_unique)
-
+    
     print(f"Regression fitted on {len(unique_data)} unique points")
     print(f"R² (unique data): {r2:.6f}")
-
+    
     return reg, y_pred_plot, r2
 
 
@@ -154,8 +137,8 @@ def calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_uniqu
     correlation = np.corrcoef(log_btc_balance_unique, log_btc_per_diluted_share_unique)[0, 1]
     slope = reg.coef_[0]
     intercept = reg.intercept_
-    a_coeff = 10 ** intercept
-
+    a_coeff = 10**intercept
+    
     return correlation, slope, intercept, a_coeff
 
 
@@ -170,13 +153,15 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
 
     # Highlight unique points used for regression
     plt.scatter(log_btc_balance_unique, log_btc_per_diluted_share_unique,
-                alpha=0.9, s=80, c='red', edgecolors='darkred', linewidth=1,
+                alpha=0.9, s=80, c='#ff0000', edgecolors='#8b0a1a', linewidth=1,
                 label=f'{company_name} Treasury Updates ({len(unique_data)})', zorder=5)
 
     # Plot fitted line
     sort_idx = np.argsort(log_btc_balance)
-    plt.plot(log_btc_balance.iloc[sort_idx], y_pred_plot[sort_idx],
-             'r-', linewidth=3, label='Fitted Power Law', alpha=0.8, zorder=4)
+    X_plot = np.linspace(log_btc_balance.min(), log_btc_balance.max(), 100)
+    y_pred_plot = slope * X_plot + np.log10(a_coeff)
+    plt.plot(X_plot, y_pred_plot,
+             '#ff0000', linewidth=3, label='Fitted Power Law', alpha=0.8, zorder=4)
 
     # Labels and title
     plt.xlabel('Bitcoin Holdings (BTC)', fontsize=14, fontweight='bold')
@@ -193,16 +178,13 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
 
     # Create equation text
     equation_text = f'Power Law: y = {a_coeff:.2e} × x^{slope:.3f}'
-
-    # Display statistics
-    stats_text = (f'Correlation: {correlation:.3f}\n'
-                  f'R² (unique data): {r2:.3f}\n'
-                  f'{equation_text}')
-
-    plt.text(0.05, 0.95, stats_text,
-             transform=plt.gca().transAxes, fontsize=11,
-             bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8),
-             verticalalignment='top')
+    stats_text = f'R² = {r2:.6f} | Correlation = {correlation:.6f}'
+    
+    # Add text box with equation and statistics
+    textstr = f'{equation_text}\n{stats_text}'
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.8)
+    plt.text(0.05, 0.95, textstr, transform=plt.gca().transAxes, fontsize=10,
+             verticalalignment='top', bbox=props)
 
     # Add legend and grid
     plt.legend(loc='lower right')
@@ -214,7 +196,7 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     plt.show()
 
 
-def create_stock_nav_chart(df, company_name):
+def create_stock_nav_chart(df, company_name, config):
     """Create stock price vs NAV multipliers per share chart with time extension"""
     print("\nCreating Stock Price vs NAV Multipliers Per Share Chart")
     print("=" * 60)
@@ -227,10 +209,17 @@ def create_stock_nav_chart(df, company_name):
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
     df['nav'] = df['btc_balance'] * df['btc_prices']
     
+    # Get NAV reference levels and colors from config
+    nav_levels = config.get('nav_reference_levels', [3, 5, 7])
+    nav_colors = config.get('nav_reference_colors', ['#0000ff', '#008000', '#ff0000'])
+    projection_months = config.get('projection_months', 2)
+    
     # Calculate NAV multipliers per share (divide by diluted shares outstanding)
-    df['nav_3x_per_share'] = (df['nav'] * 3) / df['diluted_shares_outstanding']
-    df['nav_5x_per_share'] = (df['nav'] * 5) / df['diluted_shares_outstanding']
-    df['nav_7x_per_share'] = (df['nav'] * 7) / df['diluted_shares_outstanding']
+    nav_columns = {}
+    for level in nav_levels:
+        column_name = f'nav_{level}x_per_share'
+        df[column_name] = (df['nav'] * level) / df['diluted_shares_outstanding']
+        nav_columns[level] = column_name
     
     # Calculate 30-day average daily bitcoin yield
     last_30_days = df.tail(30)  # Get last 30 days of data
@@ -244,10 +233,11 @@ def create_stock_nav_chart(df, company_name):
     
     print(f"30-day average daily bitcoin yield: {daily_btc_yield:.4f} BTC/day")
     
-    # Extend time axis 2 months into the future
+    # Extend time axis based on projection_months
     last_date = df['date'].max()
+    projection_days = projection_months * 30  # Approximate days per month
     future_dates = pd.date_range(start=last_date + timedelta(days=1), 
-                                periods=60, freq='D')  # ~2 months
+                                periods=projection_days, freq='D')
     
     # Get the last values for projection
     last_btc_balance = df['btc_balance'].iloc[-1]
@@ -255,9 +245,7 @@ def create_stock_nav_chart(df, company_name):
     last_diluted_shares = df['diluted_shares_outstanding'].iloc[-1]
     
     # Project future bitcoin accumulation and NAV per share
-    future_nav_3x_per_share = []
-    future_nav_5x_per_share = []
-    future_nav_7x_per_share = []
+    future_nav_per_share = {level: [] for level in nav_levels}
     
     for i, future_date in enumerate(future_dates):
         days_ahead = i + 1
@@ -267,36 +255,27 @@ def create_stock_nav_chart(df, company_name):
         projected_nav = projected_btc_balance * last_btc_price
         
         # Calculate NAV multipliers per share
-        nav_3x_per_share = (projected_nav * 3) / last_diluted_shares
-        nav_5x_per_share = (projected_nav * 5) / last_diluted_shares
-        nav_7x_per_share = (projected_nav * 7) / last_diluted_shares
-        
-        future_nav_3x_per_share.append(nav_3x_per_share)
-        future_nav_5x_per_share.append(nav_5x_per_share)
-        future_nav_7x_per_share.append(nav_7x_per_share)
+        for level in nav_levels:
+            nav_per_share = (projected_nav * level) / last_diluted_shares
+            future_nav_per_share[level].append(nav_per_share)
     
     # Plot historical stock price (dotted line)
-    plt.plot(df['date'], df['stock_prices'], 'k--', linewidth=2, 
+    plt.plot(df['date'], df['stock_prices'], '#000000', linestyle='--', linewidth=2, 
              label=f'{company_name} Stock Price (USD)', alpha=0.8)
     
     # Plot NAV multipliers per share (solid lines)
-    plt.plot(df['date'], df['nav_3x_per_share'], 'b-', linewidth=2, 
-             label='3x Bitcoin NAV per Share', alpha=0.8)
-    plt.plot(df['date'], df['nav_5x_per_share'], 'g-', linewidth=2, 
-             label='5x Bitcoin NAV per Share', alpha=0.8)
-    plt.plot(df['date'], df['nav_7x_per_share'], 'r-', linewidth=2, 
-             label='7x Bitcoin NAV per Share', alpha=0.8)
-    
-    # Plot future NAV multipliers per share with projected accumulation (solid lines, lighter)
-    plt.plot(future_dates, future_nav_3x_per_share, 'b-', linewidth=2, 
-             alpha=0.5)
-    plt.plot(future_dates, future_nav_5x_per_share, 'g-', linewidth=2, 
-             alpha=0.5)
-    plt.plot(future_dates, future_nav_7x_per_share, 'r-', linewidth=2, 
-             alpha=0.5)
+    for i, level in enumerate(nav_levels):
+        color = nav_colors[i] if i < len(nav_colors) else f'C{i}'
+        column_name = nav_columns[level]
+        plt.plot(df['date'], df[column_name], color, linewidth=2, 
+                 label=f'{level}x Bitcoin NAV per Share', alpha=0.8)
+        
+        # Plot future NAV multipliers per share with projected accumulation (solid lines, lighter)
+        plt.plot(future_dates, future_nav_per_share[level], color, linewidth=2, 
+                 alpha=0.5)
     
     # Add vertical line to separate historical from projected data
-    plt.axvline(x=last_date, color='gray', linestyle=':', alpha=0.7, 
+    plt.axvline(x=last_date, color='#808080', linestyle=':', alpha=0.7, 
                 label='Projection Start')
 
     # Labels and title
@@ -309,7 +288,7 @@ def create_stock_nav_chart(df, company_name):
     
     plt.suptitle(f'{company_name} Stock Price vs Bitcoin NAV Multipliers per Share',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Extended 2 Months with Projected BTC Accumulation\n@DunderHODL - {current_date}', 
+    plt.title(f'Extended {projection_months} Months with Projected BTC Accumulation\n@DunderHODL - {current_date}', 
               fontsize=12, pad=20)
 
     # Set log scale for y-axis
@@ -338,7 +317,7 @@ def create_stock_nav_chart(df, company_name):
     plt.show()
 
 
-def create_mnav_chart(df, company_name):
+def create_mnav_chart(df, company_name, config):
     """Create mNAV chart showing stock price as multiple of NAV"""
     print("\nCreating mNAV Chart (Stock Price Multiple of NAV)")
     print("=" * 60)
@@ -348,12 +327,17 @@ def create_mnav_chart(df, company_name):
     # Convert date column to datetime
     df['date'] = pd.to_datetime(df['date'])
     
-    # Filter data from June 16th onwards
-    june_16_2025 = pd.to_datetime('2025-06-16')
-    df_filtered = df[df['date'] >= june_16_2025].copy()
+    # Get configuration options
+    nav_levels = config.get('nav_reference_levels', [3, 5, 7])
+    nav_colors = config.get('nav_reference_colors', ['#0000ff', '#008000', '#ff0000'])
+    start_date = config.get('mnav_start_date', '2025-06-16')
+    
+    # Filter data from start_date onwards
+    filter_date = pd.to_datetime(start_date)
+    df_filtered = df[df['date'] >= filter_date].copy()
     
     if len(df_filtered) == 0:
-        print("No data available from June 16th onwards")
+        print(f"No data available from {start_date} onwards")
         return
     
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
@@ -369,7 +353,7 @@ def create_mnav_chart(df, company_name):
     print(f"mNAV range: {df_filtered['mnav'].min():.2f}x to {df_filtered['mnav'].max():.2f}x")
     
     # Plot historical mNAV (solid line)
-    plt.plot(df_filtered['date'], df_filtered['mnav'], 'b-', linewidth=2, 
+    plt.plot(df_filtered['date'], df_filtered['mnav'], '#0000ff', linewidth=2, 
              label=f'{company_name} Stock Price Multiple of Bitcoin NAV', alpha=0.8)
 
     # Labels and title
@@ -386,16 +370,16 @@ def create_mnav_chart(df, company_name):
     
     plt.suptitle(f'{company_name} Stock Price as Multiple of Bitcoin NAV',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Market Valuation vs Bitcoin Holdings (from June 16th)\nCurrent mNAV: {most_recent_mnav:.2f}x | @DunderHODL - {current_date}', 
+    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date})\nCurrent mNAV: {most_recent_mnav:.2f}x | @DunderHODL - {current_date}', 
               fontsize=12, pad=20)
 
     # Add NAV reference lines with matching colors from stock NAV chart
-    plt.axhline(y=3.0, color='b', linestyle='--', alpha=0.7, label='3x NAV')
-    plt.axhline(y=5.0, color='g', linestyle='--', alpha=0.7, label='5x NAV')
-    plt.axhline(y=7.0, color='r', linestyle='--', alpha=0.7, label='7x NAV')
+    for i, level in enumerate(nav_levels):
+        color = nav_colors[i] if i < len(nav_colors) else f'C{i}'
+        plt.axhline(y=level, color=color, linestyle='--', alpha=0.7, label=f'{level}x NAV')
     
     # Add a data point dot on the most recent mNAV value
-    plt.plot(most_recent_date, most_recent_mnav, 'bo', markersize=8, zorder=5)
+    plt.plot(most_recent_date, most_recent_mnav, '#0000ff', markersize=8, zorder=5)
     
     # Add annotation for the most recent mNAV value
     plt.annotate(f'{most_recent_mnav:.2f}x', 
@@ -440,13 +424,13 @@ def create_stacked_area_chart(df, company_name):
     
     # Create stacked area chart
     plt.fill_between(df['date'], 0, df['fully_diluted_market_cap'], 
-                     alpha=0.7, color='lightblue', label='Fully Diluted Market Cap')
+                     alpha=0.7, color='#add8e6', label='Fully Diluted Market Cap')
     plt.fill_between(df['date'], 0, df['bitcoin_nav'], 
-                     alpha=0.7, color='orange', label='Bitcoin Net Asset Value')
+                     alpha=0.7, color='#ffa07a', label='Bitcoin Net Asset Value')
     
     # Plot the lines on top for clarity
-    plt.plot(df['date'], df['fully_diluted_market_cap'], 'b-', linewidth=2, alpha=0.8)
-    plt.plot(df['date'], df['bitcoin_nav'], 'orange', linewidth=2, alpha=0.8)
+    plt.plot(df['date'], df['fully_diluted_market_cap'], '#0000ff', linewidth=2, alpha=0.8)
+    plt.plot(df['date'], df['bitcoin_nav'], '#ff0000', linewidth=2, alpha=0.8)
     
     # Find intersection point: where historical market cap equals current bitcoin NAV
     current_bitcoin_nav = df['bitcoin_nav'].iloc[-1]
@@ -464,7 +448,7 @@ def create_stacked_area_chart(df, company_name):
     # Draw dashed line from current bitcoin NAV to intersection point
     plt.plot([intersection_date, current_date], 
              [intersection_market_cap, current_bitcoin_nav], 
-             'r--', linewidth=2, alpha=0.8)
+             '#ff0000', linestyle='--', linewidth=2, alpha=0.8)
     
     # Add annotation for the dashed line
     mid_date = intersection_date + (current_date - intersection_date) / 2
@@ -476,8 +460,8 @@ def create_stacked_area_chart(df, company_name):
                 fontsize=10, fontweight='bold', ha='center')
     
     # Add markers at intersection points
-    plt.plot(intersection_date, intersection_market_cap, 'ro', markersize=8, zorder=5)
-    plt.plot(current_date, current_bitcoin_nav, 'ro', markersize=8, zorder=5)
+    plt.plot(intersection_date, intersection_market_cap, '#0000ff', markersize=8, zorder=5)
+    plt.plot(current_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
 
     # Labels and title
     plt.xlabel('Date', fontsize=14, fontweight='bold')
@@ -527,11 +511,11 @@ def print_detailed_summary(df, valid_data, unique_data, duplicates, correlation,
     print(f"=" * 50)
     print(f"Dataset: {len(df)} total records, {len(valid_data)} valid for analysis")
     print(f"Unique datapoints: {len(unique_data)} (used for regression)")
-    print(f"Duplicate removal: {duplicates.sum()} duplicates removed")
+    print(f"Duplicate removal: {duplicates} duplicates removed")
     print(f"")
     print(f"POWER LAW RELATIONSHIP:")
     print(f"• Equation: y = {a_coeff:.2e} × x^{slope:.3f}")
-    print(f"• R² = {r2:.6f} (excellent fit)")
+    print(f"• R² = {r2:.6f} ({'excellent' if r2 > 0.95 else 'good' if r2 > 0.8 else 'moderate'} fit)")
     print(f"• Correlation = {correlation:.6f}")
     print(f"• Exponent = {slope:.3f}")
     print(f"")
@@ -542,7 +526,3 @@ def print_detailed_summary(df, valid_data, unique_data, duplicates, correlation,
         print(f"Exponent interpretation: {slope:.3f} > 1 (increasing returns)")
     else:
         print(f"Exponent interpretation: {slope:.3f} ≈ 1 (linear relationship)")
-
-
-if __name__ == "__main__":
-    main()
