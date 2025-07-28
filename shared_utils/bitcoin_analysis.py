@@ -107,13 +107,11 @@ def run_company_analysis(df, company_name="Company", chart_config=None, output_d
     print(f"\n{'='*60}")
     print(f"RUNNING ANALYSIS FOR {company_name}")
     print(f"{'='*60}")
-    
-    # Default chart configuration
+
     default_config = {
-        'nav_reference_levels': [3, 5, 7],  # Default NAV multiplier reference lines
-        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],  # Colors for 3x, 5x, 7x NAV lines
-        'projection_months': 2,  # Default projection period
-        'mnav_start_date': '2025-06-16',  # Default start date for mNAV chart
+        'nav_reference_levels': [3, 5, 7],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+        'projection_months': 2,
     }
     
     # Merge user config with defaults
@@ -419,15 +417,19 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     # Get configuration options
     nav_levels = config.get('nav_reference_levels', [3, 5, 7])
     nav_colors = config.get('nav_reference_colors', ['#0000ff', '#008000', '#ff0000'])
-    start_date = config.get('mnav_start_date', '2025-06-16')
+    start_date = config.get('mnav_start_date')
     
-    # Filter data from start_date onwards
-    filter_date = pd.to_datetime(start_date)
-    df_filtered = df[df['date'] >= filter_date].copy()
-    
-    if len(df_filtered) == 0:
-        print(f"No data available from {start_date} onwards")
-        return
+    # Filter data from start_date onwards if provided
+    if start_date:
+        filter_date = pd.to_datetime(start_date)
+        df_filtered = df[df['date'] >= filter_date].copy()
+        
+        if len(df_filtered) == 0:
+            print(f"No data available from {start_date} onwards")
+            return
+    else:
+        # Use all available data if no start date specified
+        df_filtered = df.copy()
     
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
     df_filtered['nav'] = df_filtered['btc_balance'] * df_filtered['btc_prices']
@@ -459,7 +461,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     
     plt.suptitle(f'{company_name} Stock Price as Multiple of Bitcoin NAV',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date})\nCurrent mNAV: {most_recent_mnav:.2f}x | @DunderHODL - {current_date}', 
+    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date if start_date else "beginning"})\nCurrent mNAV: {most_recent_mnav:.2f}x | @DunderHODL - {current_date}', 
               fontsize=12, pad=20)
 
     # Add NAV reference lines with matching colors from stock NAV chart
