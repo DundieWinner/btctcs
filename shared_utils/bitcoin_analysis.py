@@ -271,7 +271,7 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_log_log_chart_no_duplicates.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{company_name.lower()}_log_log_btc_held_vs_btc_per_diluted_share.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 
@@ -391,8 +391,7 @@ def create_stock_nav_chart(df, company_name, config):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_stock_nav_per_share_chart.png', dpi=300, bbox_inches='tight')
-    print(f"Chart saved as '{company_name.lower()}_stock_nav_per_share_chart.png'")
+    plt.savefig(f'{company_name.lower()}_time_vs_stock_price_and_nav_multiples.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 
@@ -476,8 +475,7 @@ def create_mnav_chart(df, company_name, config):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_mnav_chart.png', dpi=300, bbox_inches='tight')
-    print(f"Chart saved as '{company_name.lower()}_mnav_chart.png'")
+    plt.savefig(f'{company_name.lower()}_time_vs_mnav.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 
@@ -578,8 +576,7 @@ def create_stacked_area_chart(df, company_name):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_stacked_area_chart.png', dpi=300, bbox_inches='tight')
-    print(f"Chart saved as '{company_name.lower()}_stacked_area_chart.png'")
+    plt.savefig(f'{company_name.lower()}_stacked_time_vs_mc_and_nav.png', dpi=300, bbox_inches='tight')
     print(f"Intersection found: {days_difference} days ago (Market Cap: ${intersection_market_cap:,.0f}, Current Bitcoin NAV: ${current_bitcoin_nav:,.0f})")
     plt.show()
 

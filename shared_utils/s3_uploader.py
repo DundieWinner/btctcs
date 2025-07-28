@@ -3,6 +3,14 @@
 S3 Upload Utility for Bitcoin Treasury Analysis
 ==============================================
 Uploads PNG chart files from company directories to S3 buckets
+
+Environment Variables:
+- S3_BUCKET_NAME: Target S3 bucket (required)
+- AWS_ACCESS_KEY_ID: AWS access key (required)
+- AWS_SECRET_ACCESS_KEY: AWS secret key (required)
+- AWS_REGION: AWS region (optional, defaults to us-east-1)
+- AWS_ENDPOINT_URL: Custom S3 endpoint URL (optional, for S3-compatible services)
+- S3_KEY_PREFIX: S3 key prefix (optional, defaults to 'charts')
 """
 
 import os
@@ -29,6 +37,7 @@ def upload_company_charts(company_directory, company_name=None):
     aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
     aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
     aws_region = os.getenv('AWS_REGION', 'us-east-1')  # Default to us-east-1
+    aws_endpoint_url = os.getenv('AWS_ENDPOINT_URL')  # Custom endpoint URL (optional)
     s3_key_prefix = os.getenv('S3_KEY_PREFIX', 'charts')  # Default prefix
     
     # Validate required environment variables
@@ -53,9 +62,13 @@ def upload_company_charts(company_directory, company_name=None):
             's3',
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
-            region_name=aws_region
+            region_name=aws_region,
+            endpoint_url=aws_endpoint_url
         )
-        print(f"Successfully initialized S3 client for region: {aws_region}")
+        if aws_endpoint_url:
+            print(f"Successfully initialized S3 client for region: {aws_region} using custom endpoint: {aws_endpoint_url}")
+        else:
+            print(f"Successfully initialized S3 client for region: {aws_region}")
     except NoCredentialsError:
         raise ValueError("Invalid AWS credentials provided")
     
@@ -77,7 +90,7 @@ def upload_company_charts(company_directory, company_name=None):
     # Upload results tracking
     uploaded_files = []
     failed_files = []
-    
+
     # Get current timestamp for file organization
     timestamp = datetime.now().strftime('%Y-%m-%d')
     
@@ -88,7 +101,7 @@ def upload_company_charts(company_directory, company_name=None):
             filename = os.path.basename(png_file)
             
             # Create S3 key with timestamp and company organization
-            s3_key = f"{s3_key_prefix}/{company_name}/{timestamp}/{filename}"
+            s3_key = f"{s3_key_prefix}/{company_name}/{filename}"
             
             # Upload file to S3
             print(f"Uploading {filename} to s3://{bucket_name}/{s3_key}")
@@ -99,6 +112,7 @@ def upload_company_charts(company_directory, company_name=None):
                 s3_key,
                 ExtraArgs={
                     'ContentType': 'image/png',
+                    'ACL': 'public-read',  # Make file publicly accessible
                     'Metadata': {
                         'company': company_name,
                         'upload_date': timestamp,
