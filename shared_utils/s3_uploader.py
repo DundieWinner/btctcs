@@ -101,7 +101,7 @@ def upload_company_charts(company_directory, company_name=None):
             filename = os.path.basename(png_file)
             
             # Create S3 key with timestamp and company organization
-            s3_key = f"{s3_key_prefix}/{company_name}/{filename}"
+            s3_key = f"{s3_key_prefix}/{company_name.lower()}/{filename}"
             
             # Upload file to S3
             print(f"Uploading {filename} to s3://{bucket_name}/{s3_key}")

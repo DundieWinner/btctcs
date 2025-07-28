@@ -1,0 +1,1 @@
+export const uiHost = process.env.NEXT_PUBLIC_HOST ?? "";
