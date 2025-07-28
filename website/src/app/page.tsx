@@ -7,7 +7,8 @@ import { baseUrl, getAbsoluteUrl } from "@/config/environment";
 // Metadata for the homepage
 export const metadata: Metadata = {
   title: "BTC Treasury Charts - Charting the BTCTCs taking the world by storm",
-  description: "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption and treasury management.",
+  description:
+    "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption and treasury management.",
   keywords: [
     "bitcoin",
     "treasury",
@@ -18,14 +19,16 @@ export const metadata: Metadata = {
     "treasury management",
     "bitcoin adoption",
     "corporate treasury",
-    "btctcs"
+    "btctcs",
   ],
   authors: [{ name: "@DunderHodl", url: "https://x.com/DunderHodl" }],
   creator: "@DunderHodl",
   publisher: "BTC Treasury Charts",
   openGraph: {
-    title: "BTC Treasury Charts - Charting the BTCTCs taking the world by storm",
-    description: "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption.",
+    title:
+      "BTC Treasury Charts - Charting the BTCTCs taking the world by storm",
+    description:
+      "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption.",
     type: "website",
     siteName: "BTC Treasury Charts",
     url: baseUrl,
@@ -40,8 +43,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BTC Treasury Charts - Charting the BTCTCs taking the world by storm",
-    description: "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption.",
+    title:
+      "BTC Treasury Charts - Charting the BTCTCs taking the world by storm",
+    description:
+      "Track and analyze Bitcoin treasury holdings across leading companies. Real-time charts and data for corporate Bitcoin adoption.",
     creator: "@DunderHodl",
     images: [getAbsoluteUrl("/images/feature-image.png")],
   },

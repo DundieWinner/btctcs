@@ -5,8 +5,9 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import Button from "@/components/Button";
-import { getCompanyById, type Curator } from "@/config/companies";
-import { baseUrl, getAbsoluteUrl } from "@/config/environment";
+import { getCompanyById } from "@/config/companies";
+import { baseUrl } from "@/config/environment";
+import { s3AccessKey, s3Secret } from "@/config/environment-be";
 
 // Revalidate this page every 10 minutes (600 seconds)
 export const revalidate = 600;
@@ -122,8 +123,8 @@ const s3Client = new S3Client({
   endpoint: "https://nyc3.digitaloceanspaces.com",
   region: "nyc3",
   credentials: {
-    accessKeyId: process.env.DO_SPACES_KEY || "",
-    secretAccessKey: process.env.DO_SPACES_SECRET || "",
+    accessKeyId: s3AccessKey,
+    secretAccessKey: s3Secret,
   },
 });
 
@@ -161,7 +162,7 @@ const fetchCompanyImages = async (companyId: string): Promise<string[]> => {
     console.error("Error fetching images from S3:", error);
 
     // If S3 credentials are not configured, return placeholder images
-    if (!process.env.DO_SPACES_KEY || !process.env.DO_SPACES_SECRET) {
+    if (!s3AccessKey || !s3Secret) {
       console.warn(
         "DigitalOcean Spaces credentials not configured. Using placeholder images.",
       );
