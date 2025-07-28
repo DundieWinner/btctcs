@@ -551,22 +551,21 @@ def create_stacked_area_chart(df, company_name, output_dir=None):
         # Calculate days between intersection and current date
         days_difference = (current_date - intersection_date).days
         
-        # Draw dashed line from crossing point to current bitcoin NAV
+        # Draw dashed line from crossing point to current bitcoin NAV (flat line at current NAV level)
         plt.plot([intersection_date, current_date], 
-                 [intersection_market_cap, current_bitcoin_nav], 
+                 [current_bitcoin_nav, current_bitcoin_nav], 
                  '#ff0000', linestyle='--', linewidth=2, alpha=0.8)
         
         # Add annotation for the dashed line
         mid_date = intersection_date + (current_date - intersection_date) / 2
-        mid_value = (intersection_market_cap + current_bitcoin_nav) / 2
         plt.annotate(f'{days_difference} days', 
-                    xy=(mid_date, mid_value),
+                    xy=(mid_date, current_bitcoin_nav),
                     xytext=(0, 20), textcoords='offset points',
                     bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.8),
                     fontsize=10, fontweight='bold', ha='center')
         
         # Add markers at intersection points
-        plt.plot(intersection_date, intersection_market_cap, '#0000ff', markersize=8, zorder=5)
+        plt.plot(intersection_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
         plt.plot(current_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
     else:
         # If no crossing found, set default values
