@@ -10,6 +10,7 @@ on:
 
 jobs:
   discover-companies:
+    name: Discover Companies with Analysis Scripts
     runs-on: ubuntu-latest
     outputs:
       companies: ${{ steps.find-companies.outputs.companies }}
@@ -44,6 +45,7 @@ jobs:
           echo "Found companies: ${companies//,/ }"
 
   run-analysis:
+    name: Run Analysis for Each Company
     needs: discover-companies
     if: ${{ needs.discover-companies.outputs.companies != '[]' }}
     runs-on: ubuntu-latest
