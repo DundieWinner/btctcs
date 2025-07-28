@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
 
 # Add parent directory to path to import shared_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -37,7 +37,7 @@ def run_h100_analysis():
     }
     
     # Run the generalized analysis pipeline with H100-specific configuration
-    run_company_analysis(df, company_name="H100", chart_config=h100_chart_config)
+    run_company_analysis(df, company_name="H100", chart_config=h100_chart_config, output_dir=current_dir)
     
     return df, current_dir
 

@@ -45,7 +45,7 @@ jobs:
           echo "Found companies: ${companies//,/ }"
 
   run-analysis:
-    name: Run Analysis for Each Company
+    name: Run Analysis
     needs: discover-companies
     if: ${{ needs.discover-companies.outputs.companies != '[]' }}
     runs-on: ubuntu-latest

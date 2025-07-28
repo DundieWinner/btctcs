@@ -7,14 +7,15 @@ Provides reusable analysis functions for bitcoin treasury companies
 
 # Import required libraries
 import json
-import numpy as np
+import os
+from datetime import timedelta
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import requests
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from datetime import datetime, timedelta
-import os
-import requests
 
 
 def load_strategy_tracker_stats(fallback_file_path=None, prefix=None):
@@ -101,7 +102,7 @@ def setup_plotting():
     plt.rcParams['font.size'] = 12
 
 
-def run_company_analysis(df, company_name="Company", chart_config=None):
+def run_company_analysis(df, company_name="Company", chart_config=None, output_dir=None):
     """Run complete analysis pipeline for a given company with customizable chart options"""
     print(f"\n{'='*60}")
     print(f"RUNNING ANALYSIS FOR {company_name}")
@@ -135,13 +136,13 @@ def run_company_analysis(df, company_name="Company", chart_config=None):
     # Step 5: Create visualizations
     create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique, 
                 log_btc_per_diluted_share_unique, y_pred_plot, unique_data, 
-                correlation, slope, a_coeff, r2, company_name)
+                correlation, slope, a_coeff, r2, company_name, output_dir)
     
-    create_stock_nav_chart(df, company_name, config)
+    create_stock_nav_chart(df, company_name, config, output_dir)
     
-    create_mnav_chart(df, company_name, config)
+    create_mnav_chart(df, company_name, config, output_dir)
     
-    create_stacked_area_chart(df, company_name)
+    create_stacked_area_chart(df, company_name, output_dir)
     
     # Step 6: Print analysis results
     print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
@@ -223,7 +224,7 @@ def calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_uniqu
 
 def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique,
                  log_btc_per_diluted_share_unique, y_pred_plot, unique_data,
-                 correlation, slope, a_coeff, r2, company_name):
+                 correlation, slope, a_coeff, r2, company_name, output_dir=None):
     """Create and save the log-log chart with power law fit"""
     print("\nCreating Log-Log Chart with Fitted Power Law Function")
     print("=" * 70)
@@ -271,11 +272,16 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_log_log_btc_held_vs_btc_per_diluted_share.png', dpi=300, bbox_inches='tight')
+    filename = f'{company_name.lower()}_log_log_btc_held_vs_btc_per_diluted_share.png'
+    if output_dir:
+        filepath = os.path.join(output_dir, filename)
+    else:
+        filepath = filename
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.show()
 
 
-def create_stock_nav_chart(df, company_name, config):
+def create_stock_nav_chart(df, company_name, config, output_dir=None):
     """Create stock price vs NAV multipliers per share chart with time extension"""
     print("\nCreating Stock Price vs NAV Multipliers Per Share Chart")
     print("=" * 60)
@@ -391,11 +397,16 @@ def create_stock_nav_chart(df, company_name, config):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_time_vs_stock_price_and_nav_multiples.png', dpi=300, bbox_inches='tight')
+    filename = f'{company_name.lower()}_time_vs_stock_price_and_nav_multiples.png'
+    if output_dir:
+        filepath = os.path.join(output_dir, filename)
+    else:
+        filepath = filename
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.show()
 
 
-def create_mnav_chart(df, company_name, config):
+def create_mnav_chart(df, company_name, config, output_dir=None):
     """Create mNAV chart showing stock price as multiple of NAV"""
     print("\nCreating mNAV Chart (Stock Price Multiple of NAV)")
     print("=" * 60)
@@ -475,11 +486,16 @@ def create_mnav_chart(df, company_name, config):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_time_vs_mnav.png', dpi=300, bbox_inches='tight')
+    filename = f'{company_name.lower()}_time_vs_mnav.png'
+    if output_dir:
+        filepath = os.path.join(output_dir, filename)
+    else:
+        filepath = filename
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.show()
 
 
-def create_stacked_area_chart(df, company_name):
+def create_stacked_area_chart(df, company_name, output_dir=None):
     """Create a stacked area chart showing market cap and bitcoin NAV with intersection analysis"""
     print("\nCreating Stacked Area Chart (Market Cap vs Bitcoin NAV)")
     print("=" * 60)
@@ -576,7 +592,12 @@ def create_stacked_area_chart(df, company_name):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig(f'{company_name.lower()}_stacked_time_vs_mc_and_nav.png', dpi=300, bbox_inches='tight')
+    filename = f'{company_name.lower()}_stacked_time_vs_mc_and_nav.png'
+    if output_dir:
+        filepath = os.path.join(output_dir, filename)
+    else:
+        filepath = filename
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     print(f"Intersection found: {days_difference} days ago (Market Cap: ${intersection_market_cap:,.0f}, Current Bitcoin NAV: ${current_bitcoin_nav:,.0f})")
     plt.show()
 
