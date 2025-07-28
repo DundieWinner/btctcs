@@ -113,6 +113,7 @@ def upload_company_charts(company_directory, company_name=None):
                 ExtraArgs={
                     'ContentType': 'image/png',
                     'ACL': 'public-read',  # Make file publicly accessible
+                    'CacheControl': 'max-age=600',  # Cache for 10 minutes (600 seconds)
                     'Metadata': {
                         'company': company_name,
                         'upload_date': timestamp,
