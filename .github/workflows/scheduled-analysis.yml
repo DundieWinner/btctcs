@@ -30,7 +30,11 @@ jobs:
           done
           
           # Convert array to JSON format for matrix strategy
-          companies_json=$(printf '%s\n' "${companies[@]}" | jq -R . | jq -s .)
+          if [ ${#companies[@]} -eq 0 ]; then
+            companies_json="[]"
+          else
+            companies_json=$(printf '%s\n' "${companies[@]}" | jq -R . | jq -s .)
+          fi
           echo "companies=$companies_json" >> $GITHUB_OUTPUT
           
           echo "Found companies: ${companies[*]}"
