@@ -5,9 +5,18 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import Button from "@/components/Button";
-import { getCompanyById, type GoogleSheetConfig, type GoogleSheetExtraction, type GoogleSheetData } from "@/config/companies";
+import {
+  getCompanyById,
+  type GoogleSheetConfig,
+  type GoogleSheetExtraction,
+  type GoogleSheetData,
+} from "@/config/companies";
 import { baseUrl } from "@/config/environment";
-import { s3AccessKey, s3Secret, googleSheetsApiKey } from "@/config/environment-be";
+import {
+  s3AccessKey,
+  s3Secret,
+  googleSheetsApiKey,
+} from "@/config/environment-be";
 
 // Types for Google Sheets API response
 interface GoogleSheetApiData {
@@ -24,6 +33,87 @@ interface ProcessedExtraction {
 
 // Revalidate this page every 10 minutes (600 seconds)
 export const revalidate = 600;
+
+// Helper function to render Google Sheets data sections
+function renderGoogleSheetsData(
+  extractions: ProcessedExtraction[],
+  className?: string,
+) {
+  if (extractions.length === 0) return null;
+
+  return (
+    <div className={`space-y-8 ${className || ""}`}>
+      {extractions.map((extraction) => (
+        <div key={extraction.id} className="">
+          <div className="mb-4">
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ color: "rgb(249, 115, 22)" }}
+            >
+              {extraction.title}
+            </h2>
+            {extraction.description && (
+              <p
+                className="text-gray-400 text-sm [&_a]:text-orange-500 [&_a]:underline [&_a:hover]:text-orange-400 [&_a]:transition-colors"
+                dangerouslySetInnerHTML={{ __html: extraction.description }}
+              />
+            )}
+          </div>
+
+          <div
+            className="rounded-lg border border-gray-700 overflow-hidden"
+            style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    {extraction.data.headers.map(
+                      (header: string, index: number) => (
+                        <th
+                          key={index}
+                          className="px-4 py-3 text-left font-medium text-gray-300"
+                        >
+                          {header}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {extraction.data.rows.map(
+                    (
+                      row: { [key: string]: string | number },
+                      rowIndex: number,
+                    ) => (
+                      <tr
+                        key={rowIndex}
+                        className="border-b border-gray-800 hover:bg-gray-800/50"
+                      >
+                        {extraction.data.headers.map(
+                          (header: string, colIndex: number) => (
+                            <td
+                              key={colIndex}
+                              className="px-4 py-3 text-gray-300"
+                            >
+                              {typeof row[header] === "number"
+                                ? row[header].toLocaleString()
+                                : row[header] || "-"}
+                            </td>
+                          ),
+                        )}
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface CompanyPageProps {
   params: Promise<{
@@ -193,19 +283,23 @@ const fetchCompanyImages = async (companyId: string): Promise<string[]> => {
 // Function to fetch multiple ranges from a single Google Sheet using batchGet
 async function fetchGoogleSheetDataBatch(
   spreadsheetId: string,
-  ranges: string[]
+  ranges: string[],
 ): Promise<(GoogleSheetData | null)[]> {
   try {
     // Build the batchGet URL with multiple ranges
-    const rangeParams = ranges.map(range => `ranges=${encodeURIComponent(range)}`).join('&');
+    const rangeParams = ranges
+      .map((range) => `ranges=${encodeURIComponent(range)}`)
+      .join("&");
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${rangeParams}&key=${googleSheetsApiKey}`;
-    
+
     const response = await fetch(url, {
       next: { revalidate: 600 }, // Cache for 10 minutes
     } as RequestInit & { next: { revalidate: number } });
 
     if (!response.ok) {
-      console.error(`Google Sheets batchGet API error: ${response.status} ${response.statusText}`);
+      console.error(
+        `Google Sheets batchGet API error: ${response.status} ${response.statusText}`,
+      );
       return ranges.map(() => null);
     }
 
@@ -217,7 +311,7 @@ async function fetchGoogleSheetDataBatch(
         values?: string[][];
       }[];
     } = await response.json();
-    
+
     // Process each range in the batch response
     return batchResponse.valueRanges.map((valueRange) => {
       if (!valueRange.values || valueRange.values.length === 0) {
@@ -233,28 +327,28 @@ async function fetchGoogleSheetDataBatch(
       for (let i = 1; i < valueRange.values.length; i++) {
         const row: { [key: string]: string | number } = {};
         const rowData = valueRange.values[i];
-        
+
         headers.forEach((header: string, index: number) => {
-          const value = rowData[index] || '';
+          const value = rowData[index] || "";
           // Try to convert to number if it looks like a number
           const numValue = parseFloat(value);
-          row[header] = !isNaN(numValue) && value !== '' ? numValue : value;
+          row[header] = !isNaN(numValue) && value !== "" ? numValue : value;
         });
-        
+
         rows.push(row);
       }
 
       return { headers, rows };
     });
   } catch (error) {
-    console.error('Error fetching Google Sheet batch data:', error);
+    console.error("Error fetching Google Sheet batch data:", error);
     return ranges.map(() => null);
   }
 }
 
 // Function to process multiple Google Sheet extractions using batchGet
 async function processGoogleSheetExtractions(
-  extractions: GoogleSheetExtraction[]
+  extractions: GoogleSheetExtraction[],
 ): Promise<ProcessedExtraction[]> {
   if (extractions.length === 0) {
     return [];
@@ -268,7 +362,7 @@ async function processGoogleSheetExtractions(
       // Fetch all ranges for this extraction in a single batchGet call
       const batchData = await fetchGoogleSheetDataBatch(
         extraction.spreadsheetId,
-        extraction.ranges
+        extraction.ranges,
       );
 
       // Apply processor if provided, otherwise use the first range data
@@ -280,22 +374,20 @@ async function processGoogleSheetExtractions(
         const firstRangeData = batchData[0];
         processedData = firstRangeData || { headers: [], rows: [] };
       }
-      
+
       results.push({
         id: extraction.id,
         title: extraction.title,
         description: extraction.description,
-        data: processedData
+        data: processedData,
       });
     } catch (error) {
       console.error(`Error processing extraction ${extraction.id}:`, error);
     }
   }
-  
+
   return results;
 }
-
-
 
 // Loading component
 function LoadingDashboard({ companyName }: { companyName: string }) {
@@ -324,17 +416,41 @@ async function CompanyDashboard({ company }: { company: string }) {
   try {
     // Fetch both S3 images and Google Sheets data
     const images = await fetchCompanyImages(company);
-    
+
     // Check if this company has Google Sheets configuration
     let extractedData: ProcessedExtraction[] = [];
-    
+
     if (companyData?.googleSheet?.extractions) {
-      extractedData = await processGoogleSheetExtractions(companyData.googleSheet.extractions);
+      extractedData = await processGoogleSheetExtractions(
+        companyData.googleSheet.extractions,
+      );
     }
+
+    // Separate extractions by render location
+    const topExtractions = extractedData.filter((extraction) => {
+      const config = companyData?.googleSheet?.extractions.find(
+        (e) => e.id === extraction.id,
+      );
+      return !config?.renderLocation || config.renderLocation === "top";
+    });
+
+    const sidebarExtractions = extractedData.filter((extraction) => {
+      const config = companyData?.googleSheet?.extractions.find(
+        (e) => e.id === extraction.id,
+      );
+      return config?.renderLocation === "sidebar";
+    });
+
+    const bottomExtractions = extractedData.filter((extraction) => {
+      const config = companyData?.googleSheet?.extractions.find(
+        (e) => e.id === extraction.id,
+      );
+      return config?.renderLocation === "bottom";
+    });
 
     return (
       <div className="min-h-screen p-8">
-        <div className="max-w-screen-2xl mx-auto">
+        <div className="mx-auto">
           {/* Header */}
           <header className="mb-8">
             <div className="flex items-center justify-between mb-6">
@@ -391,101 +507,64 @@ async function CompanyDashboard({ company }: { company: string }) {
             )}
           </header>
 
-          {/* Google Sheets Data Sections */}
-          {extractedData.length > 0 && (
-            <div className="mb-8 space-y-8">
-              {extractedData.map((extraction) => (
-                <div key={extraction.id} className="">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold mb-2" style={{ color: "rgb(249, 115, 22)" }}>
-                      {extraction.title}
-                    </h2>
-                    {extraction.description && (
-                      <p 
-                        className="text-gray-400 text-sm [&_a]:text-orange-500 [&_a]:underline [&_a:hover]:text-orange-400 [&_a]:transition-colors"
-                        dangerouslySetInnerHTML={{ __html: extraction.description }}
-                      />
-                    )}
-                  </div>
-                  
-                  <div 
-                    className="rounded-lg border border-gray-700 overflow-hidden"
-                    style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
-                  >
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-gray-700">
-                            {extraction.data.headers.map((header: string, index: number) => (
-                              <th 
-                                key={index} 
-                                className="px-4 py-3 text-left font-medium text-gray-300"
-                              >
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {extraction.data.rows.slice(0, 10).map((row: { [key: string]: string | number }, rowIndex: number) => (
-                            <tr 
-                              key={rowIndex} 
-                              className="border-b border-gray-800 hover:bg-gray-800/50"
-                            >
-                              {extraction.data.headers.map((header: string, colIndex: number) => (
-                                <td key={colIndex} className="px-4 py-3 text-gray-300">
-                                  {typeof row[header] === 'number' 
-                                    ? row[header].toLocaleString() 
-                                    : row[header] || '-'
-                                  }
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {extraction.data.rows.length > 10 && (
-                      <div className="px-4 py-3 text-center text-gray-400 text-sm border-t border-gray-700">
-                        Showing first 10 rows of {extraction.data.rows.length} total rows
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Top Google Sheets Data */}
+          {topExtractions.length > 0 && (
+            <div className="mb-8">{renderGoogleSheetsData(topExtractions)}</div>
           )}
 
-          {/* Images Grid */}
-          {images.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-300 text-lg">
-                No images found for {companyName}
-              </p>
-              <p className="text-gray-400 text-sm mt-2">
-                Images will appear here once they are uploaded to the S3 bucket
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {images.map((imageUrl, index) => (
-                <div
-                  key={imageUrl}
-                  className="rounded-lg overflow-hidden border border-gray-700 hover:border-orange-500 transition-colors"
-                  style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
-                >
-                  <div className="relative">
-                    <Image
-                      src={imageUrl}
-                      alt={`${companyName} chart ${index + 1}`}
-                      width={800}
-                      height={600}
-                      className="w-full h-auto object-contain"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  </div>
+          {/* Main Content Area with Sidebar Layout */}
+          <div
+            className={`${sidebarExtractions.length > 0 ? "flex gap-8" : ""}`}
+          >
+            {/* Main Content */}
+            <div className={`${sidebarExtractions.length > 0 ? "flex-1" : ""}`}>
+              {/* Images Grid */}
+              {images.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-300 text-lg">
+                    No images found for {companyName}
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Images will appear here once they are uploaded to the S3
+                    bucket
+                  </p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {images.map((imageUrl, index) => (
+                    <div
+                      key={imageUrl}
+                      className="rounded-lg overflow-hidden border border-gray-700 hover:border-orange-500 transition-colors"
+                      style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
+                    >
+                      <div className="relative">
+                        <Image
+                          src={imageUrl}
+                          alt={`${companyName} chart ${index + 1}`}
+                          width={800}
+                          height={600}
+                          className="w-full h-auto object-contain"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            {sidebarExtractions.length > 0 && (
+              <div className="w-100 flex-shrink-0">
+                {renderGoogleSheetsData(sidebarExtractions)}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Google Sheets Data */}
+          {bottomExtractions.length > 0 && (
+            <div className="mt-8">
+              {renderGoogleSheetsData(bottomExtractions)}
             </div>
           )}
         </div>
