@@ -6,6 +6,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'companies/**'
+      - 'shared_utils/**'
+      - 'requirements.txt'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
