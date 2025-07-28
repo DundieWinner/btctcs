@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BTC Treasury Charts",
-  description: "Charting the BTCTCs taking the world by storm",
+  title: "BTCTCs",
+  description: "Tracking and charting the BTCTCs taking the world by storm",
 };
 
 export default function RootLayout({

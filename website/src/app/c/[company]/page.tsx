@@ -37,7 +37,7 @@ export async function generateMetadata({
 
   if (!companyData) {
     const baseMetadata = {
-      title: `${company.toUpperCase()} - BTC Treasury Charts`,
+      title: `${company.toUpperCase()} - BTCTCs`,
       description: `Bitcoin treasury charts and data for ${company.toUpperCase()}`,
     };
 
@@ -47,7 +47,7 @@ export async function generateMetadata({
         openGraph: {
           ...baseMetadata,
           type: "website",
-          siteName: "BTC Treasury Charts",
+          siteName: "BTCTCs",
           url: `${baseUrl}/c/${company}`,
           images: [{ url: featureImage }],
         },
@@ -63,7 +63,7 @@ export async function generateMetadata({
   }
 
   const curatorNames = companyData.curators.map((c) => c.name).join(", ");
-  const title = `${companyData.name} ${companyData.emoji} - BTC Treasury Charts`;
+  const title = `${companyData.name} ${companyData.emoji} - BTCTCs`;
   const description = `Bitcoin treasury charts and analytics for ${companyData.name}. ${companyData.description || ""} Curated by ${curatorNames}.`;
 
   const baseMetadata = {
@@ -88,7 +88,7 @@ export async function generateMetadata({
         title,
         description,
         type: "website",
-        siteName: "BTC Treasury Charts",
+        siteName: "BTCTCs",
         url: `${baseUrl}/c/${company}`,
         images: [{ url: featureImage }],
       },
@@ -107,7 +107,7 @@ export async function generateMetadata({
       title,
       description,
       type: "website",
-      siteName: "BTC Treasury Charts",
+      siteName: "BTCTCs",
       url: `${baseUrl}/c/${company}`,
     },
     twitter: {
