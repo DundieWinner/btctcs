@@ -10,7 +10,7 @@ on:
 
 jobs:
   discover-companies:
-    name: Discover Companies with Analysis Scripts
+    name: Discover Companies
     runs-on: ubuntu-latest
     outputs:
       companies: ${{ steps.find-companies.outputs.companies }}
@@ -80,7 +80,9 @@ jobs:
           
           # Data Configuration
           H100_DATA_URL: ${{ secrets.H100_DATA_URL }}
-          
+          METAPLANET_DATA_URL: ${{ secrets.H100_DATA_URL }}
+          LQWD_DATA_URL: ${{ secrets.H100_DATA_URL }}
+
           # Python path configuration
           PYTHONPATH: ${{ github.workspace }}
         run: |
