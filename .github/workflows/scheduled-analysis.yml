@@ -81,8 +81,7 @@ jobs:
           H100_DATA_URL: ${{ secrets.H100_DATA_URL }}
         run: |
           echo "Running analysis for company: ${{ matrix.company }}"
-          cd companies/${{ matrix.company }}
-          python analysis_with_upload.py
+          python companies/${{ matrix.company }}/analysis_with_upload.py
 
       - name: Upload artifacts on failure
         if: failure()
