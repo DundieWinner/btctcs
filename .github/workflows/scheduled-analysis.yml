@@ -21,23 +21,28 @@ jobs:
       - name: Find companies with analysis scripts
         id: find-companies
         run: |
-          companies=()
+          companies=""
           for dir in companies/*/; do
             if [ -d "$dir" ] && [ -f "${dir}analysis_with_upload.py" ]; then
               company_name=$(basename "$dir")
-              companies+=("$company_name")
+              if [ -z "$companies" ]; then
+                companies="\"$company_name\""
+              else
+                companies="$companies,\"$company_name\""
+              fi
             fi
           done
           
-          # Convert array to JSON format for matrix strategy
-          if [ ${#companies[@]} -eq 0 ]; then
+          # Create JSON array
+          if [ -z "$companies" ]; then
             companies_json="[]"
           else
-            companies_json=$(printf '%s\n' "${companies[@]}" | jq -R . | jq -s .)
+            companies_json="[$companies]"
           fi
-          echo "companies=$companies_json" >> $GITHUB_OUTPUT
           
-          echo "Found companies: ${companies[*]}"
+          echo "companies=$companies_json" >> $GITHUB_OUTPUT
+          echo "Found companies JSON: $companies_json"
+          echo "Found companies: ${companies//,/ }"
 
   run-analysis:
     needs: discover-companies
