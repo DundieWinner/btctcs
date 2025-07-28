@@ -17,22 +17,30 @@ import os
 import requests
 
 
-def load_strategy_tracker_stats(fallback_file_path=None):
+def load_strategy_tracker_stats(fallback_file_path=None, prefix=None):
     """
-    Load bitcoin treasury data from DATA_URL environment variable or fallback to local file
+    Load bitcoin treasury data from prefixed DATA_URL environment variable or fallback to local file
     
     Args:
         fallback_file_path (str): Path to fallback JSON file if DATA_URL is not set
                                  Defaults to 'h100/data.json' relative to project root
+        prefix (str): Prefix for environment variable (e.g., 'H100' for 'H100_DATA_URL')
+                     If None, uses 'DATA_URL'
     
     Returns:
         pd.DataFrame: Processed dataframe with bitcoin treasury data
     """
-    # Check for DATA_URL environment variable
-    data_url = os.getenv('DATA_URL')
+    # Determine environment variable name
+    if prefix:
+        env_var_name = f"{prefix}_DATA_URL"
+    else:
+        env_var_name = "DATA_URL"
+    
+    # Check for prefixed DATA_URL environment variable
+    data_url = os.getenv(env_var_name)
     
     if data_url:
-        print(f"Loading data from URL: {data_url}")
+        print(f"Loading data from URL ({env_var_name}): {data_url}")
         try:
             response = requests.get(data_url, timeout=30)
             response.raise_for_status()  # Raise an exception for bad status codes
