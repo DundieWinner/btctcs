@@ -3,6 +3,7 @@ Shared utilities for Bitcoin Treasury Analysis
 """
 
 from .bitcoin_analysis import (
+    load_strategy_tracker_stats,
     setup_plotting,
     run_company_analysis,
     filter_and_deduplicate_data,
@@ -17,6 +18,7 @@ from .bitcoin_analysis import (
 )
 
 __all__ = [
+    'load_strategy_tracker_stats',
     'setup_plotting',
     'run_company_analysis',
     'filter_and_deduplicate_data',

@@ -13,6 +13,77 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from datetime import datetime, timedelta
+import os
+import requests
+
+
+def load_strategy_tracker_stats(fallback_file_path=None):
+    """
+    Load bitcoin treasury data from DATA_URL environment variable or fallback to local file
+    
+    Args:
+        fallback_file_path (str): Path to fallback JSON file if DATA_URL is not set
+                                 Defaults to 'h100/data.json' relative to project root
+    
+    Returns:
+        pd.DataFrame: Processed dataframe with bitcoin treasury data
+    """
+    # Check for DATA_URL environment variable
+    data_url = os.getenv('DATA_URL')
+    
+    if data_url:
+        print(f"Loading data from URL: {data_url}")
+        try:
+            response = requests.get(data_url, timeout=30)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            data = response.json()
+            print("Successfully loaded data from URL")
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data from URL: {e}")
+            print("Falling back to local file...")
+            data = None
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON from URL: {e}")
+            print("Falling back to local file...")
+            data = None
+    else:
+        data = None
+    
+    # Fallback to local file if URL failed or not provided
+    if data is None:
+        if fallback_file_path is None:
+            # Default fallback to h100/data.json relative to project root
+            current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            fallback_file_path = os.path.join(current_dir, 'h100', 'data.json')
+        
+        print(f"Loading data from local file: {fallback_file_path}")
+        try:
+            with open(fallback_file_path, 'r') as f:
+                data = json.load(f)
+            print("Successfully loaded data from local file")
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Could not find fallback data file: {fallback_file_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error parsing JSON from local file: {e}")
+    
+    # Process the data into DataFrame
+    hist_data = data['historicalData']
+    df = pd.DataFrame({
+        'date': hist_data['dates'],
+        'btc_balance': hist_data['btc_balance'],
+        'stock_prices': hist_data['stock_prices'],
+        'btc_prices': hist_data['btc_prices'],
+        'diluted_shares_outstanding': hist_data['diluted_shares_outstanding'],
+        'market_cap_basic': hist_data['market_cap_basic']
+    })
+    
+    # Convert date column to datetime
+    df['date'] = pd.to_datetime(df['date'])
+    
+    # Calculate btc_per_diluted_share for analysis
+    df['btc_per_diluted_share'] = df['btc_balance'] / df['diluted_shares_outstanding']
+    
+    return df
 
 
 def setup_plotting():
