@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -6,21 +6,22 @@ export default function Footer() {
       <div className="max-w-screen-2xl mx-auto px-8">
         <div className="text-center text-gray-400 text-sm">
           <p>
-            Data sourced from public company filings, announcements, and treasury dashboards.
+            Data sourced from public company filings, announcements, and
+            treasury dashboards.
           </p>
           <p className="mt-1">
-            This site is a creation of{' '}
-            <Link 
-              href="https://x.com/DunderHodl" 
+            This site is a creation of{" "}
+            <Link
+              href="https://x.com/DunderHodl"
               className="text-orange-500 hover:text-orange-400 underline"
               target="_blank"
               rel="noopener noreferrer"
             >
               @DunderHodl
             </Link>
-            . All rights reserved.{' '}
-            <Link 
-              href="/privacy" 
+            . All rights reserved.{" "}
+            <Link
+              href="/privacy"
               className="text-orange-500 hover:text-orange-400 underline"
             >
               Privacy Policy

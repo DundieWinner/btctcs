@@ -1,19 +1,19 @@
-import { MetadataRoute } from 'next';
-import { uiHost } from '@/config/environment';
-import { companies } from '@/config/companies';
+import { MetadataRoute } from "next";
+import { uiHost } from "@/config/environment";
+import { companies } from "@/config/companies";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const sitemap: MetadataRoute.Sitemap = [
     {
       url: uiHost,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1,
     },
     {
       url: `${uiHost}/privacy`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.7,
     },
   ];
@@ -23,9 +23,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     sitemap.push({
       url: `${uiHost}/c/${c.id}`,
       lastModified: new Date(),
-      changeFrequency: 'hourly',
+      changeFrequency: "hourly",
       priority: 1,
-    })
+    });
   }
 
   return sitemap;

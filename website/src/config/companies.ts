@@ -15,50 +15,52 @@ export interface Company {
 
 export const companies: Company[] = [
   {
-    id: 'h100',
-    name: 'H100',
-    displayName: 'H100 Company Dashboard',
-    emoji: '🏢',
+    id: "h100",
+    name: "H100",
+    displayName: "H100 Company Dashboard",
+    emoji: "🏢",
     curators: [
       {
-        name: 'DunderHodl',
-        github: 'DundieWinner',
-        x: 'DunderHodl'
-      }
-    ]
+        name: "DunderHodl",
+        github: "DundieWinner",
+        x: "DunderHodl",
+      },
+    ],
   },
   {
-    id: 'lqwd',
-    name: 'LQWD',
-    displayName: 'LQWD Company Dashboard',
-    emoji: '💧',
+    id: "lqwd",
+    name: "LQWD",
+    displayName: "LQWD Company Dashboard",
+    emoji: "💧",
     curators: [
       {
-        name: 'DunderHodl',
-        github: 'DundieWinner',
-        x: 'DunderHodl'
-      }
-    ]
+        name: "DunderHodl",
+        github: "DundieWinner",
+        x: "DunderHodl",
+      },
+    ],
   },
   {
-    id: 'metaplanet',
-    name: 'Metaplanet',
-    displayName: 'Metaplanet Company Dashboard',
-    emoji: '🌎',
+    id: "metaplanet",
+    name: "Metaplanet",
+    displayName: "Metaplanet Company Dashboard",
+    emoji: "🌎",
     curators: [
       {
-        name: 'DunderHodl',
-        github: 'DundieWinner',
-        x: 'DunderHodl'
-      }
-    ]
+        name: "DunderHodl",
+        github: "DundieWinner",
+        x: "DunderHodl",
+      },
+    ],
   },
 ];
 
 export const getCompanyById = (id: string): Company | undefined => {
-  return companies.find(company => company.id === id);
+  return companies.find((company) => company.id === id);
 };
 
 export const getCompanyByName = (name: string): Company | undefined => {
-  return companies.find(company => company.name.toLowerCase() === name.toLowerCase());
+  return companies.find(
+    (company) => company.name.toLowerCase() === name.toLowerCase(),
+  );
 };
