@@ -531,33 +531,48 @@ def create_stacked_area_chart(df, company_name, output_dir=None):
     current_bitcoin_nav = df['bitcoin_nav'].iloc[-1]
     current_date = df['date'].iloc[-1]
     
-    # Find the closest historical market cap value to current bitcoin NAV
-    market_cap_diff = abs(df['fully_diluted_market_cap'] - current_bitcoin_nav)
-    intersection_idx = market_cap_diff.idxmin()
-    intersection_date = df['date'].iloc[intersection_idx]
-    intersection_market_cap = df['fully_diluted_market_cap'].iloc[intersection_idx]
+    # Find the most recent date where market cap crossed above current bitcoin NAV
+    # Look for the most recent transition from below to above current NAV
+    intersection_idx = None
+    for i in range(len(df) - 1, 0, -1):  # Start from end, go backwards, stop at index 1
+        current_market_cap = df['fully_diluted_market_cap'].iloc[i]
+        previous_market_cap = df['fully_diluted_market_cap'].iloc[i-1]
+        
+        # Check if this is a crossing point: previous was below, current is above
+        if (previous_market_cap < current_bitcoin_nav and 
+            current_market_cap >= current_bitcoin_nav):
+            intersection_idx = i
+            break
     
-    # Calculate days between intersection and current date
-    days_difference = (current_date - intersection_date).days
+    if intersection_idx is not None:
+        intersection_date = df['date'].iloc[intersection_idx]
+        intersection_market_cap = df['fully_diluted_market_cap'].iloc[intersection_idx]
+        
+        # Calculate days between intersection and current date
+        days_difference = (current_date - intersection_date).days
+        
+        # Draw dashed line from crossing point to current bitcoin NAV
+        plt.plot([intersection_date, current_date], 
+                 [intersection_market_cap, current_bitcoin_nav], 
+                 '#ff0000', linestyle='--', linewidth=2, alpha=0.8)
+        
+        # Add annotation for the dashed line
+        mid_date = intersection_date + (current_date - intersection_date) / 2
+        mid_value = (intersection_market_cap + current_bitcoin_nav) / 2
+        plt.annotate(f'{days_difference} days', 
+                    xy=(mid_date, mid_value),
+                    xytext=(0, 20), textcoords='offset points',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.8),
+                    fontsize=10, fontweight='bold', ha='center')
+        
+        # Add markers at intersection points
+        plt.plot(intersection_date, intersection_market_cap, '#0000ff', markersize=8, zorder=5)
+        plt.plot(current_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
+    else:
+        # If no crossing found, set default values
+        days_difference = 0
+        intersection_market_cap = 0
     
-    # Draw dashed line from current bitcoin NAV to intersection point
-    plt.plot([intersection_date, current_date], 
-             [intersection_market_cap, current_bitcoin_nav], 
-             '#ff0000', linestyle='--', linewidth=2, alpha=0.8)
-    
-    # Add annotation for the dashed line
-    mid_date = intersection_date + (current_date - intersection_date) / 2
-    mid_value = (intersection_market_cap + current_bitcoin_nav) / 2
-    plt.annotate(f'{days_difference} days', 
-                xy=(mid_date, mid_value),
-                xytext=(0, 20), textcoords='offset points',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.8),
-                fontsize=10, fontweight='bold', ha='center')
-    
-    # Add markers at intersection points
-    plt.plot(intersection_date, intersection_market_cap, '#0000ff', markersize=8, zorder=5)
-    plt.plot(current_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
-
     # Labels and title
     plt.xlabel('Date', fontsize=14, fontweight='bold')
     plt.ylabel('Value (USD)', fontsize=14, fontweight='bold')
