@@ -140,7 +140,7 @@ def run_company_analysis(df, company_name="Company", chart_config=None, output_d
     
     create_mnav_chart(df, company_name, config, output_dir)
     
-    create_stacked_area_chart(df, company_name, output_dir)
+    create_stacked_area_chart(df, company_name, config, output_dir)
     
     # Step 6: Print analysis results
     print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
@@ -289,6 +289,16 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     # Convert date column to datetime
     df['date'] = pd.to_datetime(df['date'])
     
+    # Apply global start date filter if specified
+    global_start_date = config.get('global_start_date')
+    if global_start_date:
+        filter_date = pd.to_datetime(global_start_date)
+        df = df[df['date'] >= filter_date].copy()
+        
+        if len(df) == 0:
+            print(f"No data available from {global_start_date} onwards for stock NAV chart")
+            return
+    
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
     df['nav'] = df['btc_balance'] * df['btc_prices']
     
@@ -414,12 +424,22 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     # Convert date column to datetime
     df['date'] = pd.to_datetime(df['date'])
     
+    # Apply global start date filter first if specified
+    global_start_date = config.get('global_start_date')
+    if global_start_date:
+        filter_date = pd.to_datetime(global_start_date)
+        df = df[df['date'] >= filter_date].copy()
+        
+        if len(df) == 0:
+            print(f"No data available from {global_start_date} onwards for mNAV chart")
+            return
+    
     # Get configuration options
     nav_levels = config.get('nav_reference_levels', [3, 5, 7])
     nav_colors = config.get('nav_reference_colors', ['#0000ff', '#008000', '#ff0000'])
     start_date = config.get('mnav_start_date')
     
-    # Filter data from start_date onwards if provided
+    # Filter data from mnav_start_date onwards if provided (additional to global filter)
     if start_date:
         filter_date = pd.to_datetime(start_date)
         df_filtered = df[df['date'] >= filter_date].copy()
@@ -428,7 +448,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
             print(f"No data available from {start_date} onwards")
             return
     else:
-        # Use all available data if no start date specified
+        # Use all available data if no mnav start date specified
         df_filtered = df.copy()
     
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
@@ -497,7 +517,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     plt.show()
 
 
-def create_stacked_area_chart(df, company_name, output_dir=None):
+def create_stacked_area_chart(df, company_name, config, output_dir=None):
     """Create a stacked area chart showing market cap and bitcoin NAV with intersection analysis"""
     print("\nCreating Stacked Area Chart (Market Cap vs Bitcoin NAV)")
     print("=" * 60)
@@ -506,6 +526,16 @@ def create_stacked_area_chart(df, company_name, output_dir=None):
 
     # Convert date column to datetime
     df['date'] = pd.to_datetime(df['date'])
+    
+    # Apply global start date filter if specified
+    global_start_date = config.get('global_start_date')
+    if global_start_date:
+        filter_date = pd.to_datetime(global_start_date)
+        df = df[df['date'] >= filter_date].copy()
+        
+        if len(df) == 0:
+            print(f"No data available from {global_start_date} onwards for stacked area chart")
+            return
     
     # Calculate NAV (Net Asset Value) = BTC Balance * BTC Price
     df['bitcoin_nav'] = df['btc_balance'] * df['btc_prices']

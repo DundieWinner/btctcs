@@ -18,14 +18,14 @@ def run_analysis():
     print(f"\nFirst 5 rows:")
     print(df.head())
 
-    h100_chart_config = {
+    chart_config = {
         'nav_reference_levels': [3, 5, 7],
         'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
         'projection_months': 2,
         'mnav_start_date': '2025-06-16',
     }
 
-    run_company_analysis(df, company_name="H100", chart_config=h100_chart_config, output_dir=current_dir)
+    run_company_analysis(df, company_name="H100", chart_config=chart_config, output_dir=current_dir)
     
     return df, current_dir
 

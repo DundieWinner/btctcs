@@ -20,7 +20,11 @@ def run_analysis():
     print(f"\nFirst 5 rows:")
     print(df.head())
 
-    run_company_analysis(df, company_name="LQWD", output_dir=current_dir)
+    chart_config = {
+        'global_start_date': '2025-06-17',
+    }
+
+    run_company_analysis(df, company_name="LQWD", chart_config=chart_config, output_dir=current_dir)
     
     return df, current_dir
 
