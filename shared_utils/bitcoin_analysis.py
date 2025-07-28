@@ -23,7 +23,7 @@ def load_strategy_tracker_stats(fallback_file_path=None, prefix=None):
     
     Args:
         fallback_file_path (str): Path to fallback JSON file if DATA_URL is not set
-                                 Defaults to 'h100/data.json' relative to project root
+                                 Defaults to 'h100/fallback_data.json' relative to project root
         prefix (str): Prefix for environment variable (e.g., 'H100' for 'H100_DATA_URL')
                      If None, uses 'DATA_URL'
     
@@ -60,9 +60,9 @@ def load_strategy_tracker_stats(fallback_file_path=None, prefix=None):
     # Fallback to local file if URL failed or not provided
     if data is None:
         if fallback_file_path is None:
-            # Default fallback to h100/data.json relative to project root
+            # Default fallback to h100/fallback_data.json relative to project root
             current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            fallback_file_path = os.path.join(current_dir, 'h100', 'data.json')
+            fallback_file_path = os.path.join(current_dir, 'h100', 'fallback_data.json')
         
         print(f"Loading data from local file: {fallback_file_path}")
         try:

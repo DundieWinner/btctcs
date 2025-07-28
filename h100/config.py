@@ -21,7 +21,7 @@ def run_h100_analysis():
     
     # Use the shared data loading function with H100-specific fallback and prefix
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    h100_data_path = os.path.join(current_dir, 'data.json')
+    h100_data_path = os.path.join(current_dir, 'fallback_data.json')
     df = load_strategy_tracker_stats(fallback_file_path=h100_data_path, prefix="H100")
     
     print(f"Loaded {len(df)} records from {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
