@@ -79,9 +79,13 @@ jobs:
           
           # Data Configuration
           H100_DATA_URL: ${{ secrets.H100_DATA_URL }}
+          
+          # Python path configuration
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "Running analysis for company: ${{ matrix.company }}"
-          python companies/${{ matrix.company }}/analysis_with_upload.py
+          cd companies/${{ matrix.company }}
+          python analysis_with_upload.py
 
       - name: Upload artifacts on failure
         if: failure()
