@@ -40,7 +40,7 @@ def upload_charts(current_dir):
         print("UPLOADING CHARTS TO S3")
         print(f"{'='*60}")
         
-        upload_result = upload_company_charts(current_dir, "METAPLANET")
+        upload_result = upload_company_charts(current_dir)
         
         if upload_result['success_count'] > 0:
             print(f"\n🎉 Successfully uploaded {upload_result['success_count']} charts to S3!")

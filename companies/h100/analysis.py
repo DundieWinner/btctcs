@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-from config import run_h100_analysis
+from config import run_analysis
 
 
 def main():
-    """Main analysis function for H100"""
-    run_h100_analysis()
+    run_analysis()
 
 
 if __name__ == "__main__":

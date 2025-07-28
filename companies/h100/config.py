@@ -2,24 +2,14 @@
 import os
 import sys
 
-# Add parent directory to path to import shared_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from shared_utils.bitcoin_analysis import setup_plotting, run_company_analysis, load_strategy_tracker_stats
 
 
-def run_h100_analysis():
-    """
-    Run the complete H100 bitcoin treasury analysis
-    
-    Returns:
-        tuple: (dataframe, current_directory) for potential follow-up operations
-    """
+def run_analysis():
     setup_plotting()
-    
-    print("Loading H100 Bitcoin data...")
-    
-    # Use the shared data loading function with H100-specific fallback and prefix
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     h100_data_path = os.path.join(current_dir, 'fallback_data.json')
     df = load_strategy_tracker_stats(fallback_file_path=h100_data_path, prefix="H100")
@@ -27,31 +17,20 @@ def run_h100_analysis():
     print(f"Loaded {len(df)} records from {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
     print(f"\nFirst 5 rows:")
     print(df.head())
-    
-    # H100-specific chart configuration
+
     h100_chart_config = {
-        'nav_reference_levels': [3, 5, 7],  # H100 uses 3x, 5x, 7x NAV reference lines
-        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],  # Custom colors for H100 (blue, green, red)
-        'projection_months': 2,  # 2-month projection
-        'mnav_start_date': '2025-06-16',  # Start mNAV chart from June 16th
+        'nav_reference_levels': [3, 5, 7],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+        'projection_months': 2,
+        'mnav_start_date': '2025-06-16',
     }
-    
-    # Run the generalized analysis pipeline with H100-specific configuration
+
     run_company_analysis(df, company_name="H100", chart_config=h100_chart_config, output_dir=current_dir)
     
     return df, current_dir
 
 
-def upload_h100_charts(current_dir):
-    """
-    Upload H100 charts to S3
-    
-    Args:
-        current_dir (str): Directory containing the PNG chart files
-        
-    Returns:
-        dict: Upload results
-    """
+def upload_charts(current_dir):
     from shared_utils.s3_uploader import upload_company_charts
     
     try:
@@ -84,5 +63,4 @@ def upload_h100_charts(current_dir):
 
 
 if __name__ == "__main__":
-    # When run directly, just do the analysis
-    run_h100_analysis()
+    run_analysis()
