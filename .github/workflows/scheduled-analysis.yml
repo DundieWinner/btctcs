@@ -84,8 +84,8 @@ jobs:
           
           # Data Configuration
           H100_DATA_URL: ${{ secrets.H100_DATA_URL }}
-          METAPLANET_DATA_URL: ${{ secrets.H100_DATA_URL }}
-          LQWD_DATA_URL: ${{ secrets.H100_DATA_URL }}
+          METAPLANET_DATA_URL: ${{ secrets.METAPLANET_DATA_URL }}
+          LQWD_DATA_URL: ${{ secrets.LQWD_DATA_URL }}
 
           # Python path configuration
           PYTHONPATH: ${{ github.workspace }}
