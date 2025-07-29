@@ -251,7 +251,7 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     
     plt.suptitle(f'{company_name} Holdings vs Bitcoin per Diluted Share (Log-Log Scale)',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Power Law Relationship Analysis\nhttps://github.com/DundieWinner/btctcs - {current_date}', 
+    plt.title(f'Power Law Relationship Analysis\nhttps://btctcs.com - {current_date}',
               fontsize=12, pad=20)
 
     # Create equation text
@@ -381,7 +381,7 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     
     plt.suptitle(f'{company_name} Stock Price vs Bitcoin NAV Multipliers per Share',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Extended {projection_months} Months with Projected BTC Accumulation\nhttps://github.com/DundieWinner/btctcs - {current_date}', 
+    plt.title(f'Extended {projection_months} Months with Projected BTC Accumulation\nhttps://btctcs.com - {current_date}',
               fontsize=12, pad=20)
 
     # Set log scale for y-axis
@@ -481,7 +481,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     
     plt.suptitle(f'{company_name} Stock Price as Multiple of Bitcoin NAV',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date if start_date else "beginning"})\nCurrent mNAV: {most_recent_mnav:.2f}x | https://github.com/DundieWinner/btctcs - {current_date}', 
+    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date if start_date else "beginning"})\nCurrent mNAV: {most_recent_mnav:.2f}x | https://btctcs.com - {current_date}',
               fontsize=12, pad=20)
 
     # Add NAV reference lines with matching colors from stock NAV chart
@@ -612,7 +612,7 @@ def create_stacked_area_chart(df, company_name, config, output_dir=None):
     
     plt.suptitle(f'{company_name} Market Cap vs Bitcoin NAV Over Time',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'https://github.com/DundieWinner/btctcs - {chart_date}',
+    plt.title(f'https://btctcs.com - {chart_date}',
               fontsize=12, pad=20)
 
     # Format y-axis to show values in millions without scientific notation
