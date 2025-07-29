@@ -13,7 +13,7 @@ BLGV_DATE_COLUMN = "Date"
 BLGV_BTC_BALANCE_COLUMN = "BTC Held"
 BLGV_SHARES_COLUMN = "FD Shares"
 BLGV_STOCK_PRICE_COLUMN = "Closing Price (USD)"
-BLGV_BTC_PER_SHARE_COLUMN = "Equity Sats / Share"
+BLGV_BTC_PER_SHARE_COLUMN = "Equity BTC / Share"
 BLGV_BTC_PRICE_COLUMN = "BTC Price (USD)"
 
 
@@ -64,15 +64,13 @@ def run_analysis():
     
     print(f"\nFirst 5 rows:")
     print(df.head())
-    
-    # BLGV-specific chart configuration
-    # These can be customized based on BLGV's trading patterns and preferences
+
     chart_config = {
-        'nav_reference_levels': [2, 3, 4, 5],  # BLGV NAV multiplier levels
-        'nav_reference_colors': ['#800080', '#0000ff', '#008000', '#ff0000'],  # Purple, Blue, Green, Red
-        'projection_months': 3,  # 3-month projection
-        'mnav_start_date': None,  # Use earliest date in dataset
-        'global_start_date': None,  # Use all available data
+        'nav_reference_levels': [3, 4, 5],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+        'projection_months': 2,
+        'mnav_start_date': '2025-07-16',
+        'global_start_date': None,
     }
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
