@@ -854,7 +854,7 @@ async function CompanyDashboard({ company }: { company: string }) {
             </div>
 
             {/* Sidebar - Responsive */}
-            <div className="w-full lg:w-96 xl:w-110 flex-shrink-0 flex flex-col gap-6">
+            <div className="w-full lg:w-96 xl:w-130 flex-shrink-0 flex flex-col gap-6">
               {sidebarExtractions.length > 0 &&
                 renderGoogleSheetsData(sidebarExtractions)}
               {/* Curators */}
