@@ -4,12 +4,11 @@ import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import { companies, getCompanyById } from "@/config/companies";
 import {
-  companies,
-  getCompanyById,
   type GoogleSheetData,
   type GoogleSheetExtraction,
-} from "@/config/companies";
+} from "@/config/types";
 import { baseUrl } from "@/config/environment";
 import {
   googleSheetsApiKey,
@@ -442,7 +441,7 @@ async function CompanyDashboard({ company }: { company: string }) {
 
     return (
       <div className="min-h-screen p-3 sm:p-8">
-        <div className="max-w-[86rem] mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="max-w-[95rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
           <header className="mb-6 sm:mb-8">
             <div className="flex items-center mb-4 sm:mb-6">
