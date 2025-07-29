@@ -4,18 +4,17 @@ import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
-import Button from "@/components/Button";
 import {
+  companies,
   getCompanyById,
-  type GoogleSheetConfig,
-  type GoogleSheetExtraction,
   type GoogleSheetData,
+  type GoogleSheetExtraction,
 } from "@/config/companies";
 import { baseUrl } from "@/config/environment";
 import {
+  googleSheetsApiKey,
   s3AccessKey,
   s3Secret,
-  googleSheetsApiKey,
 } from "@/config/environment-be";
 
 // Types for Google Sheets API response
@@ -99,9 +98,9 @@ function renderGoogleSheetsData(
 }
 
 interface CompanyPageProps {
-  params: Promise<{
+  params: {
     company: string;
-  }>;
+  };
 }
 
 // Generate metadata for each company page
@@ -149,7 +148,7 @@ export async function generateMetadata({
   }
 
   const curatorNames = companyData.curators.map((c) => c.name).join(", ");
-  const title = `${companyData.name} ${companyData.emoji} - BTCTCs`;
+  const title = `${companyData.emoji} ${companyData.name} - BTCTCs`;
   const description = `Bitcoin treasury charts and analytics for ${companyData.name}. ${companyData.description || ""} Curated by ${curatorNames}.`;
 
   const baseMetadata = {
@@ -435,8 +434,19 @@ async function CompanyDashboard({ company }: { company: string }) {
         <div className="max-w-[86rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
           <header className="mb-6 sm:mb-8">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <Button href="/">← Back to Home</Button>
+            <div className="flex items-center mb-4 sm:mb-6">
+              <nav className="flex items-center space-x-2 text-md text-gray-400">
+                <Link
+                  href="/"
+                  className="hover:text-orange-500 transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="text-gray-600">/</span>
+                <span className="text-gray-300 font-medium">
+                  {companyData?.emoji} {companyName}
+                </span>
+              </nav>
             </div>
 
             <h1
@@ -448,8 +458,10 @@ async function CompanyDashboard({ company }: { company: string }) {
 
             {/* Curators */}
             {companyData?.curators && companyData.curators.length > 0 && (
-              <div className="mt-4 mb-6 sm:mb-8">
-                <p className="text-gray-400 text-sm mb-2">Curated by:</p>
+              <div className="flex flex-col md:flex-row gap-2 mt-4 mb-6 sm:mb-8">
+                <div className="text-gray-400 text-sm items-center">
+                  Curated by:
+                </div>
                 <div className="flex flex-wrap gap-2 sm:gap-4">
                   {companyData.curators.map((curator, index) => (
                     <div
@@ -458,7 +470,7 @@ async function CompanyDashboard({ company }: { company: string }) {
                     >
                       <span className="text-gray-300">{curator.name}</span>
                       <div className="flex gap-1">
-                        <a
+                        <Link
                           href={`https://github.com/${curator.github}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -466,11 +478,11 @@ async function CompanyDashboard({ company }: { company: string }) {
                           title={`${curator.name} on GitHub`}
                         >
                           GitHub
-                        </a>
+                        </Link>
                         {curator.x && (
                           <>
                             <span className="text-gray-500">•</span>
-                            <a
+                            <Link
                               href={`https://x.com/${curator.x}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -478,7 +490,7 @@ async function CompanyDashboard({ company }: { company: string }) {
                               title={`${curator.name} on X`}
                             >
                               X
-                            </a>
+                            </Link>
                           </>
                         )}
                       </div>
@@ -551,6 +563,48 @@ async function CompanyDashboard({ company }: { company: string }) {
               {renderGoogleSheetsData(bottomExtractions)}
             </div>
           )}
+
+          {/* Company Navigation Grid */}
+          <div className="mt-12 sm:mt-16 pt-8 border-t border-gray-800">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-300 mb-2">
+                Explore Other Companies
+              </h2>
+              <p className="text-gray-400">
+                Navigate to other Bitcoin treasury companies
+              </p>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {companies
+                  .filter((c) => c.id !== company)
+                  .map((company) => (
+                    <li key={company.id}>
+                      <Link
+                        href={`/c/${company.id}`}
+                        className="flex items-center p-4 rounded-lg border border-gray-700 hover:border-orange-500 hover:bg-gray-800/30 transition-all duration-200 group"
+                        style={{ backgroundColor: "rgb(3, 7, 18, 0.5)" }}
+                      >
+                        <span className="mr-3 text-2xl group-hover:scale-110 transition-transform duration-200">
+                          {company.emoji}
+                        </span>
+                        <div className="flex-1">
+                          <span className="text-lg text-gray-300 group-hover:text-orange-500 transition-colors duration-200">
+                            {company.name}
+                          </span>
+                          {company.description && (
+                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                              {company.description}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     );

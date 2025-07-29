@@ -134,7 +134,7 @@ export const companies: Company[] = [
     id: "h100",
     name: "H100",
     displayName: "H100 Company Dashboard",
-    emoji: "🏢",
+    emoji: "🇸🇪",
     curators: [
       {
         name: "DunderHodl",
@@ -161,7 +161,7 @@ export const companies: Company[] = [
     id: "lqwd",
     name: "LQWD",
     displayName: "LQWD Company Dashboard",
-    emoji: "💧",
+    emoji: "🇨🇦",
     curators: [
       {
         name: "DunderHodl",
@@ -174,7 +174,7 @@ export const companies: Company[] = [
     id: "metaplanet",
     name: "Metaplanet",
     displayName: "Metaplanet Company Dashboard",
-    emoji: "🌎",
+    emoji: "🇯🇵",
     curators: [
       {
         name: "DunderHodl",
