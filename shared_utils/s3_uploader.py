@@ -13,11 +13,12 @@ Environment Variables:
 - S3_KEY_PREFIX: S3 key prefix (optional, defaults to 'charts')
 """
 
-import os
 import glob
+import os
+from datetime import datetime
+
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
-from datetime import datetime
 
 
 def upload_company_charts(company_directory, company_name=None):

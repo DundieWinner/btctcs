@@ -16,7 +16,11 @@ from .bitcoin_analysis import (
     create_stacked_area_chart,
     print_detailed_summary
 )
-
+from .google_sheets import (
+    get_sheet_data,
+    sheet_to_dataframe,
+    load_bitcoin_data_from_sheet
+)
 from .s3_uploader import (
     upload_company_charts,
     upload_multiple_companies
@@ -36,5 +40,8 @@ __all__ = [
     'create_stacked_area_chart',
     'print_detailed_summary',
     'upload_company_charts',
-    'upload_multiple_companies'
+    'upload_multiple_companies',
+    'get_sheet_data',
+    'sheet_to_dataframe',
+    'load_bitcoin_data_from_sheet'
 ]
