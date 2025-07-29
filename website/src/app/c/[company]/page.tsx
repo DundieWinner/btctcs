@@ -93,9 +93,9 @@ function renderGoogleSheetsData(
 }
 
 interface CompanyPageProps {
-  params: {
+  params: Promise<{
     company: string;
-  };
+  }>;
 }
 
 // Generate metadata for each company page
