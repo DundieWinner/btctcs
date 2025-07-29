@@ -66,39 +66,22 @@ function renderGoogleSheetsData(
           >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    {extraction.data.headers.map(
-                      (header: string, index: number) => (
-                        <th
-                          key={index}
-                          className="px-4 py-3 text-left font-medium text-gray-300"
-                        >
-                          {header}
-                        </th>
-                      ),
-                    )}
-                  </tr>
-                </thead>
                 <tbody>
                   {extraction.data.rows.map(
                     (
                       row: { [key: string]: string | number },
                       rowIndex: number,
                     ) => (
-                      <tr
-                        key={rowIndex}
-                        className="border-b border-gray-800 hover:bg-gray-800/50"
-                      >
-                        {extraction.data.headers.map(
-                          (header: string, colIndex: number) => (
+                      <tr key={rowIndex} className="border-b border-gray-800 ">
+                        {Object.values(row).map(
+                          (value: string | number, colIndex: number) => (
                             <td
                               key={colIndex}
-                              className="px-4 py-3 text-gray-300"
+                              className="px-2 py-1 text-gray-300"
                             >
-                              {typeof row[header] === "number"
-                                ? row[header].toLocaleString()
-                                : row[header] || "-"}
+                              {typeof value === "number"
+                                ? value.toLocaleString()
+                                : value || "-"}
                             </td>
                           ),
                         )}
@@ -284,7 +267,13 @@ const fetchCompanyImages = async (companyId: string): Promise<string[]> => {
 async function fetchGoogleSheetDataBatch(
   spreadsheetId: string,
   ranges: string[],
-): Promise<(GoogleSheetData | null)[]> {
+): Promise<
+  {
+    range: string;
+    majorDimension: string;
+    values?: string[][];
+  }[]
+> {
   try {
     // Build the batchGet URL with multiple ranges
     const rangeParams = ranges
@@ -300,7 +289,7 @@ async function fetchGoogleSheetDataBatch(
       console.error(
         `Google Sheets batchGet API error: ${response.status} ${response.statusText}`,
       );
-      return ranges.map(() => null);
+      return [];
     }
 
     const batchResponse: {
@@ -312,37 +301,11 @@ async function fetchGoogleSheetDataBatch(
       }[];
     } = await response.json();
 
-    // Process each range in the batch response
-    return batchResponse.valueRanges.map((valueRange) => {
-      if (!valueRange.values || valueRange.values.length === 0) {
-        console.warn(`No data found in range: ${valueRange.range}`);
-        return null;
-      }
-
-      // First row contains headers
-      const headers = valueRange.values[0];
-      const rows: { [key: string]: string | number }[] = [];
-
-      // Convert remaining rows to objects using headers as keys
-      for (let i = 1; i < valueRange.values.length; i++) {
-        const row: { [key: string]: string | number } = {};
-        const rowData = valueRange.values[i];
-
-        headers.forEach((header: string, index: number) => {
-          const value = rowData[index] || "";
-          // Try to convert to number if it looks like a number
-          const numValue = parseFloat(value);
-          row[header] = !isNaN(numValue) && value !== "" ? numValue : value;
-        });
-
-        rows.push(row);
-      }
-
-      return { headers, rows };
-    });
+    // Return valueRanges as-is from the fetch
+    return batchResponse.valueRanges;
   } catch (error) {
     console.error("Error fetching Google Sheet batch data:", error);
-    return ranges.map(() => null);
+    return [];
   }
 }
 
@@ -372,7 +335,26 @@ async function processGoogleSheetExtractions(
       } else {
         // Default behavior: use first range data if no processor
         const firstRangeData = batchData[0];
-        processedData = firstRangeData || { headers: [], rows: [] };
+        if (!firstRangeData || !firstRangeData.values) {
+          processedData = { rows: [] };
+        } else {
+          // Convert raw valueRange to GoogleSheetData format
+          const rows: { [key: string]: string | number }[] = [];
+          for (let i = 0; i < firstRangeData.values.length; i++) {
+            const row: { [key: string]: string | number } = {};
+            const rowData = firstRangeData.values[i];
+
+            rowData.forEach((value: string, index: number) => {
+              // Try to convert to number if it looks like a number
+              const numValue = parseFloat(value);
+              row[`col_${index}`] =
+                !isNaN(numValue) && value !== "" ? numValue : value;
+            });
+
+            rows.push(row);
+          }
+          processedData = { rows };
+        }
       }
 
       results.push({
@@ -449,16 +431,16 @@ async function CompanyDashboard({ company }: { company: string }) {
     });
 
     return (
-      <div className="min-h-screen p-8">
-        <div className="mx-auto">
+      <div className="min-h-screen p-3 sm:p-8">
+        <div className="max-w-[86rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
-          <header className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+          <header className="mb-6 sm:mb-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
               <Button href="/">← Back to Home</Button>
             </div>
 
             <h1
-              className="text-4xl md:text-6xl font-bold"
+              className="text-3xl sm:text-4xl md:text-6xl font-bold"
               style={{ color: "rgb(249, 115, 22)" }}
             >
               {companyName}
@@ -466,9 +448,9 @@ async function CompanyDashboard({ company }: { company: string }) {
 
             {/* Curators */}
             {companyData?.curators && companyData.curators.length > 0 && (
-              <div className="mt-4 mb-8">
+              <div className="mt-4 mb-6 sm:mb-8">
                 <p className="text-gray-400 text-sm mb-2">Curated by:</p>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-2 sm:gap-4">
                   {companyData.curators.map((curator, index) => (
                     <div
                       key={index}
@@ -509,28 +491,30 @@ async function CompanyDashboard({ company }: { company: string }) {
 
           {/* Top Google Sheets Data */}
           {topExtractions.length > 0 && (
-            <div className="mb-8">{renderGoogleSheetsData(topExtractions)}</div>
+            <div className="mb-6 sm:mb-8">
+              {renderGoogleSheetsData(topExtractions)}
+            </div>
           )}
 
-          {/* Main Content Area with Sidebar Layout */}
+          {/* Main Content Area with Responsive Layout */}
           <div
-            className={`${sidebarExtractions.length > 0 ? "flex gap-8" : ""}`}
+            className={`${
+              sidebarExtractions.length > 0
+                ? "flex flex-col lg:flex-row gap-6 lg:gap-8"
+                : ""
+            }`}
           >
             {/* Main Content */}
             <div className={`${sidebarExtractions.length > 0 ? "flex-1" : ""}`}>
               {/* Images Grid */}
               {images.length === 0 ? (
-                <div className="text-center py-12">
+                <div className="text-center py-8 sm:py-12">
                   <p className="text-gray-300 text-lg">
                     No images found for {companyName}
                   </p>
-                  <p className="text-gray-400 text-sm mt-2">
-                    Images will appear here once they are uploaded to the S3
-                    bucket
-                  </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   {images.map((imageUrl, index) => (
                     <div
                       key={imageUrl}
@@ -544,7 +528,7 @@ async function CompanyDashboard({ company }: { company: string }) {
                           width={800}
                           height={600}
                           className="w-full h-auto object-contain"
-                          sizes="(max-width: 768px) 100vw, 50vw"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 60vw"
                         />
                       </div>
                     </div>
@@ -553,9 +537,9 @@ async function CompanyDashboard({ company }: { company: string }) {
               )}
             </div>
 
-            {/* Sidebar */}
+            {/* Sidebar - Responsive */}
             {sidebarExtractions.length > 0 && (
-              <div className="w-100 flex-shrink-0">
+              <div className="w-full lg:w-96 xl:w-110 flex-shrink-0">
                 {renderGoogleSheetsData(sidebarExtractions)}
               </div>
             )}
@@ -563,7 +547,7 @@ async function CompanyDashboard({ company }: { company: string }) {
 
           {/* Bottom Google Sheets Data */}
           {bottomExtractions.length > 0 && (
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               {renderGoogleSheetsData(bottomExtractions)}
             </div>
           )}
