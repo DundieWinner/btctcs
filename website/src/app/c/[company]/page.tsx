@@ -17,11 +17,6 @@ import {
   s3Secret,
 } from "@/config/environment-be";
 
-// Types for Google Sheets API response
-interface GoogleSheetApiData {
-  values: string[][];
-}
-
 // Processed extraction result
 interface ProcessedExtraction {
   id: string;
