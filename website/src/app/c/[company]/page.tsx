@@ -23,6 +23,7 @@ interface ProcessedExtraction {
   title: string;
   description?: string;
   data: GoogleSheetData;
+  hasHeaders?: boolean;
 }
 
 // Revalidate this page every 10 minutes (600 seconds)
@@ -60,6 +61,20 @@ function renderGoogleSheetsData(
           >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                {extraction.hasHeaders && extraction.data.rows.length > 0 && (
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      {Object.keys(extraction.data.rows[0]).map((header) => (
+                        <th
+                          key={header}
+                          className="px-2 py-2 text-left text-gray-300 font-semibold bg-gray-800"
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                )}
                 <tbody>
                   {extraction.data.rows.map(
                     (
@@ -356,6 +371,7 @@ async function processGoogleSheetExtractions(
         title: extraction.title,
         description: extraction.description,
         data: processedData,
+        hasHeaders: extraction.hasHeaders,
       });
     } catch (error) {
       console.error(`Error processing extraction ${extraction.id}:`, error);
