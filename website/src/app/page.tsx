@@ -106,24 +106,12 @@ export default function Home() {
         <div className="max-w-4xl mb-12">
           <p className="text-md text-gray-300 leading-relaxed">
             These dashboards are an open project with volunteer curators helping
-            keep the company data up to date. Interested volunteers can contact
-            me via DM on X{" "}
+            keep the company data up to date. Leanr more about contributing{" "}
             <a
-              href="https://x.com/DunderHodl"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/contributing"
               className="text-orange-500 hover:text-orange-400 transition-colors duration-200"
             >
-              @DunderHodl
-            </a>{" "}
-            or check out the project&apos;s GitHub to learn more:{" "}
-            <a
-              href="https://github.com/DundieWinner/btctcs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-orange-500 hover:text-orange-400 transition-colors duration-200"
-            >
-              github.com/DundieWinner/btctcs
+              here
             </a>
           </p>
         </div>

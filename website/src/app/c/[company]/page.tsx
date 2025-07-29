@@ -387,7 +387,7 @@ function LoadingDashboard({ companyName }: { companyName: string }) {
 // Main dashboard component
 async function CompanyDashboard({ company }: { company: string }) {
   const companyData = getCompanyById(company);
-  const companyName = companyData?.name.toUpperCase() || company.toUpperCase();
+  const companyName = companyData?.name || company;
 
   try {
     // Fetch both S3 images and Google Sheets data
@@ -448,52 +448,8 @@ async function CompanyDashboard({ company }: { company: string }) {
               className="text-3xl sm:text-4xl md:text-6xl font-bold"
               style={{ color: "rgb(249, 115, 22)" }}
             >
-              {companyName}
+              {companyData?.emoji} {companyName}
             </h1>
-
-            {/* Curators */}
-            {companyData?.curators && companyData.curators.length > 0 && (
-              <div className="flex flex-col md:flex-row gap-2 mt-4 mb-6 sm:mb-8">
-                <div className="text-gray-400 text-sm items-center">
-                  Curated by:
-                </div>
-                <div className="flex flex-wrap gap-2 sm:gap-4">
-                  {companyData.curators.map((curator, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <span className="text-gray-300">{curator.name}</span>
-                      <div className="flex gap-1">
-                        <Link
-                          href={`https://github.com/${curator.github}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-orange-500 hover:text-orange-400 transition-colors"
-                          title={`${curator.name} on GitHub`}
-                        >
-                          GitHub
-                        </Link>
-                        {curator.x && (
-                          <>
-                            <span className="text-gray-500">•</span>
-                            <Link
-                              href={`https://x.com/${curator.x}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-orange-500 hover:text-orange-400 transition-colors"
-                              title={`${curator.name} on X`}
-                            >
-                              X
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </header>
 
           {/* Top Google Sheets Data */}
@@ -504,15 +460,9 @@ async function CompanyDashboard({ company }: { company: string }) {
           )}
 
           {/* Main Content Area with Responsive Layout */}
-          <div
-            className={`${
-              sidebarExtractions.length > 0
-                ? "flex flex-col lg:flex-row gap-6 lg:gap-8"
-                : ""
-            }`}
-          >
+          <div className={"flex flex-col lg:flex-row gap-6 lg:gap-8"}>
             {/* Main Content */}
-            <div className={`${sidebarExtractions.length > 0 ? "flex-1" : ""}`}>
+            <div className={"flex-1"}>
               {/* Images Grid */}
               {images.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
@@ -545,11 +495,53 @@ async function CompanyDashboard({ company }: { company: string }) {
             </div>
 
             {/* Sidebar - Responsive */}
-            {sidebarExtractions.length > 0 && (
-              <div className="w-full lg:w-96 xl:w-110 flex-shrink-0">
-                {renderGoogleSheetsData(sidebarExtractions)}
-              </div>
-            )}
+            <div className="w-full lg:w-96 xl:w-110 flex-shrink-0 flex flex-col gap-6">
+              {sidebarExtractions.length > 0 &&
+                renderGoogleSheetsData(sidebarExtractions)}
+              {/* Curators */}
+              {companyData?.curators && companyData.curators.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <div className="text-gray-400 text-sm items-center">
+                    Curated by:
+                  </div>
+                  <div className="flex flex-wrap gap-2 sm:gap-4">
+                    {companyData.curators.map((curator, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <span className="text-gray-300">{curator.name}</span>
+                        <div className="flex gap-1">
+                          <Link
+                            href={`https://github.com/${curator.github}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-orange-500 hover:text-orange-400 transition-colors"
+                            title={`${curator.name} on GitHub`}
+                          >
+                            GitHub
+                          </Link>
+                          {curator.x && (
+                            <>
+                              <span className="text-gray-500">•</span>
+                              <Link
+                                href={`https://x.com/${curator.x}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-orange-500 hover:text-orange-400 transition-colors"
+                                title={`${curator.name} on X`}
+                              >
+                                X
+                              </Link>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Bottom Google Sheets Data */}

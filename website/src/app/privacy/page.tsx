@@ -1,5 +1,54 @@
 import Footer from "@/components/Footer";
 import Button from "@/components/Button";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { baseUrl, getAbsoluteUrl } from "@/config/environment";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy - BTCTCs",
+  description:
+    "Privacy policy for BTCTCs - Bitcoin treasury charts and analytics. Learn about our data collection practices and how we protect visitor information.",
+  keywords: [
+    "privacy policy",
+    "bitcoin",
+    "treasury",
+    "data protection",
+    "btctcs",
+  ],
+  authors: [{ name: "@DunderHodl", url: "https://x.com/DunderHodl" }],
+  creator: "@DunderHodl",
+  openGraph: {
+    title: "Privacy Policy - BTCTCs",
+    description:
+      "Privacy policy for BTCTCs - Bitcoin treasury charts and analytics.",
+    type: "website",
+    siteName: "BTCTCs",
+    url: `${baseUrl}/privacy`,
+    images: [
+      {
+        url: getAbsoluteUrl("/images/feature-image.png"),
+        width: 1200,
+        height: 630,
+        alt: "BTCTCs - Privacy Policy",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy - BTCTCs",
+    description:
+      "Privacy policy for BTCTCs - Bitcoin treasury charts and analytics.",
+    creator: "@DunderHodl",
+    images: [getAbsoluteUrl("/images/feature-image.png")],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: `${baseUrl}/privacy`,
+  },
+};
 
 export default function PrivacyPolicy() {
   return (
@@ -8,8 +57,19 @@ export default function PrivacyPolicy() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <header className="mb-8">
-            <div className="mb-6">
-              <Button href="/">← Back to Home</Button>
+            <div className="flex items-center mb-4 sm:mb-6">
+              <nav className="flex items-center space-x-2 text-md text-gray-400">
+                <Link
+                  href="/"
+                  className="hover:text-orange-500 transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="text-gray-600">/</span>
+                <span className="text-gray-300 font-medium">
+                  Privacy Policy
+                </span>
+              </nav>
             </div>
 
             <h1
