@@ -82,6 +82,9 @@ jobs:
           AWS_ENDPOINT_URL: https://nyc3.digitaloceanspaces.com
           S3_KEY_PREFIX: charts
           
+          # Google Sheets Configuration
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
           # Data Configuration
           H100_DATA_URL: ${{ secrets.H100_DATA_URL }}
           METAPLANET_DATA_URL: ${{ secrets.METAPLANET_DATA_URL }}
