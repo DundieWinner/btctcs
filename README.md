@@ -12,7 +12,7 @@ Currently tracking the following Bitcoin treasury companies:
 | 🇨🇦 LQWD | @DunderHodl | Canada |
 | 🇯🇵 Metaplanet | @DunderHodl | Japan |
 
-*Want to help curate data for these or other companies? See [Contributing](#contributing) below.*
+*Want to help curate data for these or other companies? See [Contributing](http://btctcs.com/contributing).
 
 ## Development Setup
 
@@ -144,18 +144,6 @@ btctcs/
 │   └── src/config/       # Configuration files
 └── .github/workflows/    # GitHub Actions for automation
 ```
-
-## Contributing
-
-This project relies on volunteers to keep company data up to date. **No technical knowledge required!**
-
-### What's Needed
-- **Data curators** - Keep source data up to date in Google Sheets
-- **Developers** - Improve Python charts and Next.js web app
-
-### How to Help
-- **Contact**: DM [@DunderHodl](https://x.com/DunderHodl) on X
-- **GitHub**: Open issues or submit PRs at [github.com/DundieWinner/btctcs](https://github.com/DundieWinner/btctcs)
 
 ## License
 
