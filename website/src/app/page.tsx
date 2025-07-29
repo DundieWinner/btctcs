@@ -106,7 +106,7 @@ export default function Home() {
         <div className="max-w-4xl mb-12">
           <p className="text-md text-gray-300 leading-relaxed">
             These dashboards are an open project with volunteer curators helping
-            keep the company data up to date. Leanr more about contributing{" "}
+            keep the company data up to date. Learn more about contributing{" "}
             <a
               href="/contributing"
               className="text-orange-500 hover:text-orange-400 transition-colors duration-200"

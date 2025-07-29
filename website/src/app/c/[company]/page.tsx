@@ -502,7 +502,7 @@ async function CompanyDashboard({ company }: { company: string }) {
               {companyData?.curators && companyData.curators.length > 0 && (
                 <div className="flex flex-col gap-1">
                   <div className="text-gray-400 text-sm items-center">
-                    Curated by:
+                    Curators:
                   </div>
                   <div className="flex flex-wrap gap-2 sm:gap-4">
                     {companyData.curators.map((curator, index) => (

@@ -142,6 +142,8 @@ def run_company_analysis(df, company_name="Company", chart_config=None, output_d
     
     create_stacked_area_chart(df, company_name, config, output_dir)
     
+    create_btc_per_share_chart(df, company_name, config, output_dir)
+    
     # Step 6: Print analysis results
     print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
 
@@ -497,8 +499,9 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
                 xy=(most_recent_date, most_recent_mnav),
                 xytext=(10, 10), textcoords='offset points',
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
-                fontsize=10, fontweight='bold')
-    
+                fontsize=10, fontweight='bold', color='black',
+                ha='left', va='bottom')
+
     # Add legend and grid
     plt.legend(loc='upper left', fontsize=12)
     plt.grid(True, alpha=0.3)
@@ -592,7 +595,7 @@ def create_stacked_area_chart(df, company_name, config, output_dir=None):
                     xy=(mid_date, current_bitcoin_nav),
                     xytext=(0, 20), textcoords='offset points',
                     bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.8),
-                    fontsize=10, fontweight='bold', ha='center')
+                    fontsize=10, fontweight='bold', ha='center', color='black')
         
         # Add markers at intersection points
         plt.plot(intersection_date, current_bitcoin_nav, '#0000ff', markersize=8, zorder=5)
@@ -645,6 +648,80 @@ def create_stacked_area_chart(df, company_name, config, output_dir=None):
         filepath = filename
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
     print(f"Intersection found: {days_difference} days ago (Market Cap: ${intersection_market_cap:,.0f}, Current Bitcoin NAV: ${current_bitcoin_nav:,.0f})")
+    plt.show()
+
+
+def create_btc_per_share_chart(df, company_name, config, output_dir=None):
+    """Create a chart showing Sats per diluted share over time"""
+    print("\nCreating Sats per Diluted Share Over Time Chart")
+    print("=" * 60)
+
+    plt.figure(figsize=(14, 10))
+
+    # Convert date column to datetime
+    df['date'] = pd.to_datetime(df['date'])
+    
+    # Apply global start date filter if specified
+    global_start_date = config.get('global_start_date')
+    if global_start_date:
+        filter_date = pd.to_datetime(global_start_date)
+        df = df[df['date'] >= filter_date].copy()
+        
+        if len(df) == 0:
+            print(f"No data available from {global_start_date} onwards for sats per diluted share chart")
+            return
+    
+    # Convert Bitcoin per diluted share to sats per diluted share (multiply by 100,000,000)
+    sats_per_diluted_share = df['btc_per_diluted_share'] * 100_000_000
+    
+    # Plot historical sats per diluted share (solid line)
+    plt.plot(df['date'], sats_per_diluted_share, '#0000ff', linewidth=2, 
+             label=f'{company_name} Sats per Diluted Share', alpha=0.8)
+
+    # Add label for the most recent value
+    if len(sats_per_diluted_share) > 0:
+        most_recent_date = df['date'].iloc[-1]
+        most_recent_value = sats_per_diluted_share.iloc[-1]
+        
+        # Add a point marker for the most recent value
+        plt.plot(most_recent_date, most_recent_value, 'o', color='#0000ff', markersize=8, alpha=0.8)
+        
+        # Add text label with the most recent value
+        plt.annotate(f'{most_recent_value:,.0f} sats', 
+                    xy=(most_recent_date, most_recent_value),
+                    xytext=(10, 10), textcoords='offset points',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
+                    fontsize=10, fontweight='bold', color='black',
+                    ha='left', va='bottom')
+
+    # Labels and title
+    plt.xlabel('Date', fontsize=14, fontweight='bold')
+    plt.ylabel('Sats per Diluted Share', fontsize=14, fontweight='bold')
+    
+    # Get current date for subtitle
+    from datetime import datetime
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    plt.suptitle(f'{company_name} Sats per Diluted Share Over Time',
+                 fontsize=16, fontweight='bold', y=0.98)
+    plt.title(f'https://btctcs.com - {current_date}',
+              fontsize=12, pad=20)
+
+    # Add legend and grid
+    plt.legend(loc='upper left', fontsize=12)
+    plt.grid(True, alpha=0.3)
+    
+    # Format x-axis dates
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Save the plot
+    filename = f'{company_name.lower()}_time_vs_sats_per_diluted_share.png'
+    if output_dir:
+        filepath = os.path.join(output_dir, filename)
+    else:
+        filepath = filename
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.show()
 
 
