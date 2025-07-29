@@ -37,6 +37,92 @@ export const companies: Company[] = [
           processor: blgvTreasuryActionsProcessor,
           renderLocation: "bottom",
           hasHeaders: true,
+          
+          // Column formatting
+          columnFormats: [
+            {
+              key: "Change in BTC",
+              type: "number",
+              decimals: 8,
+              thousandsSeparator: true,
+              textAlign: "right"
+            },
+            {
+              key: "BTC Held",
+              type: "number",
+              decimals: 8,
+              thousandsSeparator: true,
+              textAlign: "right"
+            },
+            {
+              key: "Est. CAD Balance",
+              type: "currency",
+              decimals: 2,
+              textAlign: "right"
+            },
+            {
+              key: "Debt (CAD)",
+              type: "currency",
+              decimals: 2,
+              textAlign: "right"
+            },
+            {
+              key: "FD Share Count",
+              type: "number",
+              decimals: 0,
+              thousandsSeparator: true,
+              textAlign: "right"
+            },
+            {
+              key: "Sats / FD Share",
+              type: "number",
+              decimals: 8,
+              thousandsSeparator: true,
+              textAlign: "right"
+            },
+            {
+              key: "Sats Equity / FD Share",
+              type: "number",
+              decimals: 8,
+              thousandsSeparator: true,
+              textAlign: "right"
+            }
+          ],
+          
+          // Conditional styling for positive/negative changes
+          conditionalStyles: [
+            {
+              key: "Change in BTC",
+              condition: "positive",
+              style: {
+                backgroundColor: "rgba(34, 197, 94, 0.2)", // green-500 with opacity
+                textColor: "rgb(34, 197, 94)", // green-500
+                fontWeight: "bold"
+              }
+            },
+            {
+              key: "Change in BTC",
+              condition: "negative",
+              style: {
+                backgroundColor: "rgba(239, 68, 68, 0.2)", // red-500 with opacity
+                textColor: "rgb(239, 68, 68)", // red-500
+                fontWeight: "bold"
+              }
+            }
+          ],
+          
+          // Column widths for better layout
+          columnWidths: {
+            "Date": "120px",
+            "Description": "250px",
+            "Change in BTC": "140px",
+            "BTC Held": "140px",
+            "Est. CAD Balance": "150px",
+            "Debt (CAD)": "130px",
+            "FD Share Count": "140px",
+            "Sats / FD Share": "150px",
+            "Sats Equity / FD Share": "170px"
+          }
         },
       ],
     },

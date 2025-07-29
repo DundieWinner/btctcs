@@ -8,6 +8,10 @@ import { companies, getCompanyById } from "@/config/companies";
 import {
   type GoogleSheetData,
   type GoogleSheetExtraction,
+  type ColumnFormat,
+  type ConditionalStyle,
+  type CellStyle,
+  type TableStyle,
 } from "@/config/types";
 import { baseUrl } from "@/config/environment";
 import {
@@ -23,10 +27,243 @@ interface ProcessedExtraction {
   description?: string;
   data: GoogleSheetData;
   hasHeaders?: boolean;
+
+  // Formatting options
+  columnFormats?: ColumnFormat[];
+  conditionalStyles?: ConditionalStyle[];
+  cellStyles?: CellStyle[];
+  tableStyle?: TableStyle;
+
+  // Display options
+  maxRows?: number;
+  sortBy?: {
+    column: string;
+    direction: "asc" | "desc";
+  };
+  hideColumns?: string[];
+  columnOrder?: string[];
+  columnWidths?: { [key: string]: string };
 }
 
 // Revalidate this page every 10 minutes (600 seconds)
 export const revalidate = 600;
+
+// Helper function to format cell values based on column configuration
+function formatCellValue(
+  value: string | number,
+  columnKey: string,
+  columnFormats?: ColumnFormat[],
+): string {
+  const format = columnFormats?.find((f) => f.key === columnKey);
+  if (!format) {
+    return typeof value === "number"
+      ? value.toLocaleString()
+      : value?.toString() || "-";
+  }
+
+  // Handle custom formatter first
+  if (format.customFormatter) {
+    return format.customFormatter(value);
+  }
+
+  let formattedValue = value?.toString() || "-";
+
+  // Handle different data types
+  switch (format.type) {
+    case "number":
+      if (typeof value === "number") {
+        const decimals = format.decimals ?? 0;
+        const useThousands = format.thousandsSeparator ?? true;
+        formattedValue = useThousands
+          ? value.toLocaleString(undefined, {
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            })
+          : value.toFixed(decimals);
+      }
+      break;
+
+    case "currency":
+      if (typeof value === "number") {
+        const decimals = format.decimals ?? 2;
+        formattedValue = value.toLocaleString(undefined, {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+      }
+      break;
+
+    case "percentage":
+      if (typeof value === "number") {
+        const decimals = format.decimals ?? 1;
+        formattedValue = (value * 100).toFixed(decimals) + "%";
+      }
+      break;
+
+    case "date":
+      if (value) {
+        try {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            formattedValue = format.dateFormat
+              ? formatDate(date, format.dateFormat)
+              : date.toLocaleDateString();
+          }
+        } catch (e) {
+          // Keep original value if date parsing fails
+        }
+      }
+      break;
+
+    case "text":
+    default:
+      // Keep as string
+      break;
+  }
+
+  // Apply prefix and suffix
+  if (format.prefix) formattedValue = format.prefix + formattedValue;
+  if (format.suffix) formattedValue = formattedValue + format.suffix;
+
+  return formattedValue;
+}
+
+// Simple date formatter helper
+function formatDate(date: Date, format: string): string {
+  const map: { [key: string]: string } = {
+    MM: String(date.getMonth() + 1).padStart(2, "0"),
+    dd: String(date.getDate()).padStart(2, "0"),
+    yyyy: String(date.getFullYear()),
+    yy: String(date.getFullYear()).slice(-2),
+  };
+
+  return format.replace(/MM|dd|yyyy|yy/g, (match) => map[match] || match);
+}
+
+// Helper function to get conditional styles for a cell
+function getConditionalStyles(
+  value: string | number,
+  columnKey: string,
+  conditionalStyles?: ConditionalStyle[],
+): React.CSSProperties {
+  const styles: React.CSSProperties = {};
+
+  const applicableStyles =
+    conditionalStyles?.filter((cs) => cs.key === columnKey) || [];
+
+  for (const conditionalStyle of applicableStyles) {
+    let shouldApply = false;
+
+    switch (conditionalStyle.condition) {
+      case "positive":
+        shouldApply = typeof value === "number" && value > 0;
+        break;
+      case "negative":
+        shouldApply = typeof value === "number" && value < 0;
+        break;
+      case "zero":
+        shouldApply = typeof value === "number" && value === 0;
+        break;
+      case "custom":
+        shouldApply = conditionalStyle.customCondition
+          ? conditionalStyle.customCondition(value)
+          : false;
+        break;
+    }
+
+    if (shouldApply) {
+      if (conditionalStyle.style.backgroundColor) {
+        styles.backgroundColor = conditionalStyle.style.backgroundColor;
+      }
+      if (conditionalStyle.style.textColor) {
+        styles.color = conditionalStyle.style.textColor;
+      }
+      if (conditionalStyle.style.fontWeight) {
+        styles.fontWeight = conditionalStyle.style.fontWeight;
+      }
+      if (conditionalStyle.style.fontStyle) {
+        styles.fontStyle = conditionalStyle.style.fontStyle;
+      }
+    }
+  }
+
+  return styles;
+}
+
+// Helper function to get cell-specific styles
+function getCellStyles(
+  rowIndex: number,
+  columnKey: string,
+  cellStyles?: CellStyle[],
+): React.CSSProperties {
+  const cellStyle = cellStyles?.find(
+    (cs) => cs.row === rowIndex && cs.column === columnKey,
+  );
+  if (!cellStyle) return {};
+
+  const styles: React.CSSProperties = {};
+  if (cellStyle.style.backgroundColor)
+    styles.backgroundColor = cellStyle.style.backgroundColor;
+  if (cellStyle.style.textColor) styles.color = cellStyle.style.textColor;
+  if (cellStyle.style.fontWeight)
+    styles.fontWeight = cellStyle.style.fontWeight;
+  if (cellStyle.style.fontStyle) styles.fontStyle = cellStyle.style.fontStyle;
+
+  return styles;
+}
+
+// Helper function to process and sort data
+function processTableData(
+  data: GoogleSheetData,
+  extraction: ProcessedExtraction,
+): { rows: { [key: string]: string | number }[]; columns: string[] } {
+  let { rows } = data;
+
+  // Apply sorting if specified
+  if (extraction.sortBy) {
+    rows = [...rows].sort((a, b) => {
+      const aVal = a[extraction.sortBy!.column];
+      const bVal = b[extraction.sortBy!.column];
+
+      let comparison = 0;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        comparison = aVal - bVal;
+      } else {
+        comparison = String(aVal).localeCompare(String(bVal));
+      }
+
+      return extraction.sortBy!.direction === "desc" ? -comparison : comparison;
+    });
+  }
+
+  // Apply row limit
+  if (extraction.maxRows && extraction.maxRows > 0) {
+    rows = rows.slice(0, extraction.maxRows);
+  }
+
+  // Determine column order
+  let columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+
+  // Apply custom column order if specified
+  if (extraction.columnOrder) {
+    const orderedColumns = extraction.columnOrder.filter((col) =>
+      columns.includes(col),
+    );
+    const remainingColumns = columns.filter(
+      (col) => !extraction.columnOrder!.includes(col),
+    );
+    columns = [...orderedColumns, ...remainingColumns];
+  }
+
+  // Filter out hidden columns
+  if (extraction.hideColumns) {
+    columns = columns.filter((col) => !extraction.hideColumns!.includes(col));
+  }
+
+  return { rows, columns };
+}
 
 // Helper function to render Google Sheets data sections
 function renderGoogleSheetsData(
@@ -37,71 +274,161 @@ function renderGoogleSheetsData(
 
   return (
     <div className={`space-y-8 ${className || ""}`}>
-      {extractions.map((extraction) => (
-        <div key={extraction.id} className="">
-          <div className="mb-4">
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: "rgb(249, 115, 22)" }}
-            >
-              {extraction.title}
-            </h2>
-            {extraction.description && (
-              <p
-                className="text-gray-400 text-sm [&_a]:text-orange-500 [&_a]:underline [&_a:hover]:text-orange-400 [&_a]:transition-colors"
-                dangerouslySetInnerHTML={{ __html: extraction.description }}
-              />
-            )}
-          </div>
+      {extractions.map((extraction) => {
+        const { rows, columns } = processTableData(extraction.data, extraction);
 
-          <div
-            className="rounded-lg border border-gray-700 overflow-hidden"
-            style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                {extraction.hasHeaders && extraction.data.rows.length > 0 && (
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      {Object.keys(extraction.data.rows[0]).map((header) => (
-                        <th
-                          key={header}
-                          className="px-2 py-2 text-left text-gray-300 font-semibold bg-gray-800"
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                )}
-                <tbody>
-                  {extraction.data.rows.map(
-                    (
-                      row: { [key: string]: string | number },
-                      rowIndex: number,
-                    ) => (
-                      <tr key={rowIndex} className="border-b border-gray-800 ">
-                        {Object.values(row).map(
-                          (value: string | number, colIndex: number) => (
-                            <td
-                              key={colIndex}
-                              className="px-2 py-1 text-gray-300"
+        // Default table styles
+        const defaultTableStyle = {
+          headerBackgroundColor: "rgb(31, 41, 55)", // bg-gray-800
+          headerTextColor: "rgb(209, 213, 219)", // text-gray-300
+          rowBackgroundColor: "rgb(3, 7, 18, 0.9)",
+          alternateRowBackgroundColor: "rgb(17, 24, 39, 0.5)", // Slightly lighter
+          borderColor: "rgb(55, 65, 81)", // border-gray-700
+          textColor: "rgb(209, 213, 219)", // text-gray-300
+        };
+
+        // Merge with custom table styles
+        const tableStyle = { ...defaultTableStyle, ...extraction.tableStyle };
+
+        return (
+          <div key={extraction.id} className="">
+            <div className="mb-4">
+              <h2
+                className="text-2xl font-bold mb-2"
+                style={{ color: "rgb(249, 115, 22)" }}
+              >
+                {extraction.title}
+              </h2>
+              {extraction.description && (
+                <p
+                  className="text-gray-400 text-sm [&_a]:text-orange-500 [&_a]:underline [&_a:hover]:text-orange-400 [&_a]:transition-colors"
+                  dangerouslySetInnerHTML={{ __html: extraction.description }}
+                />
+              )}
+            </div>
+
+            <div
+              className="rounded-lg border overflow-hidden"
+              style={{
+                backgroundColor: tableStyle.rowBackgroundColor,
+                borderColor: tableStyle.borderColor,
+              }}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  {extraction.hasHeaders && rows.length > 0 && (
+                    <thead>
+                      <tr
+                        className="border-b"
+                        style={{ borderColor: tableStyle.borderColor }}
+                      >
+                        {columns.map((header) => {
+                          const width = extraction.columnWidths?.[header];
+
+                          // Get text alignment from column format for header
+                          const columnFormat = extraction.columnFormats?.find(
+                            (f) => f.key === header,
+                          );
+                          const textAlign = columnFormat?.textAlign || "left";
+
+                          return (
+                            <th
+                              key={header}
+                              className="px-2 py-2 font-semibold"
+                              style={{
+                                backgroundColor:
+                                  tableStyle.headerBackgroundColor,
+                                color: tableStyle.headerTextColor,
+                                width: width || "auto",
+                                textAlign: textAlign,
+                              }}
                             >
-                              {typeof value === "number"
-                                ? value.toLocaleString()
-                                : value || "-"}
-                            </td>
-                          ),
-                        )}
+                              {header}
+                            </th>
+                          );
+                        })}
                       </tr>
-                    ),
+                    </thead>
                   )}
-                </tbody>
-              </table>
+                  <tbody>
+                    {rows.map(
+                      (
+                        row: { [key: string]: string | number },
+                        rowIndex: number,
+                      ) => {
+                        const isAlternateRow = rowIndex % 2 === 1;
+                        const rowBgColor = isAlternateRow
+                          ? tableStyle.alternateRowBackgroundColor
+                          : tableStyle.rowBackgroundColor;
+
+                        return (
+                          <tr
+                            key={rowIndex}
+                            className="border-b"
+                            style={{
+                              borderColor: tableStyle.borderColor,
+                              backgroundColor: rowBgColor,
+                            }}
+                          >
+                            {columns.map((columnKey) => {
+                              const value = row[columnKey];
+                              const formattedValue = formatCellValue(
+                                value,
+                                columnKey,
+                                extraction.columnFormats,
+                              );
+
+                              // Combine all styles: conditional + cell-specific + table default
+                              const conditionalStyles = getConditionalStyles(
+                                value,
+                                columnKey,
+                                extraction.conditionalStyles,
+                              );
+                              const cellStyles = getCellStyles(
+                                rowIndex,
+                                columnKey,
+                                extraction.cellStyles,
+                              );
+                              const width =
+                                extraction.columnWidths?.[columnKey];
+
+                              // Get text alignment from column format
+                              const columnFormat =
+                                extraction.columnFormats?.find(
+                                  (f) => f.key === columnKey,
+                                );
+                              const textAlign =
+                                columnFormat?.textAlign || "left";
+
+                              const combinedStyles = {
+                                color: tableStyle.textColor,
+                                width: width || "auto",
+                                textAlign: textAlign,
+                                ...conditionalStyles,
+                                ...cellStyles,
+                              };
+
+                              return (
+                                <td
+                                  key={columnKey}
+                                  className="px-2 py-1"
+                                  style={combinedStyles}
+                                >
+                                  {formattedValue}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      },
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -371,6 +698,19 @@ async function processGoogleSheetExtractions(
         description: extraction.description,
         data: processedData,
         hasHeaders: extraction.hasHeaders,
+
+        // Pass through all formatting options
+        columnFormats: extraction.columnFormats,
+        conditionalStyles: extraction.conditionalStyles,
+        cellStyles: extraction.cellStyles,
+        tableStyle: extraction.tableStyle,
+
+        // Pass through display options
+        maxRows: extraction.maxRows,
+        sortBy: extraction.sortBy,
+        hideColumns: extraction.hideColumns,
+        columnOrder: extraction.columnOrder,
+        columnWidths: extraction.columnWidths,
       });
     } catch (error) {
       console.error(`Error processing extraction ${extraction.id}:`, error);
@@ -441,7 +781,7 @@ async function CompanyDashboard({ company }: { company: string }) {
 
     return (
       <div className="min-h-screen p-3 sm:p-8">
-        <div className="max-w-[95rem] mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="max-w-[115rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
           <header className="mb-6 sm:mb-8">
             <div className="flex items-center mb-4 sm:mb-6">
@@ -475,7 +815,11 @@ async function CompanyDashboard({ company }: { company: string }) {
           )}
 
           {/* Main Content Area with Responsive Layout */}
-          <div className={"flex flex-col lg:flex-row gap-6 lg:gap-8"}>
+          <div
+            className={
+              "flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[95rem] mx-auto"
+            }
+          >
             {/* Main Content */}
             <div className={"flex-1"}>
               {/* Images Grid */}
