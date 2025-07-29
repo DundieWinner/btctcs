@@ -490,7 +490,7 @@ async function CompanyDashboard({ company }: { company: string }) {
                   {images.map((imageUrl, index) => (
                     <div
                       key={imageUrl}
-                      className="rounded-lg overflow-hidden border border-gray-700 hover:border-orange-500 transition-colors"
+                      className="rounded-lg overflow-hidden border border-gray-700"
                       style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
                     >
                       <div className="relative">
