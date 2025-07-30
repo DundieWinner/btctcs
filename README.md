@@ -6,12 +6,12 @@ Open-source project for tracking and analyzing Bitcoin treasury holdings across 
 
 Currently tracking the following Bitcoin treasury companies:
 
-| Company | Curator(s) | Country |
+| Company | Curator(s) | Country | Data Source(s) |
 |---------|------------|---------|
-| 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada |
-| 🇸🇪 H100 | [@DunderHodl](https://x.com/DunderHodl) | Sweden |
-| 🇨🇦 LQWD | [@DunderHodl](https://x.com/DunderHodl) | Canada |
-| 🇯🇵 Metaplanet | [@DunderHodl](https://x.com/DunderHodl) | Japan |
+| 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada | [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE), [Google Sheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing) |
+| 🇸🇪 H100 | [@DunderHodl](https://x.com/DunderHodl) | Sweden | https://treasury.h100.group, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
+| 🇨🇦 LQWD | [@DunderHodl](https://x.com/DunderHodl) | Canada | https://treasury.lqwdtech.com |
+| 🇯🇵 Metaplanet | [@DunderHodl](https://x.com/DunderHodl) | Japan | https://metaplanet.strategytracker.com, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
 
 *Want to help curate data for these or other companies? See [Contributing](http://btctcs.com/contributing).
 
