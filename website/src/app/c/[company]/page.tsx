@@ -20,8 +20,8 @@ import { fetchCompanyImages } from "@/services/s3Images";
 import { getChartExtractions } from "@/utils/chartHelpers";
 import { generateCompanyMetadata } from "@/utils/metadataHelpers";
 
-// Revalidate this page every 10 minutes (600 seconds)
-export const revalidate = 600;
+// Revalidate this page every 5 minutes (300 seconds)
+export const revalidate = 300;
 
 interface CompanyPageProps {
   params: Promise<{
