@@ -85,6 +85,73 @@ export interface TableStyle {
   textColor?: string;
 }
 
+// Chart configuration interfaces
+export interface ChartDataMapping {
+  x: string; // Column name for X-axis data
+  y: string; // Column name for Y-axis data
+  label?: string; // Optional label override for this dataset
+}
+
+export interface ChartDataset {
+  label: string; // Dataset label
+  mapping: ChartDataMapping; // How to map data columns
+  borderColor?: string; // Line/border color
+  backgroundColor?: string; // Fill/background color
+  borderDash?: number[]; // Dash pattern for lines
+  tension?: number; // Line tension (0 = straight lines)
+  pointRadius?: number; // Point size
+  pointHoverRadius?: number; // Point size on hover
+  yAxisID?: string; // Which Y-axis to use
+  hidden?: boolean; // Start hidden
+}
+
+export interface ChartAxis {
+  id: string; // Unique axis ID
+  type: 'linear' | 'logarithmic' | 'time' | 'category'; // Axis type
+  position: 'left' | 'right' | 'top' | 'bottom'; // Axis position
+  title?: {
+    display: boolean;
+    text: string;
+    color?: string;
+  };
+  ticks?: {
+    color?: string;
+    callback?: string; // Function name for custom formatting
+  };
+  grid?: {
+    display?: boolean;
+    color?: string;
+    drawOnChartArea?: boolean;
+  };
+  beginAtZero?: boolean;
+  offset?: boolean;
+}
+
+export interface ChartConfiguration {
+  type: 'line' | 'bar' | 'scatter' | 'bubble'; // Chart type
+  title?: string; // Chart title (overrides extraction title)
+  datasets: ChartDataset[]; // Dataset configurations
+  axes?: ChartAxis[]; // Custom axis configurations
+  height?: number; // Chart height in pixels (default: 500)
+  showExportButton?: boolean; // Show export button (default: true)
+  animation?: boolean; // Enable animations (default: false)
+  responsive?: boolean; // Responsive sizing (default: true)
+  maintainAspectRatio?: boolean; // Maintain aspect ratio (default: false)
+  plugins?: {
+    legend?: {
+      display?: boolean;
+      position?: 'top' | 'bottom' | 'left' | 'right';
+    };
+    tooltip?: {
+      enabled?: boolean;
+    };
+    watermark?: {
+      enabled?: boolean;
+      text?: string;
+    };
+  };
+}
+
 export interface GoogleSheetExtraction {
   id: string; // Unique identifier for this extraction
   title: string; // Display title for this data section
@@ -98,7 +165,8 @@ export interface GoogleSheetExtraction {
       values?: string[][];
     }[],
   ) => GoogleSheetData | ProcessorResult;
-  renderLocation?: "sidebar" | "top" | "bottom"; // Where to render this extraction, defaults to "top"
+  renderLocation?: "sidebar" | "top" | "bottom" | "none"; // Where to render this extraction, defaults to "top". Use "none" for chart-only extractions
+  chart?: ChartConfiguration; // Custom chart configuration for this extraction
   hasHeaders?: boolean;
   
   // Advanced formatting options

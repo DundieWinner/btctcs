@@ -1,5 +1,76 @@
 import { GoogleSheetData } from "@/config/types";
 
+// Processor for BLGV Historical chart data
+export const blgvHistoricalProcessor = (
+  rangeData: {
+    range: string;
+    majorDimension: string;
+    values?: string[][];
+  }[],
+): GoogleSheetData => {
+  const dataRange = rangeData[0]; // Single range with all data
+
+  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
+    return { rows: [] };
+  }
+
+  // First row contains headers
+  const headers = dataRange.values[0];
+  const rows: { [key: string]: string | number }[] = [];
+
+  // Define the start date filter (July 17th, 2025)
+  const startDate = new Date('2025-07-17');
+
+  // Process each data row (skip header row)
+  for (let i = 1; i < dataRange.values.length; i++) {
+    const rowValues = dataRange.values[i];
+    const rowData: { [key: string]: string | number } = {};
+
+    // Map each cell to its corresponding header
+    headers.forEach((header, index) => {
+      const cellValue = rowValues[index];
+      if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+        // Try to convert to number if it looks like a number
+        const cleanValue = String(cellValue).trim().replace(/[,$]/g, '');
+        const numValue = parseFloat(cleanValue);
+        
+        if (!isNaN(numValue) && header !== 'Date') {
+          rowData[header] = numValue;
+        } else {
+          rowData[header] = String(cellValue).trim();
+        }
+      }
+    });
+
+    // Only add rows that have at least a date and are on or after July 17th, 2025
+    if (rowData['Date']) {
+      // Parse the date from the row
+      const rowDateStr = String(rowData['Date']).trim();
+      let rowDate: Date;
+      
+      // Handle different date formats
+      if (rowDateStr.includes('/')) {
+        // Handle M/D/YYYY format
+        const [month, day, year] = rowDateStr.split('/');
+        rowDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } else if (rowDateStr.includes('-')) {
+        // Handle YYYY-MM-DD format
+        rowDate = new Date(rowDateStr);
+      } else {
+        // Fallback to direct parsing
+        rowDate = new Date(rowDateStr);
+      }
+      
+      // Only include rows on or after July 17th, 2025
+      if (rowDate >= startDate) {
+        rows.push(rowData);
+      }
+    }
+  }
+
+  return { rows };
+};
+
 export const blgvTreasuryActionsProcessor = (
   rangeData: {
     range: string;

@@ -1,4 +1,7 @@
-import { blgvTreasuryActionsProcessor } from "@/config/gs-processors/blgv";
+import {
+  blgvTreasuryActionsProcessor,
+  blgvHistoricalProcessor,
+} from "@/config/gs-processors/blgv";
 import { Company } from "./types";
 import { ragnarProcessor } from "@/config/gs-processors/ragnar";
 
@@ -33,11 +36,11 @@ export const companies: Company[] = [
           description:
             "Data extracted from <a href='https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
           spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
-          ranges: ["'BLGV'!A1:AA1000"],
+          ranges: ["'BLGV Treasury Actions'!A1:AA1000"],
           processor: blgvTreasuryActionsProcessor,
           renderLocation: "bottom",
           hasHeaders: true,
-          
+
           // Column formatting
           columnFormats: [
             {
@@ -45,50 +48,50 @@ export const companies: Company[] = [
               type: "number",
               decimals: 8,
               thousandsSeparator: true,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "BTC Held",
               type: "number",
               decimals: 8,
               thousandsSeparator: true,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "Est. CAD Balance",
               type: "currency",
               decimals: 2,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "Debt (CAD)",
               type: "currency",
               decimals: 2,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "FD Share Count",
               type: "number",
               decimals: 0,
               thousandsSeparator: true,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "Sats / FD Share",
               type: "number",
               decimals: 8,
               thousandsSeparator: true,
-              textAlign: "right"
+              textAlign: "right",
             },
             {
               key: "Sats Equity / FD Share",
               type: "number",
               decimals: 8,
               thousandsSeparator: true,
-              textAlign: "right"
-            }
+              textAlign: "right",
+            },
           ],
-          
+
           // Conditional styling for positive/negative changes
           conditionalStyles: [
             {
@@ -97,8 +100,8 @@ export const companies: Company[] = [
               style: {
                 backgroundColor: "rgba(34, 197, 94, 0.2)", // green-500 with opacity
                 textColor: "rgb(34, 197, 94)", // green-500
-                fontWeight: "bold"
-              }
+                fontWeight: "bold",
+              },
             },
             {
               key: "Change in BTC",
@@ -106,23 +109,152 @@ export const companies: Company[] = [
               style: {
                 backgroundColor: "rgba(239, 68, 68, 0.2)", // red-500 with opacity
                 textColor: "rgb(239, 68, 68)", // red-500
-                fontWeight: "bold"
-              }
-            }
+                fontWeight: "bold",
+              },
+            },
           ],
-          
+
           // Column widths for better layout
           columnWidths: {
-            "Date": "120px",
-            "Description": "250px",
+            Date: "120px",
+            Description: "250px",
             "Change in BTC": "140px",
             "BTC Held": "140px",
             "Est. CAD Balance": "150px",
             "Debt (CAD)": "130px",
             "FD Share Count": "140px",
             "Sats / FD Share": "150px",
-            "Sats Equity / FD Share": "170px"
-          }
+            "Sats Equity / FD Share": "170px",
+          },
+        },
+        {
+          id: "historical-performance",
+          title: "Historical Performance",
+          description:
+            "Historical performance tracking of key financial metrics",
+          spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
+          ranges: ["'BLGV Historical'!A1:Q1000"],
+          processor: blgvHistoricalProcessor,
+          hasHeaders: true,
+          renderLocation: "none",
+          chart: {
+            type: "line",
+            title: "Historical Performance",
+            height: 500,
+            animation: false,
+            datasets: [
+              {
+                label: "Equity Sats / FD Share",
+                mapping: { x: "Date", y: "Equity Sats / Share" },
+                borderColor: "#f3991f",
+                backgroundColor: "rgba(243, 153, 31, 0.2)",
+                tension: 0,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                yAxisID: "sats",
+              },
+              {
+                label: "Share Price (USD)",
+                mapping: { x: "Date", y: "Closing Price (USD)" },
+                borderColor: "#ffffff",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                borderDash: [5, 5],
+                tension: 0,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                yAxisID: "price",
+              },
+              {
+                label: "Fwd Eq. mNAV",
+                mapping: { x: "Date", y: "Fwd Eq. mNAV" },
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.2)",
+                borderDash: [10, 5],
+                tension: 0,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                yAxisID: "mnav",
+              },
+            ],
+            axes: [
+              {
+                id: "x",
+                type: "time",
+                position: "bottom",
+                title: {
+                  display: true,
+                  text: "Date",
+                  color: "#ffffff",
+                },
+                grid: {
+                  color: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+              {
+                id: "sats",
+                type: "logarithmic",
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Sats Per Share",
+                  color: "#f3991f",
+                },
+                ticks: {
+                  color: "#f3991f",
+                },
+                grid: {
+                  color: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+              {
+                id: "price",
+                type: "logarithmic",
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Share Price (USD)",
+                  color: "#ffffff",
+                },
+                ticks: {
+                  color: "#ffffff",
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+              },
+              {
+                id: "mnav",
+                type: "linear",
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Fwd Eq. mNAV",
+                  color: "#10b981",
+                },
+                ticks: {
+                  color: "#10b981",
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+                offset: true,
+                beginAtZero: true,
+              },
+            ],
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              tooltip: {
+                enabled: true,
+              },
+              watermark: {
+                enabled: true,
+                text: "btctcs.com",
+              },
+            },
+          },
         },
       ],
     },

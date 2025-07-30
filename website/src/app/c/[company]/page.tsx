@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import ImageBoard from "@/components/ImageGallery";
+import { GenericChart } from "@/components/GenericChart";
 import { companies, getCompanyById } from "@/config/companies";
 import {
   type GoogleSheetData,
@@ -290,14 +291,15 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
           textColor: "rgb(209, 213, 219)",
           accentColor: "rgb(249, 115, 22)", // Orange accent
         };
-        
+
         const style = { ...defaultStyle, ...stat.style };
-        
+
         // Format the value with prefix/suffix/unit
         let displayValue = stat.value.toString();
         if (stat.prefix) displayValue = stat.prefix + displayValue;
         if (stat.suffix) displayValue = displayValue + stat.suffix;
-        if (stat.unit && !stat.suffix) displayValue = displayValue + " " + stat.unit;
+        if (stat.unit && !stat.suffix)
+          displayValue = displayValue + " " + stat.unit;
 
         return (
           <div
@@ -305,11 +307,14 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
             className="rounded-lg border border-gray-700 px-4 py-3"
             style={{ backgroundColor: style.backgroundColor }}
           >
-            <div className="text-sm font-medium mb-2" style={{ color: style.textColor }}>
+            <div
+              className="text-sm font-medium mb-2"
+              style={{ color: style.textColor }}
+            >
               {stat.label}
             </div>
-            <div 
-              className={`text-3xl font-bold ${stat.description ? 'mb-2' : ''}`}
+            <div
+              className={`text-3xl font-bold ${stat.description ? "mb-2" : ""}`}
               style={{ color: style.accentColor }}
             >
               {displayValue}
@@ -320,7 +325,11 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
                   <a
                     href={stat.link.url}
                     target={stat.link.external !== false ? "_blank" : "_self"}
-                    rel={stat.link.external !== false ? "noopener noreferrer" : undefined}
+                    rel={
+                      stat.link.external !== false
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                     className="text-orange-500 hover:text-orange-400 underline transition-colors"
                   >
                     {stat.link.text || stat.description}
@@ -347,7 +356,9 @@ function renderGoogleSheetsData(
     <div className={`space-y-8 ${className || ""}`}>
       {extractions.map((extraction) => {
         // Only process table data if extraction has data
-        const tableData = extraction.data ? processTableData(extraction.data, extraction) : null;
+        const tableData = extraction.data
+          ? processTableData(extraction.data, extraction)
+          : null;
         const { rows, columns } = tableData || { rows: [], columns: [] };
 
         // Default table styles
@@ -757,12 +768,12 @@ async function processGoogleSheetExtractions(
       // Apply processor if provided, otherwise use the first range data
       let processedData: GoogleSheetData | undefined;
       let keyStatistics: KeyStatistic[] | undefined;
-      
+
       if (extraction.processor) {
         const result = extraction.processor(batchData);
-        
+
         // Handle both old (GoogleSheetData) and new (ProcessorResult) return types
-        if ('rows' in result) {
+        if ("rows" in result) {
           // Old format: direct GoogleSheetData
           processedData = result;
         } else {
@@ -822,6 +833,32 @@ async function processGoogleSheetExtractions(
   }
 
   return results;
+}
+
+// Helper function to get extractions with chart configurations
+function getChartExtractions(
+  extractedData: ProcessedExtraction[],
+  companyData: ReturnType<typeof getCompanyById>,
+): Array<{ extraction: ProcessedExtraction; config: any }> {
+  const chartExtractions: Array<{
+    extraction: ProcessedExtraction;
+    config: any;
+  }> = [];
+
+  for (const extraction of extractedData) {
+    if (!extraction.data?.rows) continue;
+
+    // Find the original configuration for this extraction
+    const config = companyData?.googleSheet?.extractions.find(
+      (e) => e.id === extraction.id,
+    );
+
+    if (!config?.chart) continue;
+
+    chartExtractions.push({ extraction, config: config.chart });
+  }
+
+  return chartExtractions;
 }
 
 // Loading component
@@ -920,8 +957,10 @@ async function CompanyDashboard({ company }: { company: string }) {
                 allKeyStatistics.push(...extraction.keyStatistics);
               }
             });
-            
-            return allKeyStatistics.length > 0 ? renderKeyStatistics(allKeyStatistics) : null;
+
+            return allKeyStatistics.length > 0
+              ? renderKeyStatistics(allKeyStatistics)
+              : null;
           })()}
 
           {/* Top Google Sheets Data */}
@@ -932,13 +971,25 @@ async function CompanyDashboard({ company }: { company: string }) {
           )}
 
           {/* Main Content Area with Responsive Layout */}
-          <div
-            className={
-              "flex flex-col xl:flex-row gap-6 lg:gap-8"
-            }
-          >
+          <div className={"flex flex-col xl:flex-row gap-6 lg:gap-8"}>
             {/* Main Content */}
             <div className={"flex-1"}>
+              {/* Generic Charts */}
+              {(() => {
+                const chartExtractions = getChartExtractions(
+                  extractedData,
+                  companyData,
+                );
+                return chartExtractions.map(({ extraction, config }) => (
+                  <GenericChart
+                    key={extraction.id}
+                    data={extraction.data!}
+                    config={config}
+                    title={extraction.title}
+                  />
+                ));
+              })()}
+
               {/* Images Swiper */}
               <ImageBoard images={images} companyName={companyName} />
             </div>
