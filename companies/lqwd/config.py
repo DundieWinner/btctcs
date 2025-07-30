@@ -20,11 +20,26 @@ def run_analysis():
     print(f"\nFirst 5 rows:")
     print(df.head())
 
-    chart_config = {
-        'global_start_date': '2025-06-17',
+    # Define custom chart generators for LQWD
+    from shared_utils.bitcoin_analysis import (
+        create_power_law_generator,
+        create_stock_nav_generator,
+        create_mnav_generator,
+        create_stacked_area_generator,
+        create_btc_per_share_generator
+    )
+    
+    # Create custom chart generators with LQWD-specific configurations
+    chart_generators = {
+        'power_law': create_power_law_generator(),
+        'stock_nav': create_stock_nav_generator(),  # Uses default NAV levels
+        'mnav': create_mnav_generator(),  # Uses default settings
+        'stacked_area': create_stacked_area_generator(),
+        'btc_per_share': create_btc_per_share_generator()
     }
+    # Note: LQWD uses mostly default configurations
 
-    run_company_analysis(df, company_name="LQWD", chart_config=chart_config, output_dir=current_dir)
+    run_company_analysis(df, company_name="LQWD", output_dir=current_dir, chart_generators=chart_generators)
     
     return df, current_dir
 

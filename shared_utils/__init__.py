@@ -14,7 +14,14 @@ from .bitcoin_analysis import (
     create_stock_nav_chart,
     create_mnav_chart,
     create_stacked_area_chart,
-    print_detailed_summary
+    create_btc_per_share_chart,
+    print_detailed_summary,
+    # Helper functions for custom chart generators
+    create_power_law_generator,
+    create_stock_nav_generator,
+    create_mnav_generator,
+    create_stacked_area_generator,
+    create_btc_per_share_generator
 )
 from .google_sheets import (
     get_sheet_data,
@@ -41,7 +48,14 @@ __all__ = [
     'create_stock_nav_chart',
     'create_mnav_chart',
     'create_stacked_area_chart',
+    'create_btc_per_share_chart',
     'print_detailed_summary',
+    # Helper functions for custom chart generators
+    'create_power_law_generator',
+    'create_stock_nav_generator',
+    'create_mnav_generator',
+    'create_stacked_area_generator',
+    'create_btc_per_share_generator',
     'upload_company_charts',
     'upload_multiple_companies',
     'upload_charts',

@@ -102,22 +102,21 @@ def setup_plotting():
     plt.rcParams['font.size'] = 12
 
 
-def run_company_analysis(df, company_name="Company", chart_config=None, output_dir=None):
-    """Run complete analysis pipeline for a given company with customizable chart options"""
+def run_company_analysis(df, company_name="Company", output_dir=None, chart_generators=None):
+    """Run complete analysis pipeline for a given company with customizable chart generation
+    
+    Args:
+        df: DataFrame with company data
+        company_name: Name of the company for display purposes
+        output_dir: Directory to save charts to
+        chart_generators: Dictionary of chart generation functions or None for default behavior.
+            Format: {'chart_name': chart_function, ...}
+            Each chart_function should accept (processed_data, company_name, output_dir)
+            If None, uses default chart generation (backward compatibility)
+    """
     print(f"\n{'='*60}")
     print(f"RUNNING ANALYSIS FOR {company_name}")
     print(f"{'='*60}")
-
-    default_config = {
-        'nav_reference_levels': [3, 5, 7],
-        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-        'projection_months': 2,
-    }
-    
-    # Merge user config with defaults
-    if chart_config is None:
-        chart_config = {}
-    config = {**default_config, **chart_config}
     
     # Step 1: Filter and deduplicate
     valid_data, unique_data, duplicates = filter_and_deduplicate_data(df)
@@ -132,20 +131,77 @@ def run_company_analysis(df, company_name="Company", chart_config=None, output_d
     correlation, slope, intercept, a_coeff = calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_unique, reg)
     
     # Step 5: Create visualizations
+    # Prepare processed data for chart generators
+    processed_data = {
+        'df': df,
+        'valid_data': valid_data,
+        'unique_data': unique_data,
+        'duplicates': duplicates,
+        'log_btc_balance': log_btc_balance,
+        'log_btc_per_diluted_share': log_btc_per_diluted_share,
+        'log_btc_balance_unique': log_btc_balance_unique,
+        'log_btc_per_diluted_share_unique': log_btc_per_diluted_share_unique,
+        'y_pred_plot': y_pred_plot,
+        'correlation': correlation,
+        'slope': slope,
+        'a_coeff': a_coeff,
+        'r2': r2
+    }
+    
+    if chart_generators is None:
+        # Default behavior: generate all standard charts
+        print("\nUsing default chart generation")
+        _generate_default_charts(processed_data, company_name, output_dir)
+    else:
+        # Custom chart generation
+        chart_names = list(chart_generators.keys())
+        print(f"\nUsing custom chart generators: {', '.join(chart_names)}")
+        
+        for chart_name, chart_function in chart_generators.items():
+            try:
+                print(f"Generating {chart_name}...")
+                chart_function(processed_data, company_name, output_dir)
+            except Exception as e:
+                print(f"Error generating {chart_name}: {e}")
+    
+    # Step 6: Print analysis results
+    print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
+
+
+def _generate_default_charts(processed_data, company_name, output_dir):
+    """Generate all default charts using the standard chart functions with default configurations"""
+    # Extract data from processed_data dictionary
+    df = processed_data['df']
+    log_btc_balance = processed_data['log_btc_balance']
+    log_btc_per_diluted_share = processed_data['log_btc_per_diluted_share']
+    log_btc_balance_unique = processed_data['log_btc_balance_unique']
+    log_btc_per_diluted_share_unique = processed_data['log_btc_per_diluted_share_unique']
+    y_pred_plot = processed_data['y_pred_plot']
+    unique_data = processed_data['unique_data']
+    correlation = processed_data['correlation']
+    slope = processed_data['slope']
+    a_coeff = processed_data['a_coeff']
+    r2 = processed_data['r2']
+    
+    # Default configuration for backward compatibility
+    default_config = {
+        'nav_reference_levels': [3, 5, 7],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+        'projection_months': 2,
+    }
+    
+    # Generate all standard charts with default configuration
     create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique, 
                 log_btc_per_diluted_share_unique, y_pred_plot, unique_data, 
                 correlation, slope, a_coeff, r2, company_name, output_dir)
     
-    create_stock_nav_chart(df, company_name, config, output_dir)
+    create_stock_nav_chart(df, company_name, default_config, output_dir)
     
-    create_mnav_chart(df, company_name, config, output_dir)
+    create_mnav_chart(df, company_name, default_config, output_dir)
     
-    create_stacked_area_chart(df, company_name, config, output_dir)
+    create_stacked_area_chart(df, company_name, default_config, output_dir)
     
-    create_btc_per_share_chart(df, company_name, config, output_dir)
-    
-    # Step 6: Print analysis results
-    print_detailed_summary(df, valid_data, unique_data, duplicates, correlation, slope, a_coeff, r2, company_name)
+    create_btc_per_share_chart(df, company_name, default_config, output_dir)
 
 
 def filter_and_deduplicate_data(df):
@@ -737,12 +793,85 @@ def print_detailed_summary(df, valid_data, unique_data, duplicates, correlation,
     print(f"• Equation: y = {a_coeff:.2e} × x^{slope:.3f}")
     print(f"• R² = {r2:.6f} ({'excellent' if r2 > 0.95 else 'good' if r2 > 0.8 else 'moderate'} fit)")
     print(f"• Correlation = {correlation:.6f}")
-    print(f"• Exponent = {slope:.3f}")
-    print(f"")
-    print(f"INTERPRETATION:")
-    if slope < 1:
-        print(f"Exponent interpretation: {slope:.3f} < 1 (diminishing returns)")
-    elif slope > 1:
-        print(f"Exponent interpretation: {slope:.3f} > 1 (increasing returns)")
-    else:
-        print(f"Exponent interpretation: {slope:.3f} ≈ 1 (linear relationship)")
+
+
+# Helper functions for creating custom chart generators
+def create_power_law_generator(custom_colors=None, custom_title=None, custom_filename=None):
+    """Create a custom power law chart generator with customizable options"""
+    def power_law_chart(processed_data, company_name, output_dir):
+        create_chart(
+            processed_data['log_btc_balance'],
+            processed_data['log_btc_per_diluted_share'],
+            processed_data['log_btc_balance_unique'],
+            processed_data['log_btc_per_diluted_share_unique'],
+            processed_data['y_pred_plot'],
+            processed_data['unique_data'],
+            processed_data['correlation'],
+            processed_data['slope'],
+            processed_data['a_coeff'],
+            processed_data['r2'],
+            company_name,
+            output_dir
+        )
+    return power_law_chart
+
+
+def create_stock_nav_generator(nav_levels=None, nav_colors=None, projection_months=None):
+    """Create a custom stock NAV chart generator with customizable NAV levels and colors"""
+    def stock_nav_chart(processed_data, company_name, output_dir):
+        # Create configuration with custom parameters
+        config = {
+            'nav_reference_levels': nav_levels or [3, 5, 7],
+            'nav_reference_colors': nav_colors or ['#0000ff', '#008000', '#ff0000'],
+            'projection_months': projection_months or 2,
+        }
+            
+        create_stock_nav_chart(processed_data['df'], company_name, config, output_dir)
+    return stock_nav_chart
+
+
+def create_mnav_generator(mnav_start_date=None, custom_colors=None):
+    """Create a custom mNAV chart generator with customizable start date and colors"""
+    def mnav_chart(processed_data, company_name, output_dir):
+        # Create configuration with custom parameters
+        config = {
+            'nav_reference_levels': [3, 5, 7],
+            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+            'projection_months': 2,
+        }
+        if mnav_start_date is not None:
+            config['mnav_start_date'] = mnav_start_date
+        # Add custom color logic here if needed
+        
+        create_mnav_chart(processed_data['df'], company_name, config, output_dir)
+    return mnav_chart
+
+
+def create_stacked_area_generator(custom_colors=None, show_intersection=True):
+    """Create a custom stacked area chart generator"""
+    def stacked_area_chart(processed_data, company_name, output_dir):
+        # Create configuration with custom parameters
+        config = {
+            'nav_reference_levels': [3, 5, 7],
+            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+            'projection_months': 2,
+        }
+        # Add custom configuration logic here
+        
+        create_stacked_area_chart(processed_data['df'], company_name, config, output_dir)
+    return stacked_area_chart
+
+
+def create_btc_per_share_generator(custom_colors=None, show_annotations=True):
+    """Create a custom BTC per share chart generator"""
+    def btc_per_share_chart(processed_data, company_name, output_dir):
+        # Create configuration with custom parameters
+        config = {
+            'nav_reference_levels': [3, 5, 7],
+            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+            'projection_months': 2,
+        }
+        # Add custom configuration logic here
+        
+        create_btc_per_share_chart(processed_data['df'], company_name, config, output_dir)
+    return btc_per_share_chart

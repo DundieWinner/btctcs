@@ -18,14 +18,31 @@ def run_analysis():
     print(f"\nFirst 5 rows:")
     print(df.head())
 
-    chart_config = {
-        'nav_reference_levels': [3, 5, 7],
-        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-        'projection_months': 2,
-        'mnav_start_date': '2025-06-16',
+    # Define custom chart generators for H100
+    from shared_utils.bitcoin_analysis import (
+        create_power_law_generator,
+        create_stock_nav_generator,
+        create_mnav_generator,
+        create_stacked_area_generator,
+        create_btc_per_share_generator
+    )
+    
+    # Create custom chart generators with H100-specific configurations
+    chart_generators = {
+        'power_law': create_power_law_generator(),
+        'stock_nav': create_stock_nav_generator(
+            nav_levels=[3, 5, 7],  # H100-specific NAV levels
+            nav_colors=['#0000ff', '#008000', '#ff0000'],  # H100-specific colors
+            projection_months=2
+        ),
+        'mnav': create_mnav_generator(
+            mnav_start_date='2025-06-16'  # H100-specific start date
+        ),
+        'stacked_area': create_stacked_area_generator(),
+        'btc_per_share': create_btc_per_share_generator()
     }
 
-    run_company_analysis(df, company_name="H100", chart_config=chart_config, output_dir=current_dir)
+    run_company_analysis(df, company_name="H100", output_dir=current_dir, chart_generators=chart_generators)
     
     return df, current_dir
 

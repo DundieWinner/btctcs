@@ -65,21 +65,37 @@ def run_analysis():
     print(f"\nFirst 5 rows:")
     print(df.head())
 
-    chart_config = {
-        'nav_reference_levels': [3, 4, 5],
-        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-        'projection_months': 2,
-        'mnav_start_date': '2025-07-16',
-        'global_start_date': None,
-    }
-    
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
     print(f"\n{'='*60}")
     print("RUNNING BLGV BITCOIN TREASURY ANALYSIS")
     print(f"{'='*60}")
     
-    run_company_analysis(df, company_name="BLGV", chart_config=chart_config, output_dir=current_dir)
+    # Define custom chart generators for BLGV
+    from shared_utils.bitcoin_analysis import (
+        create_power_law_generator,
+        create_stock_nav_generator,
+        create_mnav_generator,
+        create_stacked_area_generator,
+        create_btc_per_share_generator
+    )
+    
+    # Create custom chart generators with BLGV-specific configurations
+    chart_generators = {
+        'power_law': create_power_law_generator(),
+        'stock_nav': create_stock_nav_generator(
+            nav_levels=[3, 4, 5],  # BLGV-specific NAV levels
+            nav_colors=['#0000ff', '#008000', '#ff0000'],  # BLGV-specific colors
+            projection_months=2
+        ),
+        'mnav': create_mnav_generator(
+            mnav_start_date='2025-07-16'  # BLGV-specific start date
+        ),
+        'stacked_area': create_stacked_area_generator(),
+        'btc_per_share': create_btc_per_share_generator()
+    }
+    
+    run_company_analysis(df, company_name="BLGV", output_dir=current_dir, chart_generators=chart_generators)
     
     return df, current_dir
 
