@@ -272,7 +272,7 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_log_log_btc_held_vs_btc_per_diluted_share.png'
+    filename = f'{company_name.lower()}_power_law_regression_log_log_analysis.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -407,7 +407,7 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_time_vs_stock_price_and_nav_multiples.png'
+    filename = f'{company_name.lower()}_stock_price_vs_bitcoin_nav_multiples.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -511,7 +511,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_time_vs_mnav.png'
+    filename = f'{company_name.lower()}_stock_price_multiple_of_bitcoin_nav.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -641,7 +641,7 @@ def create_stacked_area_chart(df, company_name, config, output_dir=None):
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_stacked_time_vs_mc_and_nav.png'
+    filename = f'{company_name.lower()}_market_cap_vs_bitcoin_nav_stacked.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -716,7 +716,7 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_time_vs_sats_per_diluted_share.png'
+    filename = f'{company_name.lower()}_bitcoin_sats_per_share_over_time.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
