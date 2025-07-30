@@ -61,9 +61,7 @@ def load_strategy_tracker_stats(fallback_file_path=None, prefix=None):
     # Fallback to local file if URL failed or not provided
     if data is None:
         if fallback_file_path is None:
-            # Default fallback to h100/fallback_data.json relative to project root
-            current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            fallback_file_path = os.path.join(current_dir, 'h100', 'fallback_data.json')
+            raise FileNotFoundError("no fallback_file_path provided and DATA_URL not set")
         
         print(f"Loading data from local file: {fallback_file_path}")
         try:
@@ -191,15 +189,13 @@ def _generate_default_charts(processed_data, company_name, output_dir):
     }
     
     # Generate all standard charts with default configuration
-    create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique, 
-                log_btc_per_diluted_share_unique, y_pred_plot, unique_data, 
-                correlation, slope, a_coeff, r2, company_name, output_dir)
+    create_power_law_chart(df, company_name, output_dir)
     
     create_stock_nav_chart(df, company_name, default_config, output_dir)
     
     create_mnav_chart(df, company_name, default_config, output_dir)
     
-    create_stacked_area_chart(df, company_name, default_config, output_dir)
+    create_stacked_mc_btc_nav_chart(df, company_name, default_config, output_dir)
     
     create_btc_per_share_chart(df, company_name, default_config, output_dir)
 
@@ -278,12 +274,22 @@ def calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_uniqu
     return correlation, slope, intercept, a_coeff
 
 
-def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique,
-                 log_btc_per_diluted_share_unique, y_pred_plot, unique_data,
-                 correlation, slope, a_coeff, r2, company_name, output_dir=None):
-    """Create and save the log-log chart with power law fit"""
+def create_power_law_chart(df, company_name, output_dir=None):
+    """Create and save the log-log chart with power law fit
+    
+    Args:
+        df (pd.DataFrame): DataFrame with columns 'btc_balance' and 'btc_per_diluted_share'
+        company_name (str): Name of the company
+        output_dir (str, optional): Directory to save the chart
+    """
     print("\nCreating Log-Log Chart with Fitted Power Law Function")
     print("=" * 70)
+    
+    # Perform data transformations internally
+    valid_data, unique_data, duplicates = filter_and_deduplicate_data(df)
+    log_btc_balance, log_btc_per_diluted_share, log_btc_balance_unique, log_btc_per_diluted_share_unique = perform_log_transformation(valid_data, unique_data)
+    reg, y_pred_plot, r2 = fit_power_law_regression(log_btc_balance, log_btc_balance_unique, log_btc_per_diluted_share_unique, unique_data)
+    correlation, slope, intercept, a_coeff = calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_unique, reg)
 
     plt.figure(figsize=(12, 8))
 
@@ -293,7 +299,6 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
                 label=f'{company_name} Treasury Updates ({len(unique_data)})', zorder=5)
 
     # Plot fitted line
-    sort_idx = np.argsort(log_btc_balance)
     X_plot = np.linspace(log_btc_balance.min(), log_btc_balance.max(), 100)
     y_pred_plot = slope * X_plot + np.log10(a_coeff)
     plt.plot(X_plot, y_pred_plot,
@@ -307,10 +312,9 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Holdings vs Bitcoin per Diluted Share (Log-Log Scale)',
+    plt.suptitle(f'{company_name} Log-Log BTC Holdings vs Bitcoin per Diluted Share',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Power Law Relationship Analysis\nhttps://btctcs.com - {current_date}',
-              fontsize=12, pad=20)
+    plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
 
     # Create equation text
     equation_text = f'Power Law: y = {a_coeff:.2e} × x^{slope:.3f}'
@@ -328,7 +332,7 @@ def create_chart(log_btc_balance, log_btc_per_diluted_share, log_btc_balance_uni
     plt.tight_layout()
 
     # Save the plot
-    filename = f'{company_name.lower()}_power_law_regression_log_log_analysis.png'
+    filename = f'{company_name.lower()}_log_log_btc_holdings_vs_btc_per_diluted_share.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -381,8 +385,6 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     # Calculate daily bitcoin balance changes
     btc_changes = last_30_days['btc_balance'].diff().dropna()
     daily_btc_yield = btc_changes.mean()
-    
-    print(f"30-day average daily bitcoin yield: {daily_btc_yield:.4f} BTC/day")
     
     # Extend time axis based on projection_months
     last_date = df['date'].max()
@@ -437,10 +439,9 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Stock Price vs Bitcoin NAV Multipliers per Share',
+    plt.suptitle(f'{company_name} Stock Price vs BTC NAV Multipliers per Share',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Extended {projection_months} Months with Projected BTC Accumulation\nhttps://btctcs.com - {current_date}',
-              fontsize=12, pad=20)
+    plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
 
     # Set log scale for y-axis
     plt.yscale('log')
@@ -537,10 +538,10 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     most_recent_mnav = df_filtered['mnav'].iloc[-1]
     most_recent_date = df_filtered['date'].iloc[-1]
     
-    plt.suptitle(f'{company_name} Stock Price as Multiple of Bitcoin NAV',
+    plt.suptitle(f'{company_name} Stock Price as Multiple of BTC NAV',
                  fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'Market Valuation vs Bitcoin Holdings (from {start_date if start_date else "beginning"})\nCurrent mNAV: {most_recent_mnav:.2f}x | https://btctcs.com - {current_date}',
-              fontsize=12, pad=20)
+    plt.title(f'(From {start_date if start_date else "beginning"})\nhttps://btctcs.com - {current_date}',
+              fontsize=12, pad=10)
 
     # Add NAV reference lines with matching colors from stock NAV chart
     for i, level in enumerate(nav_levels):
@@ -576,7 +577,7 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
     plt.show()
 
 
-def create_stacked_area_chart(df, company_name, config, output_dir=None):
+def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
     """Create a stacked area chart showing market cap and bitcoin NAV with intersection analysis"""
     print("\nCreating Stacked Area Chart (Market Cap vs Bitcoin NAV)")
     print("=" * 60)
@@ -799,20 +800,7 @@ def print_detailed_summary(df, valid_data, unique_data, duplicates, correlation,
 def create_power_law_generator(custom_colors=None, custom_title=None, custom_filename=None):
     """Create a custom power law chart generator with customizable options"""
     def power_law_chart(processed_data, company_name, output_dir):
-        create_chart(
-            processed_data['log_btc_balance'],
-            processed_data['log_btc_per_diluted_share'],
-            processed_data['log_btc_balance_unique'],
-            processed_data['log_btc_per_diluted_share_unique'],
-            processed_data['y_pred_plot'],
-            processed_data['unique_data'],
-            processed_data['correlation'],
-            processed_data['slope'],
-            processed_data['a_coeff'],
-            processed_data['r2'],
-            company_name,
-            output_dir
-        )
+        create_power_law_chart(processed_data['df'], company_name, output_dir)
     return power_law_chart
 
 
@@ -858,7 +846,7 @@ def create_stacked_area_generator(custom_colors=None, show_intersection=True):
         }
         # Add custom configuration logic here
         
-        create_stacked_area_chart(processed_data['df'], company_name, config, output_dir)
+        create_stacked_mc_btc_nav_chart(processed_data['df'], company_name, config, output_dir)
     return stacked_area_chart
 
 

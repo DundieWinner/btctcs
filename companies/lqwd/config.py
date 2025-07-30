@@ -1,45 +1,50 @@
-#!/usr/bin/env python3
 import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from shared_utils.bitcoin_analysis import setup_plotting, run_company_analysis, load_strategy_tracker_stats
+from shared_utils.bitcoin_analysis import (
+    setup_plotting,
+    load_strategy_tracker_stats,
+    create_power_law_chart,
+    create_stock_nav_chart,
+    create_mnav_chart,
+    create_stacked_mc_btc_nav_chart,
+    create_btc_per_share_chart
+)
+
+
+company_name = "LQWD"
 
 
 def run_analysis():
     setup_plotting()
-    
-    print("Loading LQWD Bitcoin data...")
-
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(current_dir, 'fallback_data.json')
-    df = load_strategy_tracker_stats(fallback_file_path=data_path, prefix="LQWD")
+    fd_data_path = os.path.join(current_dir, 'fallback_data.json')
+    df = load_strategy_tracker_stats(fallback_file_path=fd_data_path, prefix="LQWD")
     
-    print(f"Loaded {len(df)} records from {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
-    print(f"\nFirst 5 rows:")
-    print(df.head())
-
-    # Define custom chart generators for LQWD
-    from shared_utils.bitcoin_analysis import (
-        create_power_law_generator,
-        create_stock_nav_generator,
-        create_mnav_generator,
-        create_stacked_area_generator,
-        create_btc_per_share_generator
-    )
+    print("\nGenerating charts...")
+    print("Generating power_law chart...")
+    create_power_law_chart(df, company_name, current_dir)
     
-    # Create custom chart generators with LQWD-specific configurations
-    chart_generators = {
-        'power_law': create_power_law_generator(),
-        'stock_nav': create_stock_nav_generator(),  # Uses default NAV levels
-        'mnav': create_mnav_generator(),  # Uses default settings
-        'stacked_area': create_stacked_area_generator(),
-        'btc_per_share': create_btc_per_share_generator()
-    }
-    # Note: LQWD uses mostly default configurations
-
-    run_company_analysis(df, company_name="LQWD", output_dir=current_dir, chart_generators=chart_generators)
+    print("Generating stock_nav chart...")
+    create_stock_nav_chart(df, company_name, {
+        'nav_reference_levels': [3, 5, 7],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+        'projection_months': 2
+    }, current_dir)
+    
+    print("Generating mnav chart...")
+    create_mnav_chart(df, company_name, {
+        'nav_reference_levels': [3, 5, 7],
+        'nav_reference_colors': ['#0000ff', '#008000', '#ff0000']
+    }, current_dir)
+    
+    print("Generating stacked_area chart...")
+    create_stacked_mc_btc_nav_chart(df, company_name, {}, current_dir)
+    
+    print("Generating btc_per_share chart...")
+    create_btc_per_share_chart(df, company_name, {}, current_dir)
     
     return df, current_dir
 

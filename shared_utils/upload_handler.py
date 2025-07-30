@@ -7,6 +7,7 @@ to eliminate code duplication across company config files.
 """
 
 import os
+
 from .s3_uploader import upload_company_charts
 
 
