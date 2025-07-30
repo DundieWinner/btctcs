@@ -87,7 +87,10 @@ export default function Contributing() {
                 <p className="text-lg">
                   This site is intended to be a group project. I need volunteers
                   to help keep Bitcoin treasury company data up to date.
-                  <strong> No technical knowledge required!</strong>
+                  <strong>
+                    {" "}
+                    Technical knowledge is not a hard requirement!
+                  </strong>
                 </p>
               </div>
 
