@@ -25,6 +25,9 @@ from .s3_uploader import (
     upload_company_charts,
     upload_multiple_companies
 )
+from .upload_handler import (
+    upload_charts
+)
 
 __all__ = [
     'load_strategy_tracker_stats',
@@ -41,6 +44,7 @@ __all__ = [
     'print_detailed_summary',
     'upload_company_charts',
     'upload_multiple_companies',
+    'upload_charts',
     'get_sheet_data',
     'sheet_to_dataframe',
     'load_bitcoin_data_from_sheet'

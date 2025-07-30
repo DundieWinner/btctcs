@@ -85,24 +85,5 @@ def run_analysis():
 
 
 def upload_charts(current_dir):
-    from shared_utils.s3_uploader import upload_company_charts
-    
-    try:
-        print(f"\n{'='*60}")
-        print("UPLOADING CHARTS TO S3")
-        print(f"{'='*60}")
-        
-        upload_result = upload_company_charts(current_dir, "BLGV")
-        
-        if upload_result['success_count'] > 0:
-            print(f"\n🎉 Successfully uploaded {upload_result['success_count']} charts to S3!")
-        
-        if upload_result['failure_count'] > 0:
-            print(f"\n⚠️  {upload_result['failure_count']} uploads failed. Check logs above for details.")
-            
-        return upload_result
-        
-    except Exception as e:
-        print(f"\n❌ Error uploading charts: {e}")
-        print("Charts are still available locally in the company directory.")
-        return {'success_count': 0, 'failure_count': 0, 'error': str(e)}
+    from shared_utils import upload_charts as shared_upload_charts
+    return shared_upload_charts(current_dir, "BLGV")
