@@ -1,6 +1,6 @@
 // Reusable processor for Ragnar's  data
 
-import { GoogleSheetData, ProcessorResult, KeyStatistic } from "../types";
+import { KeyStatistic, ProcessorResult } from "../types";
 
 // Pairs labels from first range with values from second range
 // Now returns both table data and key statistics
@@ -88,15 +88,22 @@ export function ragnarProcessor(
   }
 
   // Helper function to extract and format key statistics
-  const extractKeyStatistic = (metricName: string, id: string, label: string, order: number, unit?: string, prefix?: string) => {
-    const row = pairedRows.find(row => row.Metric === metricName);
+  const extractKeyStatistic = (
+    metricName: string,
+    id: string,
+    label: string,
+    order: number,
+    unit?: string,
+    prefix?: string,
+  ) => {
+    const row = pairedRows.find((row) => row.Metric === metricName);
     if (row) {
       let value = row.Value;
       // Clean up common prefixes from the value
       if (typeof value === "string") {
         value = value.replace(/^₿ /, "").replace(/^\$ /, "").replace(/^% /, "");
       }
-      
+
       keyStatistics.push({
         id,
         label,
@@ -105,26 +112,40 @@ export function ragnarProcessor(
         prefix,
         order,
         style: {
-          accentColor: "rgb(249, 115, 22)" // Orange to match theme
-        }
+          accentColor: "rgb(249, 115, 22)", // Orange to match theme
+        },
       });
     }
   };
-  
+
   // Create key statistics array
   const keyStatistics: KeyStatistic[] = [];
-  
+
   // Extract key statistics in order
-  extractKeyStatistic("BTC in Treasury", "btc-treasury", "BTC Holdings", 1, "BTC");
-  
+  extractKeyStatistic(
+    "BTC in Treasury",
+    "btc-treasury",
+    "BTC Holdings",
+    1,
+    "BTC",
+  );
+
   // Combine basic and diluted mNAV into one card
-  const basicMnavRow = pairedRows.find(row => row.Metric === "Current mNAV (basic)");
-  const dilutedMnavRow = pairedRows.find(row => row.Metric === "Current mNAV (fully diluted)");
-  
-  if (basicMnavRow && dilutedMnavRow) {
+  const basicMnavRow = pairedRows.find(
+    (row) => row.Metric === "Current mNAV (basic)",
+  );
+  const dilutedMnavRow = pairedRows.find(
+    (row) => row.Metric === "Current mNAV (fully diluted)",
+  );
+  const forwardMnavRow = pairedRows.find(
+    (row) => row.Metric === "Forward mNAV",
+  );
+
+  if (basicMnavRow && dilutedMnavRow && forwardMnavRow) {
     let basicValue = basicMnavRow.Value;
     let dilutedValue = dilutedMnavRow.Value;
-    
+    let forwardValue = forwardMnavRow.Value;
+
     // Clean up prefixes
     if (typeof basicValue === "string") {
       basicValue = basicValue.replace(/^\$ /, "");
@@ -132,27 +153,48 @@ export function ragnarProcessor(
     if (typeof dilutedValue === "string") {
       dilutedValue = dilutedValue.replace(/^\$ /, "");
     }
-    
+    if (typeof forwardValue === "string") {
+      forwardValue = forwardValue.replace(/^\$ /, "");
+    }
+
     keyStatistics.push({
       id: "mnav-combined",
-      label: "Current mNAV (Basic / Fully Diluted)",
-      value: `${basicValue} / ${dilutedValue}`,
+      label: "mNAV (Basic / Fully Diluted / Fwd)",
+      value: `${basicValue} / ${dilutedValue} / ${forwardValue}`,
       order: 2,
       style: {
-        accentColor: "rgb(249, 115, 22)" // Orange to match theme
-      }
+        accentColor: "rgb(249, 115, 22)", // Orange to match theme
+      },
     });
   }
-  
-  extractKeyStatistic("Forward mNAV", "forward-mnav", "Forward mNAV", 3, undefined, "$");
-  extractKeyStatistic("Forward Months to Cover mNAV (FMC)", "fmc", "Forward MTC", 4, "M");
+
+  extractKeyStatistic(
+    "Forward Months to Cover mNAV (FMC)",
+    "fmc",
+    "Forward MTC",
+    4,
+    "months",
+  );
   extractKeyStatistic("Forward P/BYD", "forward-pbyd", "Forward P/BYD", 5);
-  extractKeyStatistic("Risk adj. months to cover", "risk-adj-mtc", "Risk Adj. MTC", 6, "months");
+  extractKeyStatistic(
+    "Risk adj. months to cover",
+    "risk-adj-mtc",
+    "Risk Adj. MTC",
+    6,
+    "months",
+  );
+  extractKeyStatistic(
+    "BTC Yield YTD %",
+    "btc-yield-ytd",
+    "BTC Yield YTD",
+    7,
+    "%",
+  );
 
   return {
     data: {
       rows: pairedRows,
     },
-    keyStatistics: keyStatistics.length > 0 ? keyStatistics : undefined
+    keyStatistics: keyStatistics.length > 0 ? keyStatistics : undefined,
   };
 }
