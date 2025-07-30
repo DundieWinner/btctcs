@@ -139,7 +139,7 @@ export default function Contributing() {
                       >
                         @DunderHodl
                       </a>{" "}
-                      - Tell me what company or companies you want to work on.I
+                      - Tell me what company or companies you want to work on. I
                       will get you set up and answer any questions.
                     </p>
                   </div>
