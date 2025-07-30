@@ -8,11 +8,110 @@ Currently tracking the following Bitcoin treasury companies:
 
 | Company | Curator(s) | Country |
 |---------|------------|---------|
-| 🇸🇪 H100 | @DunderHodl | Sweden |
-| 🇨🇦 LQWD | @DunderHodl | Canada |
-| 🇯🇵 Metaplanet | @DunderHodl | Japan |
+| 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada |
+| 🇸🇪 H100 | [@DunderHodl](https://x.com/DunderHodl) | Sweden |
+| 🇨🇦 LQWD | [@DunderHodl](https://x.com/DunderHodl) | Canada |
+| 🇯🇵 Metaplanet | [@DunderHodl](https://x.com/DunderHodl) | Japan |
 
 *Want to help curate data for these or other companies? See [Contributing](http://btctcs.com/contributing).
+
+## How It Works
+
+BTCTCs operates as a dual-component system that automatically generates and displays Bitcoin treasury analytics:
+
+### Architecture Overview
+
+```
+📊 Data Sources → 🐍 Python Analysis → ☁️ S3 Storage → 🌐 Next.js Dashboard
+```
+
+**1. Data Collection & Analysis (Python)**
+- Each company has a dedicated directory in `/companies/` (e.g., `companies/h100/`, `companies/blgv/`)
+- Company-specific Python scripts (`analysis.py`, `analysis_with_upload.py`) run on a regular cadence
+- Scripts pull data from multiple sources: Google Sheets, APIs, local JSON files, or any data source
+- Shared utilities in `/shared_utils/` provide common analysis functions (power law regression, chart generation, S3 upload)
+- Generated charts are automatically uploaded to S3/DigitalOcean Spaces for web display
+
+**2. Web Dashboard (Next.js)**
+- Located in `/website/` directory with TypeScript and Tailwind CSS
+- Dynamic company pages at `/c/[company]` route (e.g., `/c/h100`, `/c/blgv`)
+- Fetches and displays charts from each company's S3 bucket
+- Integrates live Google Sheets data with advanced formatting and chart capabilities
+- Interactive Chart.js charts generated directly from Google Sheets data with full JSON configuration
+- Responsive design with interactive features (chart navigation, data tables, key statistics)
+
+**3. Data Source Flexibility**
+- **Google Sheets**: Live data extraction with custom processors and formatting
+- **APIs**: Real-time data feeds from company endpoints
+- **Local Files**: Fallback JSON data for offline analysis
+- **Mixed Sources**: Companies can combine multiple data sources as needed
+
+### Project Structure
+
+```
+btctcs/
+├── companies/                    # Company-specific analysis scripts
+│   ├── h100/
+│   │   ├── analysis.py          # Generate charts locally
+│   │   ├── analysis_with_upload.py  # Generate + upload to S3
+│   │   ├── config.py            # Company configuration & data processing
+│   │   └── fallback_data.json   # Backup data source
+│   ├── blgv/
+│   ├── lqwd/
+│   └── metaplanet/
+├── shared_utils/                 # Common analysis utilities
+│   ├── bitcoin_analysis.py      # Chart generation & statistical analysis
+│   ├── s3_uploader.py          # S3/DigitalOcean Spaces integration
+│   ├── google_sheets.py        # Google Sheets API integration
+│   └── upload_handler.py       # Unified upload management
+├── website/                     # Next.js web dashboard
+│   ├── src/
+│   │   ├── app/c/[company]/     # Dynamic company pages
+│   │   ├── components/          # Reusable UI components
+│   │   ├── config/              # Company configurations & types
+│   │   └── services/            # API integrations
+│   └── ...
+└── requirements.txt             # Python dependencies
+```
+
+### Automation Workflow
+
+1. **Scheduled Execution**: Python scripts run automatically (via cron, GitHub Actions, etc.)
+2. **Data Processing**: Scripts fetch latest data and generate updated charts
+3. **Cloud Upload**: Charts are uploaded to S3 with company-specific prefixes
+4. **Web Display**: Next.js dashboard automatically displays the latest charts
+5. **Live Integration**: Google Sheets data is fetched in real-time by the web dashboard
+
+### Volunteer-Friendly Contribution Model
+
+**🚀 Adding a new company is as simple as updating a single `config.py` file!**
+
+The project has been scaffolded to make volunteer contributions incredibly easy:
+
+- **Minimal Setup**: Each company needs a `config.py` file (data loading and chart configuration) and `analysis_with_upload.py` file (automation entry point)
+- **Web Dashboard Integration**: Add company configuration to `website/src/config/companies.ts` for dashboard display
+- **Instant Global Sharing**: Once configured, charts are automatically generated and shared worldwide via the web dashboard
+- **No Infrastructure Knowledge Required**: Volunteers only need to understand the company's data - the framework can handle most everything else
+- **Template-Based**: Copy an existing company's directory and modify for your target company
+- **Flexible Data Sources**: Use whatever data source works best (Google Sheets, APIs, CSV files, etc.)
+- **Automated CI/CD**: GitHub Actions automatically discovers and runs any company with an `analysis_with_upload.py` file
+
+**Example**: To add GameStop's Bitcoin holdings, a volunteer would:
+1. Copy `/companies/h100/` to `/companies/gamestop/`
+2. Update `config.py` with GameStop's data source (e.g., point to a public Google Sheet with GameStop's treasury data)
+3. Customize chart settings (colors, date ranges, etc.) / create custom charts
+4. Add GameStop configuration to `website/src/config/companies.ts` (company name, emoji, curator info, etc.)
+5. The `analysis_with_upload.py` file works automatically (no changes needed)
+6. GameStop's analytics are now live at `btctcs.com/c/gamestop` and update automatically 🎉
+
+### Key Features
+
+- **Multi-Source Data**: Supports Google Sheets, APIs, JSON files, and custom data sources
+- **Automated Charts**: Power law analysis, NAV multiples, time series, and custom visualizations
+- **Real-Time Dashboard**: Live data integration with interactive charts and tables
+- **Scalable Architecture**: Easy to add new companies with minimal configuration
+- **Volunteer-Driven Growth**: Community can scale the project by adopting individual companies
+- **Flexible Deployment**: Python scripts can run anywhere, web dashboard deploys to Vercel/Netlify
 
 ## Development Setup
 
@@ -33,12 +132,11 @@ cd btctcs
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Run analysis for a specific company
-cd h100
-python3 analysis.py
+# Run analysis for a specific company (from root directory)
+python3 companies/h100/analysis.py
 
 # Or run with data upload to S3 (requires AWS credentials)
-python3 analysis_with_upload.py
+python3 companies/h100/analysis_with_upload.py
 ```
 
 #### Virtual Environment (Recommended)
@@ -50,9 +148,8 @@ source data_analysis_env/bin/activate  # On Windows: data_analysis_env\Scripts\a
 # Install dependencies
 pip install -r requirements.txt
 
-# Run analysis
-cd h100
-python3 analysis.py
+# Run analysis (from root directory)
+python3 companies/h100/analysis.py
 ```
 
 #### Environment Variables (Optional)
@@ -127,22 +224,6 @@ S3_REGION=us-east-1
 
 # Base URL for the site
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
-
-## Project Structure
-
-```
-btctcs/
-├── shared_utils/           # Shared Python utilities
-│   ├── bitcoin_analysis.py # Main analysis pipeline
-│   └── s3_uploader.py     # S3 upload utilities
-├── h100/                  # H100 company data & analysis
-├── companies/             # Other company directories
-├── website/               # Next.js web application
-│   ├── src/app/          # App router pages
-│   ├── src/components/   # React components
-│   └── src/config/       # Configuration files
-└── .github/workflows/    # GitHub Actions for automation
 ```
 
 ## License
