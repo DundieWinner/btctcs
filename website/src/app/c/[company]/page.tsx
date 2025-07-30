@@ -4,6 +4,7 @@ import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import ImageBoard from "@/components/ImageGallery";
 import { companies, getCompanyById } from "@/config/companies";
 import {
   type GoogleSheetData,
@@ -334,7 +335,7 @@ function renderGoogleSheetsData(
                           return (
                             <th
                               key={header}
-                              className="px-2 py-2 font-semibold"
+                              className="px-2 py-2 font-semibold whitespace-nowrap"
                               style={{
                                 backgroundColor:
                                   tableStyle.headerBackgroundColor,
@@ -411,7 +412,7 @@ function renderGoogleSheetsData(
                               return (
                                 <td
                                   key={columnKey}
-                                  className="px-2 py-1"
+                                  className="px-2 py-1 whitespace-nowrap" 
                                   style={combinedStyles}
                                 >
                                   {formattedValue}
@@ -780,7 +781,7 @@ async function CompanyDashboard({ company }: { company: string }) {
     });
 
     return (
-      <div className="min-h-screen p-3 sm:p-8">
+      <div className="min-h-screen p-3 sm:py-8">
         <div className="max-w-[115rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
           <header className="mb-6 sm:mb-8">
@@ -817,44 +818,17 @@ async function CompanyDashboard({ company }: { company: string }) {
           {/* Main Content Area with Responsive Layout */}
           <div
             className={
-              "flex flex-col lg:flex-row gap-6 lg:gap-8 max-w-[95rem] mx-auto"
+              "flex flex-col xl:flex-row gap-6 lg:gap-8"
             }
           >
             {/* Main Content */}
             <div className={"flex-1"}>
-              {/* Images Grid */}
-              {images.length === 0 ? (
-                <div className="text-center py-8 sm:py-12">
-                  <p className="text-gray-300 text-lg">
-                    No images found for {companyName}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                  {images.map((imageUrl, index) => (
-                    <div
-                      key={imageUrl}
-                      className="rounded-lg overflow-hidden border border-gray-700"
-                      style={{ backgroundColor: "rgb(3, 7, 18, 0.9)" }}
-                    >
-                      <div className="relative">
-                        <Image
-                          src={imageUrl}
-                          alt={`${companyName} chart ${index + 1}`}
-                          width={800}
-                          height={600}
-                          className="w-full h-auto object-contain"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 60vw"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Images Swiper */}
+              <ImageBoard images={images} companyName={companyName} />
             </div>
 
             {/* Sidebar - Responsive */}
-            <div className="w-full lg:w-96 xl:w-130 flex-shrink-0 flex flex-col gap-6">
+            <div className="w-full xl:w-96 2xl:w-130 flex-shrink-0 flex flex-col gap-6">
               {sidebarExtractions.length > 0 &&
                 renderGoogleSheetsData(sidebarExtractions)}
               {/* Curators */}
