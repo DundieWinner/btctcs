@@ -9,6 +9,34 @@ export interface GoogleSheetData {
   rows: { [key: string]: string | number }[];
 }
 
+// Key statistic for prominent display on company dashboard
+export interface KeyStatistic {
+  id: string; // Unique identifier for this statistic
+  label: string; // Display label (e.g., "BTC Holdings")
+  value: string | number; // The statistic value (e.g., "628.22" or 628.22)
+  unit?: string; // Optional unit (e.g., "BTC", "$", "%")
+  prefix?: string; // Optional prefix (e.g., "$" for currency)
+  suffix?: string; // Optional suffix (e.g., "%" for percentage)
+  description?: string; // Optional description/credit text
+  link?: {
+    url: string;
+    text?: string; // Link text, defaults to description if not provided
+    external?: boolean; // Whether link opens in new tab (default: true)
+  };
+  order?: number; // Display order (lower numbers first, defaults to 0)
+  style?: {
+    backgroundColor?: string;
+    textColor?: string;
+    accentColor?: string; // Color for the value text
+  };
+}
+
+// Result from a processor that can include both table data and key statistics
+export interface ProcessorResult {
+  data?: GoogleSheetData; // Table data (optional)
+  keyStatistics?: KeyStatistic[]; // Key statistics for dashboard display (optional)
+}
+
 // Column formatting configuration
 export interface ColumnFormat {
   key: string; // Column key to apply formatting to
@@ -69,7 +97,7 @@ export interface GoogleSheetExtraction {
       majorDimension: string;
       values?: string[][];
     }[],
-  ) => GoogleSheetData;
+  ) => GoogleSheetData | ProcessorResult;
   renderLocation?: "sidebar" | "top" | "bottom"; // Where to render this extraction, defaults to "top"
   hasHeaders?: boolean;
   

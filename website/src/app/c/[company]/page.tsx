@@ -13,6 +13,8 @@ import {
   type ConditionalStyle,
   type CellStyle,
   type TableStyle,
+  type KeyStatistic,
+  type ProcessorResult,
 } from "@/config/types";
 import { baseUrl } from "@/config/environment";
 import {
@@ -26,7 +28,8 @@ interface ProcessedExtraction {
   id: string;
   title: string;
   description?: string;
-  data: GoogleSheetData;
+  data?: GoogleSheetData; // Now optional since processor might only return keyStatistics
+  keyStatistics?: KeyStatistic[]; // Key statistics for dashboard display
   hasHeaders?: boolean;
 
   // Formatting options
@@ -267,6 +270,73 @@ function processTableData(
 }
 
 // Helper function to render Google Sheets data sections
+// Component to render key statistics cards
+function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
+  if (!keyStatistics || keyStatistics.length === 0) return null;
+
+  // Sort by order (lower numbers first), then by id for consistency
+  const sortedStats = [...keyStatistics].sort((a, b) => {
+    const orderA = a.order ?? 0;
+    const orderB = b.order ?? 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.id.localeCompare(b.id);
+  });
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {sortedStats.map((stat) => {
+        const defaultStyle = {
+          backgroundColor: "rgb(3, 7, 18, 0.9)",
+          textColor: "rgb(209, 213, 219)",
+          accentColor: "rgb(249, 115, 22)", // Orange accent
+        };
+        
+        const style = { ...defaultStyle, ...stat.style };
+        
+        // Format the value with prefix/suffix/unit
+        let displayValue = stat.value.toString();
+        if (stat.prefix) displayValue = stat.prefix + displayValue;
+        if (stat.suffix) displayValue = displayValue + stat.suffix;
+        if (stat.unit && !stat.suffix) displayValue = displayValue + " " + stat.unit;
+
+        return (
+          <div
+            key={stat.id}
+            className="rounded-lg border border-gray-700 p-6"
+            style={{ backgroundColor: style.backgroundColor }}
+          >
+            <div className="text-sm font-medium mb-2" style={{ color: style.textColor }}>
+              {stat.label}
+            </div>
+            <div 
+              className="text-3xl font-bold mb-2" 
+              style={{ color: style.accentColor }}
+            >
+              {displayValue}
+            </div>
+            {stat.description && (
+              <div className="text-xs" style={{ color: style.textColor }}>
+                {stat.link ? (
+                  <a
+                    href={stat.link.url}
+                    target={stat.link.external !== false ? "_blank" : "_self"}
+                    rel={stat.link.external !== false ? "noopener noreferrer" : undefined}
+                    className="text-orange-500 hover:text-orange-400 underline transition-colors"
+                  >
+                    {stat.link.text || stat.description}
+                  </a>
+                ) : (
+                  stat.description
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function renderGoogleSheetsData(
   extractions: ProcessedExtraction[],
   className?: string,
@@ -276,7 +346,9 @@ function renderGoogleSheetsData(
   return (
     <div className={`space-y-8 ${className || ""}`}>
       {extractions.map((extraction) => {
-        const { rows, columns } = processTableData(extraction.data, extraction);
+        // Only process table data if extraction has data
+        const tableData = extraction.data ? processTableData(extraction.data, extraction) : null;
+        const { rows, columns } = tableData || { rows: [], columns: [] };
 
         // Default table styles
         const defaultTableStyle = {
@@ -308,125 +380,143 @@ function renderGoogleSheetsData(
               )}
             </div>
 
-            <div
-              className="rounded-lg border overflow-hidden"
-              style={{
-                backgroundColor: tableStyle.rowBackgroundColor,
-                borderColor: tableStyle.borderColor,
-              }}
-            >
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  {extraction.hasHeaders && rows.length > 0 && (
-                    <thead>
-                      <tr
-                        className="border-b"
-                        style={{ borderColor: tableStyle.borderColor }}
-                      >
-                        {columns.map((header) => {
-                          const width = extraction.columnWidths?.[header];
+            {/* Render table data if available */}
+            {extraction.data && (
+              <div
+                className="rounded-lg border overflow-hidden"
+                style={{
+                  backgroundColor: tableStyle.rowBackgroundColor,
+                  borderColor: tableStyle.borderColor,
+                }}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    {extraction.hasHeaders && rows.length > 0 && (
+                      <thead>
+                        <tr
+                          className="border-b"
+                          style={{ borderColor: tableStyle.borderColor }}
+                        >
+                          {columns.map((header: string) => {
+                            const width = extraction.columnWidths?.[header];
 
-                          // Get text alignment from column format for header
-                          const columnFormat = extraction.columnFormats?.find(
-                            (f) => f.key === header,
-                          );
-                          const textAlign = columnFormat?.textAlign || "left";
+                            // Get text alignment from column format for header
+                            const columnFormat = extraction.columnFormats?.find(
+                              (f) => f.key === header,
+                            );
+                            const textAlign = columnFormat?.textAlign || "left";
+
+                            return (
+                              <th
+                                key={header}
+                                className="px-2 py-2 font-semibold whitespace-nowrap"
+                                style={{
+                                  backgroundColor:
+                                    tableStyle.headerBackgroundColor,
+                                  color: tableStyle.headerTextColor,
+                                  width: width || "auto",
+                                  textAlign: textAlign,
+                                }}
+                              >
+                                {header}
+                              </th>
+                            );
+                          })}
+                        </tr>
+                      </thead>
+                    )}
+                    <tbody>
+                      {rows.map(
+                        (
+                          row: { [key: string]: string | number },
+                          rowIndex: number,
+                        ) => {
+                          const isAlternateRow = rowIndex % 2 === 1;
+                          const rowBgColor = isAlternateRow
+                            ? tableStyle.alternateRowBackgroundColor
+                            : tableStyle.rowBackgroundColor;
 
                           return (
-                            <th
-                              key={header}
-                              className="px-2 py-2 font-semibold whitespace-nowrap"
+                            <tr
+                              key={rowIndex}
+                              className="border-b"
                               style={{
-                                backgroundColor:
-                                  tableStyle.headerBackgroundColor,
-                                color: tableStyle.headerTextColor,
-                                width: width || "auto",
-                                textAlign: textAlign,
+                                borderColor: tableStyle.borderColor,
+                                backgroundColor: rowBgColor,
                               }}
                             >
-                              {header}
-                            </th>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                  )}
-                  <tbody>
-                    {rows.map(
-                      (
-                        row: { [key: string]: string | number },
-                        rowIndex: number,
-                      ) => {
-                        const isAlternateRow = rowIndex % 2 === 1;
-                        const rowBgColor = isAlternateRow
-                          ? tableStyle.alternateRowBackgroundColor
-                          : tableStyle.rowBackgroundColor;
-
-                        return (
-                          <tr
-                            key={rowIndex}
-                            className="border-b"
-                            style={{
-                              borderColor: tableStyle.borderColor,
-                              backgroundColor: rowBgColor,
-                            }}
-                          >
-                            {columns.map((columnKey) => {
-                              const value = row[columnKey];
-                              const formattedValue = formatCellValue(
-                                value,
-                                columnKey,
-                                extraction.columnFormats,
-                              );
-
-                              // Combine all styles: conditional + cell-specific + table default
-                              const conditionalStyles = getConditionalStyles(
-                                value,
-                                columnKey,
-                                extraction.conditionalStyles,
-                              );
-                              const cellStyles = getCellStyles(
-                                rowIndex,
-                                columnKey,
-                                extraction.cellStyles,
-                              );
-                              const width =
-                                extraction.columnWidths?.[columnKey];
-
-                              // Get text alignment from column format
-                              const columnFormat =
-                                extraction.columnFormats?.find(
-                                  (f) => f.key === columnKey,
+                              {columns.map((columnKey: string) => {
+                                const value = row[columnKey];
+                                const formattedValue = formatCellValue(
+                                  value,
+                                  columnKey,
+                                  extraction.columnFormats,
                                 );
-                              const textAlign =
-                                columnFormat?.textAlign || "left";
 
-                              const combinedStyles = {
-                                color: tableStyle.textColor,
-                                width: width || "auto",
-                                textAlign: textAlign,
-                                ...conditionalStyles,
-                                ...cellStyles,
-                              };
+                                // Combine all styles: conditional + cell-specific + table default
+                                const conditionalStyles = getConditionalStyles(
+                                  value,
+                                  columnKey,
+                                  extraction.conditionalStyles,
+                                );
+                                const cellStyles = getCellStyles(
+                                  rowIndex,
+                                  columnKey,
+                                  extraction.cellStyles,
+                                );
+                                const width =
+                                  extraction.columnWidths?.[columnKey];
 
-                              return (
-                                <td
-                                  key={columnKey}
-                                  className="px-2 py-1 whitespace-nowrap" 
-                                  style={combinedStyles}
-                                >
-                                  {formattedValue}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      },
-                    )}
-                  </tbody>
-                </table>
+                                // Get text alignment from column format
+                                const columnFormat =
+                                  extraction.columnFormats?.find(
+                                    (f) => f.key === columnKey,
+                                  );
+                                const textAlign =
+                                  columnFormat?.textAlign || "left";
+
+                                const combinedStyles = {
+                                  ...conditionalStyles,
+                                  ...cellStyles,
+                                  color:
+                                    conditionalStyles.color ||
+                                    cellStyles.color ||
+                                    tableStyle.textColor,
+                                  backgroundColor:
+                                    conditionalStyles.backgroundColor ||
+                                    cellStyles.backgroundColor ||
+                                    rowBgColor,
+                                  fontWeight:
+                                    conditionalStyles.fontWeight ||
+                                    cellStyles.fontWeight ||
+                                    "normal",
+                                  fontStyle:
+                                    conditionalStyles.fontStyle ||
+                                    cellStyles.fontStyle ||
+                                    "normal",
+                                  width: width || "auto",
+                                  textAlign: textAlign,
+                                };
+
+                                return (
+                                  <td
+                                    key={columnKey}
+                                    className="px-2 py-2 whitespace-nowrap"
+                                    style={combinedStyles}
+                                  >
+                                    {formattedValue}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        },
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
@@ -665,9 +755,21 @@ async function processGoogleSheetExtractions(
       );
 
       // Apply processor if provided, otherwise use the first range data
-      let processedData: GoogleSheetData;
+      let processedData: GoogleSheetData | undefined;
+      let keyStatistics: KeyStatistic[] | undefined;
+      
       if (extraction.processor) {
-        processedData = extraction.processor(batchData);
+        const result = extraction.processor(batchData);
+        
+        // Handle both old (GoogleSheetData) and new (ProcessorResult) return types
+        if ('rows' in result) {
+          // Old format: direct GoogleSheetData
+          processedData = result;
+        } else {
+          // New format: ProcessorResult
+          processedData = result.data;
+          keyStatistics = result.keyStatistics;
+        }
       } else {
         // Default behavior: use first range data if no processor
         const firstRangeData = batchData[0];
@@ -698,6 +800,7 @@ async function processGoogleSheetExtractions(
         title: extraction.title,
         description: extraction.description,
         data: processedData,
+        keyStatistics: keyStatistics,
         hasHeaders: extraction.hasHeaders,
 
         // Pass through all formatting options
@@ -807,6 +910,19 @@ async function CompanyDashboard({ company }: { company: string }) {
               {companyData?.emoji} {companyName}
             </h1>
           </header>
+
+          {/* Key Statistics from all extractions */}
+          {(() => {
+            // Collect all key statistics from all extractions
+            const allKeyStatistics: KeyStatistic[] = [];
+            extractedData.forEach((extraction) => {
+              if (extraction.keyStatistics) {
+                allKeyStatistics.push(...extraction.keyStatistics);
+              }
+            });
+            
+            return allKeyStatistics.length > 0 ? renderKeyStatistics(allKeyStatistics) : null;
+          })()}
 
           {/* Top Google Sheets Data */}
           {topExtractions.length > 0 && (
