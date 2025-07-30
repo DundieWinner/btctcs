@@ -109,8 +109,8 @@ export default function Contributing() {
                   </li>
                   <li>
                     • <strong>Developers</strong> - If you are techinical, I
-                    well all improvements to the Python-generated charts and the
-                    Next.js web app
+                    welcome all improvements to the Python-generated charts and
+                    the Next.js web app
                   </li>
                 </ul>
               </section>
@@ -137,7 +137,8 @@ export default function Contributing() {
                       >
                         @DunderHodl
                       </a>{" "}
-                      - I will get you set up and answer any questions.
+                      - Tell me what company or companies you want to work on.I
+                      will get you set up and answer any questions.
                     </p>
                   </div>
 
