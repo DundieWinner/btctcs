@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ImageBoardProps {
   images: string[];

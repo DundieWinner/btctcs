@@ -1,6 +1,6 @@
 import {
-  blgvTreasuryActionsProcessor,
   blgvHistoricalProcessor,
+  blgvTreasuryActionsProcessor,
 } from "@/config/gs-processors/blgv";
 import { Company } from "./types";
 import { ragnarProcessor } from "@/config/gs-processors/ragnar";

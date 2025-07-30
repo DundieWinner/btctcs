@@ -2,22 +2,26 @@
 
 import React, { useRef } from "react";
 import {
-  Chart as ChartJS,
-  LinearScale,
-  LogarithmicScale,
-  CategoryScale,
-  TimeScale,
-  PointElement,
-  LineElement,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  ChartOptions,
+  Legend,
+  LinearScale,
+  LineElement,
+  LogarithmicScale,
+  PointElement,
+  TimeScale,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
-import { Line, Bar, Scatter, Bubble } from "react-chartjs-2";
-import { ChartConfiguration, GoogleSheetData, ResponsiveHeight } from "@/config/types";
+import { Bar, Bubble, Line, Scatter } from "react-chartjs-2";
+import {
+  ChartConfiguration,
+  GoogleSheetData,
+  ResponsiveHeight,
+} from "@/config/types";
 
 // Register Chart.js components
 ChartJS.register(
@@ -40,37 +44,42 @@ export interface GenericChartProps {
 }
 
 // Function to handle responsive heights
-function getResponsiveHeightStyles(height: number | ResponsiveHeight | undefined): {
+function getResponsiveHeightStyles(
+  height: number | ResponsiveHeight | undefined,
+): {
   style?: React.CSSProperties;
   className?: string;
   cssId?: string;
 } {
-  if (typeof height === 'number') {
+  if (typeof height === "number") {
     return { style: { height: `${height}px` } };
   }
-  
-  if (height && typeof height === 'object') {
+
+  if (height && typeof height === "object") {
     // Generate a unique ID for this chart's responsive styles
     const cssId = `chart-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return {
       style: { height: `${height.default}px` },
       className: cssId,
-      cssId
+      cssId,
     };
   }
-  
+
   // Default height
-  return { style: { height: '500px' } };
+  return { style: { height: "500px" } };
 }
 
 // Function to generate responsive CSS for a chart
-function generateResponsiveCSS(height: ResponsiveHeight, cssId: string): string {
+function generateResponsiveCSS(
+  height: ResponsiveHeight,
+  cssId: string,
+): string {
   let css = ``;
-  
+
   // Base height
   css += `.${cssId} { height: ${height.default}px !important; }`;
-  
+
   // Responsive breakpoints
   if (height.sm) {
     css += `@media (min-width: 640px) { .${cssId} { height: ${height.sm}px !important; } }`;
@@ -84,10 +93,10 @@ function generateResponsiveCSS(height: ResponsiveHeight, cssId: string): string 
   if (height.xl) {
     css += `@media (min-width: 1280px) { .${cssId} { height: ${height.xl}px !important; } }`;
   }
-  if (height['2xl']) {
-    css += `@media (min-width: 1536px) { .${cssId} { height: ${height['2xl']}px !important; } }`;
+  if (height["2xl"]) {
+    css += `@media (min-width: 1536px) { .${cssId} { height: ${height["2xl"]}px !important; } }`;
   }
-  
+
   return css;
 }
 
@@ -96,7 +105,6 @@ export const GenericChart: React.FC<GenericChartProps> = ({
   config,
   title,
 }) => {
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
 
@@ -118,8 +126,6 @@ export const GenericChart: React.FC<GenericChartProps> = ({
     }
     return typeof value === "number" ? value : Number(value) || 0;
   };
-
-
 
   // Prepare datasets for Chart.js
   const chartData = {
@@ -374,9 +380,10 @@ export const GenericChart: React.FC<GenericChartProps> = ({
   const heightStyles = getResponsiveHeightStyles(config.height);
 
   // Generate responsive CSS if needed
-  const responsiveCSS = heightStyles.cssId && typeof config.height === 'object' 
-    ? generateResponsiveCSS(config.height, heightStyles.cssId)
-    : null;
+  const responsiveCSS =
+    heightStyles.cssId && typeof config.height === "object"
+      ? generateResponsiveCSS(config.height, heightStyles.cssId)
+      : null;
 
   return (
     <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
@@ -384,8 +391,8 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       {responsiveCSS && (
         <style dangerouslySetInnerHTML={{ __html: responsiveCSS }} />
       )}
-      <div 
-        className={`relative mb-6 ${heightStyles.className || ''}`}
+      <div
+        className={`relative mb-6 ${heightStyles.className || ""}`}
         style={heightStyles.style}
       >
         {/* Export Icon Button */}
@@ -417,8 +424,6 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           plugins={config.plugins?.watermark?.enabled ? [watermarkPlugin] : []}
         />
       </div>
-
-
     </div>
   );
 };

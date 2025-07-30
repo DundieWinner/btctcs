@@ -36,7 +36,7 @@ function parseMarkdownLinks(text: string): (string | React.ReactNode)[] {
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
-    
+
     // Add the link as a React element
     parts.push(
       <a
@@ -47,17 +47,17 @@ function parseMarkdownLinks(text: string): (string | React.ReactNode)[] {
         className="text-orange-500 underline hover:text-orange-400 transition-colors"
       >
         {match[1]}
-      </a>
+      </a>,
     );
-    
+
     lastIndex = linkRegex.lastIndex;
   }
-  
+
   // Add remaining text after the last link
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
   }
-  
+
   return parts;
 }
 
@@ -351,7 +351,7 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
               {stat.label}
             </div>
             <div
-              className={`text-3xl font-bold ${stat.description ? "mb-2" : ""}`}
+              className={`text-xl md:text-2xl xl:text-3xl font-bold ${stat.description ? "mb-2" : ""}`}
               style={{ color: style.accentColor }}
             >
               {displayValue}
@@ -457,7 +457,7 @@ function renderGoogleSheetsData(
                             return (
                               <th
                                 key={header}
-                                className="px-2 py-2 font-semibold md:whitespace-nowrap"
+                                className="py-1 md:py-2 px-2 font-semibold whitespace-nowrap"
                                 style={{
                                   backgroundColor:
                                     tableStyle.headerBackgroundColor,
@@ -549,7 +549,7 @@ function renderGoogleSheetsData(
                                 return (
                                   <td
                                     key={columnKey}
-                                    className="px-2 py-2 md:whitespace-nowrap"
+                                    className="py-1 px-2 md:whitespace-nowrap"
                                     style={combinedStyles}
                                   >
                                     {formattedValue}
@@ -716,7 +716,6 @@ const fetchCompanyImages = async (companyId: string): Promise<string[]> => {
       .map((obj) => `${baseUrl}/${obj.Key}`)
       .sort(); // Sort alphabetically
 
-    console.log(`Found ${imageUrls.length} images for company: ${companyId}`);
     return imageUrls;
   } catch (error) {
     console.error("Error fetching images from S3:", error);
