@@ -3,6 +3,10 @@ import {
   type GoogleSheetData,
   type GoogleSheetExtraction,
   type KeyStatistic,
+  type ColumnFormat,
+  type ConditionalStyle,
+  type CellStyle,
+  type TableStyle,
 } from "@/config/types";
 
 // Processed extraction result
@@ -15,10 +19,10 @@ export interface ProcessedExtraction {
   hasHeaders?: boolean;
 
   // Formatting options
-  columnFormats?: any[];
-  conditionalStyles?: any[];
-  cellStyles?: any[];
-  tableStyle?: any;
+  columnFormats?: ColumnFormat[];
+  conditionalStyles?: ConditionalStyle[];
+  cellStyles?: CellStyle[];
+  tableStyle?: TableStyle;
 
   // Display options
   maxRows?: number;
