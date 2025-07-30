@@ -1,21 +1,20 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import ImageBoard from "@/components/ImageGallery";
 import { GenericChart } from "@/components/GenericChart";
 import { companies, getCompanyById } from "@/config/companies";
 import {
-  type GoogleSheetData,
-  type GoogleSheetExtraction,
+  type CellStyle,
+  type ChartConfiguration,
   type ColumnFormat,
   type ConditionalStyle,
-  type CellStyle,
-  type TableStyle,
+  type GoogleSheetData,
+  type GoogleSheetExtraction,
   type KeyStatistic,
-  type ProcessorResult,
+  type TableStyle,
 } from "@/config/types";
 import { baseUrl } from "@/config/environment";
 import {
@@ -23,6 +22,44 @@ import {
   s3AccessKey,
   s3Secret,
 } from "@/config/environment-be";
+
+// Function to parse markdown links and render as React elements
+function parseMarkdownLinks(text: string): (string | React.ReactNode)[] {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts: (string | React.ReactNode)[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyCounter = 0;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    
+    // Add the link as a React element
+    parts.push(
+      <a
+        key={keyCounter++}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-orange-500 underline hover:text-orange-400 transition-colors"
+      >
+        {match[1]}
+      </a>
+    );
+    
+    lastIndex = linkRegex.lastIndex;
+  }
+  
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  return parts;
+}
 
 // Processed extraction result
 interface ProcessedExtraction {
@@ -116,7 +153,7 @@ function formatCellValue(
               ? formatDate(date, format.dateFormat)
               : date.toLocaleDateString();
           }
-        } catch (e) {
+        } catch {
           // Keep original value if date parsing fails
         }
       }
@@ -420,7 +457,7 @@ function renderGoogleSheetsData(
                             return (
                               <th
                                 key={header}
-                                className="px-2 py-2 font-semibold whitespace-nowrap"
+                                className="px-2 py-2 font-semibold md:whitespace-nowrap"
                                 style={{
                                   backgroundColor:
                                     tableStyle.headerBackgroundColor,
@@ -512,7 +549,7 @@ function renderGoogleSheetsData(
                                 return (
                                   <td
                                     key={columnKey}
-                                    className="px-2 py-2 whitespace-nowrap"
+                                    className="px-2 py-2 md:whitespace-nowrap"
                                     style={combinedStyles}
                                   >
                                     {formattedValue}
@@ -587,7 +624,7 @@ export async function generateMetadata({
 
   const curatorNames = companyData.curators.map((c) => c.name).join(", ");
   const title = `${companyData.emoji} ${companyData.name} - BTCTCs`;
-  const description = `Bitcoin treasury charts and analytics for ${companyData.name}. ${companyData.description || ""} Curated by ${curatorNames}.`;
+  const description = `Bitcoin treasury charts and analytics for ${companyData.name}. ${companyData.disclosure || ""} Curated by ${curatorNames}.`;
 
   const baseMetadata = {
     title,
@@ -839,10 +876,10 @@ async function processGoogleSheetExtractions(
 function getChartExtractions(
   extractedData: ProcessedExtraction[],
   companyData: ReturnType<typeof getCompanyById>,
-): Array<{ extraction: ProcessedExtraction; config: any }> {
+): Array<{ extraction: ProcessedExtraction; config: ChartConfiguration }> {
   const chartExtractions: Array<{
     extraction: ProcessedExtraction;
-    config: any;
+    config: ChartConfiguration;
   }> = [];
 
   for (const extraction of extractedData) {
@@ -946,6 +983,11 @@ async function CompanyDashboard({ company }: { company: string }) {
             >
               {companyData?.emoji} {companyName}
             </h1>
+            {companyData?.disclosure && (
+              <p className="mt-4 text-xs sm:text-sm lg:text-md text-gray-300">
+                {parseMarkdownLinks(companyData.disclosure)}
+              </p>
+            )}
           </header>
 
           {/* Key Statistics from all extractions */}
@@ -1080,11 +1122,6 @@ async function CompanyDashboard({ company }: { company: string }) {
                           <span className="text-lg text-gray-300 group-hover:text-orange-500 transition-colors duration-200">
                             {company.name}
                           </span>
-                          {company.description && (
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                              {company.description}
-                            </p>
-                          )}
                         </div>
                       </Link>
                     </li>

@@ -17,7 +17,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line, Bar, Scatter, Bubble } from "react-chartjs-2";
-import { ChartConfiguration, GoogleSheetData } from "@/config/types";
+import { ChartConfiguration, GoogleSheetData, ResponsiveHeight } from "@/config/types";
 
 // Register Chart.js components
 ChartJS.register(
@@ -39,12 +39,65 @@ export interface GenericChartProps {
   title?: string;
 }
 
+// Function to handle responsive heights
+function getResponsiveHeightStyles(height: number | ResponsiveHeight | undefined): {
+  style?: React.CSSProperties;
+  className?: string;
+  cssId?: string;
+} {
+  if (typeof height === 'number') {
+    return { style: { height: `${height}px` } };
+  }
+  
+  if (height && typeof height === 'object') {
+    // Generate a unique ID for this chart's responsive styles
+    const cssId = `chart-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return {
+      style: { height: `${height.default}px` },
+      className: cssId,
+      cssId
+    };
+  }
+  
+  // Default height
+  return { style: { height: '500px' } };
+}
+
+// Function to generate responsive CSS for a chart
+function generateResponsiveCSS(height: ResponsiveHeight, cssId: string): string {
+  let css = ``;
+  
+  // Base height
+  css += `.${cssId} { height: ${height.default}px !important; }`;
+  
+  // Responsive breakpoints
+  if (height.sm) {
+    css += `@media (min-width: 640px) { .${cssId} { height: ${height.sm}px !important; } }`;
+  }
+  if (height.md) {
+    css += `@media (min-width: 768px) { .${cssId} { height: ${height.md}px !important; } }`;
+  }
+  if (height.lg) {
+    css += `@media (min-width: 1024px) { .${cssId} { height: ${height.lg}px !important; } }`;
+  }
+  if (height.xl) {
+    css += `@media (min-width: 1280px) { .${cssId} { height: ${height.xl}px !important; } }`;
+  }
+  if (height['2xl']) {
+    css += `@media (min-width: 1536px) { .${cssId} { height: ${height['2xl']}px !important; } }`;
+  }
+  
+  return css;
+}
+
 export const GenericChart: React.FC<GenericChartProps> = ({
   data,
   config,
   title,
 }) => {
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
 
   // Function to parse date strings correctly
@@ -114,7 +167,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
   // Watermark plugin
   const watermarkPlugin = {
     id: "watermark",
-    afterDraw: (chart: any) => {
+    afterDraw: (chart: ChartJS) => {
       if (typeof window !== "undefined" && window.innerWidth < 768) {
         return;
       }
@@ -139,6 +192,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
   };
 
   // Build Chart.js options from configuration
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const options: ChartOptions<any> = {
     responsive: config.responsive ?? true,
     maintainAspectRatio: config.maintainAspectRatio ?? false,
@@ -155,6 +209,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           usePointStyle: true,
           padding: 20,
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onClick: (e: any, legendItem: any, legend: any) => {
           const index = legendItem.datasetIndex!;
           const chart = legend.chart;
@@ -198,6 +253,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       tooltip: {
         enabled: config.plugins?.tooltip?.enabled ?? true,
         callbacks: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           title: (tooltipItems: any[]) => {
             const item = tooltipItems[0];
             const xAxis = config.axes?.find(
@@ -214,6 +270,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
 
             return String(item.parsed.x);
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           label: (context: any) => {
             const value = context.parsed.y;
             const metricName = context.dataset.label;
@@ -314,11 +371,23 @@ export const GenericChart: React.FC<GenericChartProps> = ({
   }[config.type];
 
   const showExportButton = config.showExportButton ?? true;
-  const height = config.height ?? 500;
+  const heightStyles = getResponsiveHeightStyles(config.height);
+
+  // Generate responsive CSS if needed
+  const responsiveCSS = heightStyles.cssId && typeof config.height === 'object' 
+    ? generateResponsiveCSS(config.height, heightStyles.cssId)
+    : null;
 
   return (
     <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
-      <div className="relative mb-6" style={{ height: `${height}px` }}>
+      {/* Inject responsive CSS */}
+      {responsiveCSS && (
+        <style dangerouslySetInnerHTML={{ __html: responsiveCSS }} />
+      )}
+      <div 
+        className={`relative mb-6 ${heightStyles.className || ''}`}
+        style={heightStyles.style}
+      >
         {/* Export Icon Button */}
         {showExportButton && (
           <div className="absolute top-0 right-0 z-10 hidden md:block">

@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface ImageBoardProps {
   images: string[];
   companyName: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getImageTitle(imageUrl: string, index: number): string {
   const filename = imageUrl.split("/").pop() || "";
   const nameWithoutExtension = filename.replace(/\.[^/.]+$/, "");
@@ -35,17 +36,17 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
     setSelectedImage(imageUrl);
   };
 
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
     setCurrentIndex(newIndex);
     setSelectedImage(images[newIndex]);
-  };
+  }, [currentIndex, images]);
 
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
     setCurrentIndex(newIndex);
     setSelectedImage(images[newIndex]);
-  };
+  }, [currentIndex, images]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [selectedImage, currentIndex]);
+  }, [selectedImage, currentIndex, goToNext, goToPrevious]);
 
   if (images.length === 0) {
     return (
@@ -82,9 +83,8 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
   return (
     <div className="w-full">
       {/* Pinterest-style Masonry Grid */}
-      <div className="columns-1 sm:columns-2 gap-4 space-y-4">
+      <div className="columns-1 sm:columns-2 xl:columns-3 gap-4 space-y-4">
         {images.map((imageUrl, index) => {
-          const title = getImageTitle(imageUrl, index);
           return (
             <div
               key={imageUrl}

@@ -107,8 +107,8 @@ export interface ChartDataset {
 
 export interface ChartAxis {
   id: string; // Unique axis ID
-  type: 'linear' | 'logarithmic' | 'time' | 'category'; // Axis type
-  position: 'left' | 'right' | 'top' | 'bottom'; // Axis position
+  type: "linear" | "logarithmic" | "time" | "category"; // Axis type
+  position: "left" | "right" | "top" | "bottom"; // Axis position
   title?: {
     display: boolean;
     text: string;
@@ -127,12 +127,22 @@ export interface ChartAxis {
   offset?: boolean;
 }
 
+// Responsive height configuration
+export interface ResponsiveHeight {
+  default: number; // Default height in pixels
+  sm?: number; // Small screens (640px+)
+  md?: number; // Medium screens (768px+)
+  lg?: number; // Large screens (1024px+)
+  xl?: number; // Extra large screens (1280px+)
+  "2xl"?: number; // 2X large screens (1536px+)
+}
+
 export interface ChartConfiguration {
-  type: 'line' | 'bar' | 'scatter' | 'bubble'; // Chart type
+  type: "line" | "bar" | "scatter" | "bubble"; // Chart type
   title?: string; // Chart title (overrides extraction title)
   datasets: ChartDataset[]; // Dataset configurations
   axes?: ChartAxis[]; // Custom axis configurations
-  height?: number; // Chart height in pixels (default: 500)
+  height?: number | ResponsiveHeight; // Chart height in pixels (default: 500) or responsive configuration
   showExportButton?: boolean; // Show export button (default: true)
   animation?: boolean; // Enable animations (default: false)
   responsive?: boolean; // Responsive sizing (default: true)
@@ -140,7 +150,7 @@ export interface ChartConfiguration {
   plugins?: {
     legend?: {
       display?: boolean;
-      position?: 'top' | 'bottom' | 'left' | 'right';
+      position?: "top" | "bottom" | "left" | "right";
     };
     tooltip?: {
       enabled?: boolean;
@@ -168,13 +178,13 @@ export interface GoogleSheetExtraction {
   renderLocation?: "sidebar" | "top" | "bottom" | "none"; // Where to render this extraction, defaults to "top". Use "none" for chart-only extractions
   chart?: ChartConfiguration; // Custom chart configuration for this extraction
   hasHeaders?: boolean;
-  
+
   // Advanced formatting options
   columnFormats?: ColumnFormat[]; // Custom formatting for specific columns
   conditionalStyles?: ConditionalStyle[]; // Conditional styling based on cell values
   cellStyles?: CellStyle[]; // Individual cell style overrides
   tableStyle?: TableStyle; // Overall table styling
-  
+
   // Display options
   maxRows?: number; // Maximum number of rows to display
   sortBy?: {
@@ -195,7 +205,7 @@ export interface Company {
   name: string;
   displayName: string;
   emoji: string;
-  description?: string;
+  disclosure?: string;
   curators: Curator[];
   googleSheet?: GoogleSheetConfig; // Optional Google Sheets integration
 }

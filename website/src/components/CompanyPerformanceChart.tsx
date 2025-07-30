@@ -50,6 +50,7 @@ export const CompanyPerformanceChart: React.FC<CompanyPerformanceChartProps> = (
   priceHistory,
 }) => {
   const [showTable, setShowTable] = React.useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
 
   // Filter to only BTC purchase announcements
@@ -71,6 +72,7 @@ export const CompanyPerformanceChart: React.FC<CompanyPerformanceChartProps> = (
   };
 
   // Function to get Bitcoin price for a given date
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getBitcoinPriceForDate = (date: string) => {
     const priceRecord = priceHistory.find((record) => record.date === date);
     return priceRecord ? priceRecord.bitcoinPrice : 77800; // fallback price
@@ -174,6 +176,7 @@ export const CompanyPerformanceChart: React.FC<CompanyPerformanceChartProps> = (
   // Watermark plugin for chart area (hidden on mobile)
   const watermarkPlugin = {
     id: 'watermark',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     afterDraw: (chart: any) => {
       // Skip watermark on mobile devices (screen width < 768px)
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -531,7 +534,7 @@ export const CompanyPerformanceChart: React.FC<CompanyPerformanceChartProps> = (
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-800'>
-              {tableData.map((row, index) => (
+              {tableData.map((row) => (
                 <tr
                   key={row.date}
                   className='hover:bg-gray-800 transition-colors'

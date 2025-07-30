@@ -10,6 +10,8 @@ export const companies: Company[] = [
     id: "blgv",
     name: "Belgravia Hartford",
     displayName: "Belgravia Hartford Dashboard",
+    disclosure:
+      "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592) as well as BTCTCs's [community-sheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?gid=1527424383#gid=1527424383).",
     emoji: "🇨🇦",
     curators: [
       {
@@ -140,7 +142,10 @@ export const companies: Company[] = [
           chart: {
             type: "line",
             title: "Historical Performance",
-            height: 500,
+            height: {
+              default: 350,
+              md: 500,
+            },
             animation: false,
             datasets: [
               {

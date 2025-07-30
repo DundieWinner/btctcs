@@ -19,7 +19,7 @@ export const blgvHistoricalProcessor = (
   const rows: { [key: string]: string | number }[] = [];
 
   // Define the start date filter (July 17th, 2025)
-  const startDate = new Date('2025-07-17');
+  const startDate = new Date("2025-07-17");
 
   // Process each data row (skip header row)
   for (let i = 1; i < dataRange.values.length; i++) {
@@ -29,12 +29,12 @@ export const blgvHistoricalProcessor = (
     // Map each cell to its corresponding header
     headers.forEach((header, index) => {
       const cellValue = rowValues[index];
-      if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+      if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
         // Try to convert to number if it looks like a number
-        const cleanValue = String(cellValue).trim().replace(/[,$]/g, '');
+        const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
         const numValue = parseFloat(cleanValue);
-        
-        if (!isNaN(numValue) && header !== 'Date') {
+
+        if (!isNaN(numValue) && header !== "Date") {
           rowData[header] = numValue;
         } else {
           rowData[header] = String(cellValue).trim();
@@ -43,24 +43,24 @@ export const blgvHistoricalProcessor = (
     });
 
     // Only add rows that have at least a date and are on or after July 17th, 2025
-    if (rowData['Date']) {
+    if (rowData["Date"]) {
       // Parse the date from the row
-      const rowDateStr = String(rowData['Date']).trim();
+      const rowDateStr = String(rowData["Date"]).trim();
       let rowDate: Date;
-      
+
       // Handle different date formats
-      if (rowDateStr.includes('/')) {
+      if (rowDateStr.includes("/")) {
         // Handle M/D/YYYY format
-        const [month, day, year] = rowDateStr.split('/');
+        const [month, day, year] = rowDateStr.split("/");
         rowDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      } else if (rowDateStr.includes('-')) {
+      } else if (rowDateStr.includes("-")) {
         // Handle YYYY-MM-DD format
         rowDate = new Date(rowDateStr);
       } else {
         // Fallback to direct parsing
         rowDate = new Date(rowDateStr);
       }
-      
+
       // Only include rows on or after July 17th, 2025
       if (rowDate >= startDate) {
         rows.push(rowData);
@@ -102,61 +102,50 @@ export const blgvTreasuryActionsProcessor = (
     const satsEquityPerFDShare = row && row[15] ? String(row[15]).trim() : ""; // Column P (index 15)
 
     // Helper function to convert to number with better parsing
-    const convertToNumber = (value: string, columnName?: string): number | string => {
+    const convertToNumber = (
+      value: string,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      columnName?: string,
+    ): number | string => {
       if (!value || value === "") {
         return "-";
       }
-      
+
       // Clean the value - remove commas, currency symbols, and extra spaces
       let cleanValue = value.toString().trim();
-      cleanValue = cleanValue.replace(/[,$]/g, ''); // Remove commas and dollar signs
-      cleanValue = cleanValue.replace(/\s+/g, ''); // Remove all whitespace
-      
+      cleanValue = cleanValue.replace(/[,$]/g, ""); // Remove commas and dollar signs
+      cleanValue = cleanValue.replace(/\s+/g, ""); // Remove all whitespace
+
       // Handle negative values in parentheses (accounting format)
-      if (cleanValue.startsWith('(') && cleanValue.endsWith(')')) {
-        cleanValue = '-' + cleanValue.slice(1, -1);
+      if (cleanValue.startsWith("(") && cleanValue.endsWith(")")) {
+        cleanValue = "-" + cleanValue.slice(1, -1);
       }
-      
+
       const parsed = parseFloat(cleanValue);
       if (!isNaN(parsed)) {
-        // Debug logging to help identify issues
-        if (columnName) {
-          console.log(`${columnName}: "${value}" -> "${cleanValue}" -> ${parsed}`);
-        }
         return parsed;
       }
-      
-      // If parsing failed, log for debugging
-      if (columnName) {
-        console.log(`${columnName}: Failed to parse "${value}" (cleaned: "${cleanValue}")`);
-      }
+
       return "-";
     };
 
     // Convert all numerical values with debugging
     const changeInBTC = convertToNumber(changeRaw, "Change in BTC");
     const btcHeldValue = convertToNumber(btcHeld, "BTC Held");
-    const estCADBalanceValue = convertToNumber(estCADBalance, "Est. CAD Balance");
+    const estCADBalanceValue = convertToNumber(
+      estCADBalance,
+      "Est. CAD Balance",
+    );
     const debtCADValue = convertToNumber(debtCAD, "Debt (CAD)");
     const fdShareCountValue = convertToNumber(fdShareCount, "FD Share Count");
-    const satsPerFDShareValue = convertToNumber(satsPerFDShare, "Sats / FD Share");
-    const satsEquityPerFDShareValue = convertToNumber(satsEquityPerFDShare, "Sats Equity / FD Share");
-    
-    // Debug log the raw values to understand what we're getting
-    if (i === 1) { // Log first data row for debugging
-      console.log('Raw values from sheet:', {
-        date,
-        description,
-        changeRaw,
-        btcHeld,
-        estCADBalance: `"${estCADBalance}"`,
-        debtCAD: `"${debtCAD}"`,
-        fdShareCount: `"${fdShareCount}"`,
-        satsPerFDShare: `"${satsPerFDShare}"`,
-        satsEquityPerFDShare: `"${satsEquityPerFDShare}"`,
-        rowLength: row?.length || 0
-      });
-    }
+    const satsPerFDShareValue = convertToNumber(
+      satsPerFDShare,
+      "Sats / FD Share",
+    );
+    const satsEquityPerFDShareValue = convertToNumber(
+      satsEquityPerFDShare,
+      "Sats Equity / FD Share",
+    );
 
     // Only include rows where we have at least a date and description
     if (date && description) {

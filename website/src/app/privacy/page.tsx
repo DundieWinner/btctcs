@@ -1,5 +1,4 @@
 import Footer from "@/components/Footer";
-import Button from "@/components/Button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { baseUrl, getAbsoluteUrl } from "@/config/environment";
