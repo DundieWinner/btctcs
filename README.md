@@ -111,7 +111,7 @@ The project has been scaffolded to make volunteer contributions incredibly easy:
 - **Real-Time Dashboard**: Live data integration with interactive charts and tables
 - **Scalable Architecture**: Easy to add new companies with minimal configuration
 - **Volunteer-Driven Growth**: Community can scale the project by adopting individual companies
-- **Flexible Deployment**: Python scripts can run anywhere, web dashboard deploys to Vercel/Netlify
+- **Flexible Deployment**: Python scripts can run anywhere, web dashboard deploys to Vercel
 
 ## Development Setup
 
