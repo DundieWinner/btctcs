@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="max-w-screen-6xl mx-auto px-8 flex-1">
+      <div className="w-full max-w-6xl mx-auto px-8 flex-1">
         {/* Header */}
         <header className="text-center mb-4 pt-8">
           <h1
@@ -86,15 +86,15 @@ export default function Home() {
         </header>
 
         {/* Companies List */}
-        <div className="md:max-w-4xl lg:max-w-4xl pb-8">
-          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="pb-8">
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-4">
             {companies.map((company) => (
               <li key={company.id}>
                 <Link
                   href={`/c/${company.id}`}
-                  className="flex items-center text-xl text-gray-300 hover:text-orange-500 transition-colors duration-200"
+                  className="flex items-center text-lg md:text-xl text-gray-300 hover:text-orange-500 transition-colors duration-200"
                 >
-                  <span className="mr-3 text-2xl">{company.emoji}</span>
+                  <span className="mr-3">{company.emoji}</span>
                   <span>{company.name}</span>
                 </Link>
               </li>
@@ -103,8 +103,8 @@ export default function Home() {
         </div>
 
         {/* Project Description */}
-        <div className="max-w-4xl mb-12">
-          <p className="text-md text-gray-300 leading-relaxed">
+        <div className="text-center max-w-4xl mx-auto mb-12">
+          <p className="text-sm md:text-lg text-gray-300 leading-relaxed">
             These dashboards are an open project with volunteer curators helping
             keep the company data up to date. Learn more about contributing{" "}
             <a

@@ -6,8 +6,8 @@ export default function Footer() {
       <div className="max-w-screen-2xl mx-auto px-8">
         <div className="text-center text-gray-400 text-sm">
           <p>
-            Data sourced from public company filings, announcements, and
-            treasury dashboards.
+            Data sourced from public company filings, announcements, treasury
+            dashboards, and community-provided Google Sheets.
           </p>
           <p className="mt-1">
             This site is a creation of{" "}
