@@ -283,7 +283,7 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-8">
       {sortedStats.map((stat) => {
         const defaultStyle = {
           backgroundColor: "rgb(3, 7, 18, 0.9)",
@@ -302,14 +302,14 @@ function renderKeyStatistics(keyStatistics: KeyStatistic[]) {
         return (
           <div
             key={stat.id}
-            className="rounded-lg border border-gray-700 p-6"
+            className="rounded-lg border border-gray-700 px-4 py-3"
             style={{ backgroundColor: style.backgroundColor }}
           >
             <div className="text-sm font-medium mb-2" style={{ color: style.textColor }}>
               {stat.label}
             </div>
             <div 
-              className="text-3xl font-bold mb-2" 
+              className={`text-3xl font-bold ${stat.description ? 'mb-2' : ''}`}
               style={{ color: style.accentColor }}
             >
               {displayValue}
