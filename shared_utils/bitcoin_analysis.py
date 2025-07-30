@@ -764,6 +764,9 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
     plt.title(f'https://btctcs.com - {current_date}',
               fontsize=12, pad=20)
 
+    # Set logarithmic y-axis
+    plt.yscale('log')
+    
     # Add legend and grid
     plt.legend(loc='upper left', fontsize=12)
     plt.grid(True, alpha=0.3)
