@@ -1,8 +1,11 @@
 import { Company, GoogleSheetData } from "@/config/types";
-import { ragnarProcessor } from "@/config/companies/ragnar";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
-
+import {
+  createColumnFilterProcessor,
+  createTreasuryActionsProcessor,
+  ragnarProcessor,
+} from "@/config/processors";
 
 // Google Sheet Column Header Names
 const COLUMN_HEADERS = {
@@ -30,245 +33,44 @@ const COLUMN_HEADERS = {
 } as const;
 
 // Processor for BLGV Historical chart data
-const blgvHistoricalProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
-    return { rows: [] };
-  }
-
-  // First row contains headers
-  const headers = dataRange.values[0];
-  const rows: { [key: string]: string | number }[] = [];
-
-  // Define the start date filter (July 17th, 2025)
-  const startDate = new Date("2025-07-17");
-
-  // Define only the columns we actually need for charts
-  const requiredColumns = new Set<string>([
+const blgvHistoricalProcessor = createColumnFilterProcessor({
+  requiredColumns: [
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
     COLUMN_HEADERS.SATS_PER_FD_SHARE,
     COLUMN_HEADERS.CLOSING_PRICE_USD,
     COLUMN_HEADERS.FWD_EQ_MNAV,
-  ]);
+  ],
+  dateColumn: COLUMN_HEADERS.DATE,
+  startDate: "2025-07-17", // Filter to July 17th, 2025 and after
+});
 
-  // Process each data row (skip header row)
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const rowValues = dataRange.values[i];
-    const rowData: { [key: string]: string | number } = {};
-
-    // Only process required columns
-    headers.forEach((header, index) => {
-      if (requiredColumns.has(header)) {
-        const cellValue = rowValues[index];
-        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-          // Try to convert to number if it looks like a number
-          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-          const numValue = parseFloat(cleanValue);
-
-          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-            rowData[header] = numValue;
-          } else {
-            rowData[header] = String(cellValue).trim();
-          }
-        }
-      }
-    });
-
-    // Only add rows that have at least a date and are on or after July 17th, 2025
-    if (rowData[COLUMN_HEADERS.DATE]) {
-      // Parse the date from the row
-      const rowDateStr = String(rowData[COLUMN_HEADERS.DATE]).trim();
-      let rowDate: Date;
-
-      // Handle different date formats
-      if (rowDateStr.includes("/")) {
-        // Handle M/D/YYYY format
-        const [month, day, year] = rowDateStr.split("/");
-        rowDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      } else if (rowDateStr.includes("-")) {
-        // Handle YYYY-MM-DD format
-        rowDate = new Date(rowDateStr);
-      } else {
-        // Fallback to direct parsing
-        rowDate = new Date(rowDateStr);
-      }
-
-      // Only include rows on or after July 17th, 2025
-      if (rowDate >= startDate) {
-        rows.push(rowData);
-      }
-    }
-  }
-
-  return { rows };
-};
-
-const blgvBitcoinPriceProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
-    return { rows: [] };
-  }
-
-  // First row contains headers
-  const headers = dataRange.values[0];
-  const rows: { [key: string]: string | number }[] = [];
-
-  // Define only the columns we actually need for Bitcoin price chart
-  const requiredColumns = new Set<string>([
+const blgvBitcoinPriceProcessor = createColumnFilterProcessor({
+  requiredColumns: [
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.BTC_PRICE_USD,
     COLUMN_HEADERS.BTC_PURCHASE,
-  ]);
+  ],
+  dateColumn: COLUMN_HEADERS.DATE,
+  // No startDate specified - includes all rows
+});
 
-  // Process each data row (skip header row) - NO DATE FILTERING
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const rowValues = dataRange.values[i];
-    const rowData: { [key: string]: string | number } = {};
-
-    // Only process required columns
-    headers.forEach((header, index) => {
-      if (requiredColumns.has(header)) {
-        const cellValue = rowValues[index];
-        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-          // Try to convert to number if it looks like a number
-          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-          const numValue = parseFloat(cleanValue);
-
-          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-            rowData[header] = numValue;
-          } else {
-            rowData[header] = String(cellValue).trim();
-          }
-        }
-      }
-    });
-
-    // Add all rows that have at least a date (no date filtering)
-    if (rowData[COLUMN_HEADERS.DATE]) {
-      rows.push(rowData);
-    }
-  }
-
-  return { rows };
-};
-
-const blgvTreasuryActionsProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values) {
-    return { rows: [] };
-  }
-
-  // Extract treasury actions from columns A-D and E, F, G, H, K, L
-  const treasuryActions: { [key: string]: string | number }[] = [];
-
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const row = dataRange.values[i];
-
-    // Extract data from specific columns
-    const date = row && row[0] ? String(row[0]).trim() : ""; // Column A
-    const description = row && row[1] ? String(row[1]).trim() : ""; // Column B
-    const changeRaw = row && row[2] ? String(row[2]).trim() : ""; // Column C (index 2)
-    const btcHeld = row && row[3] ? String(row[3]).trim() : ""; // Column D (index 3)
-    const estCADBalance = row && row[5] ? String(row[5]).trim() : ""; // Column F (index 5)
-    const debtCAD = row && row[7] ? String(row[7]).trim() : ""; // Column H (index 7)
-    const fdShareCount = row && row[13] ? String(row[13]).trim() : ""; // Column N (index 13)
-    const satsPerFDShare = row && row[15] ? String(row[15]).trim() : ""; // Column P (index 15)
-    const satsEquityPerFDShare = row && row[17] ? String(row[17]).trim() : ""; // Column R (index 17)
-
-    // Helper function to convert to number with better parsing
-    const convertToNumber = (
-      value: string,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      columnName?: string,
-    ): number | string => {
-      if (!value || value === "") {
-        return "-";
-      }
-
-      // Clean the value - remove commas, currency symbols, and extra spaces
-      let cleanValue = value.toString().trim();
-      cleanValue = cleanValue.replace(/[,$]/g, ""); // Remove commas and dollar signs
-      cleanValue = cleanValue.replace(/\s+/g, ""); // Remove all whitespace
-
-      // Handle negative values in parentheses (accounting format)
-      if (cleanValue.startsWith("(") && cleanValue.endsWith(")")) {
-        cleanValue = "-" + cleanValue.slice(1, -1);
-      }
-
-      const parsed = parseFloat(cleanValue);
-      if (!isNaN(parsed)) {
-        return parsed;
-      }
-
-      return "-";
-    };
-
-    // Convert all numerical values with debugging
-    const changeInBTC = convertToNumber(
-      changeRaw,
-      COLUMN_HEADERS.CHANGE_IN_BTC,
-    );
-    const btcHeldValue = convertToNumber(btcHeld, COLUMN_HEADERS.BTC_HELD);
-    const estCADBalanceValue = convertToNumber(
-      estCADBalance,
-      COLUMN_HEADERS.EST_CAD_BALANCE,
-    );
-    const debtCADValue = convertToNumber(debtCAD, COLUMN_HEADERS.DEBT_CAD);
-    const fdShareCountValue = convertToNumber(
-      fdShareCount,
-      COLUMN_HEADERS.FD_SHARE_COUNT,
-    );
-    const satsPerFDShareValue = convertToNumber(
-      satsPerFDShare,
-      COLUMN_HEADERS.SATS_PER_FD_SHARE,
-    );
-    const satsEquityPerFDShareValue = convertToNumber(
-      satsEquityPerFDShare,
-      COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
-    );
-
-    // Only include rows where we have at least a date and description
-    if (date && description) {
-      treasuryActions.push({
-        [COLUMN_HEADERS.DATE]: date,
-        [COLUMN_HEADERS.DESCRIPTION]: description,
-        [COLUMN_HEADERS.CHANGE_IN_BTC]: changeInBTC,
-        [COLUMN_HEADERS.BTC_HELD]: btcHeldValue,
-        [COLUMN_HEADERS.EST_CAD_BALANCE]: estCADBalanceValue,
-        [COLUMN_HEADERS.DEBT_CAD]: debtCADValue,
-        [COLUMN_HEADERS.FD_SHARE_COUNT]: fdShareCountValue,
-        [COLUMN_HEADERS.SATS_PER_FD_SHARE]: satsPerFDShareValue,
-        [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: satsEquityPerFDShareValue,
-      });
-    }
-  }
-
-  return {
-    rows: treasuryActions,
-  };
-};
+const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
+  columnMapping: {
+    [COLUMN_HEADERS.DATE]: 0, // Column A
+    [COLUMN_HEADERS.DESCRIPTION]: 1, // Column B
+    [COLUMN_HEADERS.CHANGE_IN_BTC]: 2, // Column C
+    [COLUMN_HEADERS.BTC_HELD]: 3, // Column D
+    [COLUMN_HEADERS.EST_CAD_BALANCE]: 5, // Column F
+    [COLUMN_HEADERS.DEBT_CAD]: 7, // Column H
+    [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
+    [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
+    [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: 17, // Column R
+  },
+  dateColumn: COLUMN_HEADERS.DATE,
+  descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
+  currencySymbolsToRemove: ['$', ','], // CAD uses $ symbol
+});
 
 export const blgvCompanyConfig: Company = {
   id: "blgv",

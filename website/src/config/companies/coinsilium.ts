@@ -1,7 +1,11 @@
-import { ragnarProcessor } from "@/config/companies/ragnar";
 import { Company, GoogleSheetData } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
+import {
+  createColumnFilterProcessor,
+  createTreasuryActionsProcessor,
+  ragnarProcessor,
+} from "@/config/processors";
 
 const COLUMN_HEADERS = {
   // Common columns
@@ -25,25 +29,8 @@ const COLUMN_HEADERS = {
   FWD_MNAV: "Fwd mNAV",
 } as const;
 
-const bitcoinPriceProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
-    return { rows: [] };
-  }
-
-  // First row contains headers
-  const headers = dataRange.values[0];
-  const rows: { [key: string]: string | number }[] = [];
-
-  // Define only the columns we actually need for Bitcoin price chart
-  const requiredColumns = new Set<string>([
+const bitcoinPriceProcessor = createColumnFilterProcessor({
+  requiredColumns: [
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.BTC_PRICE_USD,
     COLUMN_HEADERS.BTC_PURCHASE,
@@ -51,141 +38,26 @@ const bitcoinPriceProcessor = (
     COLUMN_HEADERS.SATS_PER_SHARE,
     COLUMN_HEADERS.FWD_SATS_PER_SHARE,
     COLUMN_HEADERS.FWD_MNAV,
-  ]);
+  ],
+  dateColumn: COLUMN_HEADERS.DATE,
+  // No startDate specified - includes all rows
+});
 
-  // Process each data row (skip header row) - NO DATE FILTERING
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const rowValues = dataRange.values[i];
-    const rowData: { [key: string]: string | number } = {};
-
-    // Only process required columns
-    headers.forEach((header, index) => {
-      if (requiredColumns.has(header)) {
-        const cellValue = rowValues[index];
-        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-          // Try to convert to number if it looks like a number
-          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-          const numValue = parseFloat(cleanValue);
-
-          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-            rowData[header] = numValue;
-          } else {
-            rowData[header] = String(cellValue).trim();
-          }
-        }
-      }
-    });
-
-    // Add all rows that have at least a date (no date filtering)
-    if (rowData[COLUMN_HEADERS.DATE]) {
-      rows.push(rowData);
-    }
-  }
-
-  return { rows };
-};
-
-const treasuryActionsProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values) {
-    return { rows: [] };
-  }
-
-  // Extract treasury actions from columns A-D and E, F, G, H, K, L
-  const treasuryActions: { [key: string]: string | number }[] = [];
-
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const row = dataRange.values[i];
-
-    // Extract data from specific columns
-    const date = row && row[0] ? String(row[0]).trim() : ""; // Column A
-    const description = row && row[1] ? String(row[1]).trim() : ""; // Column B
-    const changeRaw = row && row[2] ? String(row[2]).trim() : ""; // Column C (index 2)
-    const btcHeld = row && row[3] ? String(row[3]).trim() : ""; // Column D (index 3)
-    const estGBPBalance = row && row[5] ? String(row[5]).trim() : ""; // Column F (index 5)
-    const shareCount = row && row[7] ? String(row[7]).trim() : ""; // Column H (index 7)
-    const satsPerShare = row && row[9] ? String(row[9]).trim() : ""; // Column J (index 9)
-    const fwdSatsPerShare = row && row[11] ? String(row[11]).trim() : ""; // Column L (index 11)
-
-    // Helper function to convert to number with better parsing
-    const convertToNumber = (
-      value: string,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      columnName?: string,
-    ): number | string => {
-      if (!value || value === "") {
-        return "-";
-      }
-
-      // Clean the value - remove commas, currency symbols, and extra spaces
-      let cleanValue = value.toString().trim();
-      cleanValue = cleanValue.replace(/[,£]/g, ""); // Remove commas and dollar signs
-      cleanValue = cleanValue.replace(/\s+/g, ""); // Remove all whitespace
-
-      // Handle negative values in parentheses (accounting format)
-      if (cleanValue.startsWith("(") && cleanValue.endsWith(")")) {
-        cleanValue = "-" + cleanValue.slice(1, -1);
-      }
-
-      const parsed = parseFloat(cleanValue);
-      if (!isNaN(parsed)) {
-        return parsed;
-      }
-
-      return "-";
-    };
-
-    // Convert all numerical values with debugging
-    const changeInBTC = convertToNumber(
-      changeRaw,
-      COLUMN_HEADERS.CHANGE_IN_BTC,
-    );
-    const btcHeldValue = convertToNumber(btcHeld, COLUMN_HEADERS.BTC_HELD);
-    const estGBPBalanceValue = convertToNumber(
-      estGBPBalance,
-      COLUMN_HEADERS.EST_GBP_BALANCE,
-    );
-    const shareCountValue = convertToNumber(
-      shareCount,
-      COLUMN_HEADERS.SHARE_COUNT,
-    );
-    const satsPerShareValue = convertToNumber(
-      satsPerShare,
-      COLUMN_HEADERS.SATS_PER_SHARE,
-    );
-    const fwdSatsPerShareValue = convertToNumber(
-      fwdSatsPerShare,
-      COLUMN_HEADERS.FWD_SATS_PER_SHARE,
-    );
-
-    // Only include rows where we have at least a date and description
-    if (date && description) {
-      treasuryActions.push({
-        [COLUMN_HEADERS.DATE]: date,
-        [COLUMN_HEADERS.DESCRIPTION]: description,
-        [COLUMN_HEADERS.CHANGE_IN_BTC]: changeInBTC,
-        [COLUMN_HEADERS.BTC_HELD]: btcHeldValue,
-        [COLUMN_HEADERS.EST_GBP_BALANCE]: estGBPBalanceValue,
-        [COLUMN_HEADERS.SHARE_COUNT]: shareCountValue,
-        [COLUMN_HEADERS.SATS_PER_SHARE]: satsPerShareValue,
-        [COLUMN_HEADERS.FWD_SATS_PER_SHARE]: fwdSatsPerShareValue,
-      });
-    }
-  }
-
-  console.log(dataRange.values);
-
-  return {
-    rows: treasuryActions,
-  };
-};
+const treasuryActionsProcessor = createTreasuryActionsProcessor({
+  columnMapping: {
+    [COLUMN_HEADERS.DATE]: 0, // Column A
+    [COLUMN_HEADERS.DESCRIPTION]: 1, // Column B
+    [COLUMN_HEADERS.CHANGE_IN_BTC]: 2, // Column C
+    [COLUMN_HEADERS.BTC_HELD]: 3, // Column D
+    [COLUMN_HEADERS.EST_GBP_BALANCE]: 5, // Column F
+    [COLUMN_HEADERS.SHARE_COUNT]: 7, // Column H
+    [COLUMN_HEADERS.SATS_PER_SHARE]: 9, // Column J
+    [COLUMN_HEADERS.FWD_SATS_PER_SHARE]: 11, // Column L
+  },
+  dateColumn: COLUMN_HEADERS.DATE,
+  descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
+  currencySymbolsToRemove: ['£', ','], // GBP uses £ symbol
+});
 
 export const coinsiliumCompanyConfig: Company = {
   id: "coinsilium",

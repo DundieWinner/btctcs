@@ -1,4 +1,4 @@
-import { ragnarProcessor } from "@/config/companies/ragnar";
+import { ragnarProcessor } from "@/config/processors";
 import { Company } from "@/config/types";
 
 export const metaplanetCompanyConfig: Company = {
