@@ -11,7 +11,6 @@ import {
   whiteMedium,
 } from "@/config/colors";
 
-// Google Sheet Column Header Names
 const COLUMN_HEADERS = {
   // Common columns
   DATE: "Date",
@@ -28,8 +27,6 @@ const COLUMN_HEADERS = {
   SHARE_COUNT: "Share Count",
   SATS_PER_SHARE: "Sats / Share",
   FWD_SATS_PER_SHARE: "Fwd Sats / Share",
-  SATS_EQ_PER_FD_SHARE: "Sats Eq. / FD Share",
-  FWD_SATS_EQ_PER_FD_SHARE: "Fwd Sats Eq. / FD Share",
 
   // Financial columns
   EST_GBP_BALANCE: "Est. Fiat Balance (GBP)",
