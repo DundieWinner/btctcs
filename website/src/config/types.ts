@@ -176,7 +176,7 @@ export interface GoogleSheetExtraction {
     }[],
   ) => GoogleSheetData | ProcessorResult;
   renderLocation?: "sidebar" | "top" | "bottom" | "none"; // Where to render this extraction, defaults to "top". Use "none" for chart-only extractions
-  chart?: ChartConfiguration; // Custom chart configuration for this extraction
+  charts?: ChartConfiguration[]; // Custom chart configurations for this extraction (supports multiple charts)
   hasHeaders?: boolean;
 
   // Advanced formatting options

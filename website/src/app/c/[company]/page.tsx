@@ -114,12 +114,12 @@ async function CompanyDashboard({ company }: { company: string }) {
             {/* Main Content */}
             <div className={"flex-1"}>
               {/* Generic Charts */}
-              {chartExtractions.map(({ extraction, config }) => (
+              {chartExtractions.map(({ extraction, config, chartIndex }) => (
                 <GenericChart
-                  key={extraction.id}
+                  key={`${extraction.id}-chart-${chartIndex}`}
                   data={extraction.data!}
                   config={config}
-                  title={extraction.title}
+                  title={config.title || `${extraction.title} - Chart ${chartIndex + 1}`}
                 />
               ))}
 

@@ -301,7 +301,7 @@ export const blgvCompanyConfig: Company = {
         processor: blgvHistoricalProcessor,
         hasHeaders: true,
         renderLocation: "none",
-        chart: {
+        charts: [{
           type: "line",
           title: "Historical Performance",
           height: {
@@ -432,7 +432,7 @@ export const blgvCompanyConfig: Company = {
               text: "btctcs.com",
             },
           },
-        },
+        }],
       },
     ],
   },
