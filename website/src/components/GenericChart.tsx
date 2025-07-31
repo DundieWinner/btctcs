@@ -200,7 +200,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
             ? row[datasetConfig.mapping.yPosition] 
             : yValue;
           
-          const dataPoint: any = {
+          const dataPoint: { x: unknown; y: unknown; tooltipValue?: unknown; sizeValue?: number } = {
             x: processValue(xValue, xAxis?.type),
             y: processValue(yPositionValue, yAxis?.type), // Use yPosition for chart positioning
             tooltipValue: yValue, // Store original y value for tooltip
@@ -222,13 +222,13 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       
       if (datasetConfig.mapping.pointSize && mappedData.length > 0) {
         const sizeConfig = datasetConfig.mapping.pointSize;
-        const sizeValues = mappedData.map((point: any) => point.sizeValue || 0).filter(val => val > 0);
+        const sizeValues = mappedData.map((point: { sizeValue?: number }) => point.sizeValue || 0).filter(val => val > 0);
         
         if (sizeValues.length > 0) {
           const minValue = Math.min(...sizeValues);
           const maxValue = Math.max(...sizeValues);
           
-          pointRadii = mappedData.map((point: any) => {
+          pointRadii = mappedData.map((point: { sizeValue?: number }) => {
             const sizeValue = point.sizeValue || 0;
             if (sizeValue <= 0) return 0; // Hidden point
             
@@ -255,7 +255,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
         }
       }
 
-      const dataset: any = {
+      const dataset = {
         label: datasetConfig.label,
         data: mappedData,
         borderColor: datasetConfig.borderColor || "#f3991f",
@@ -270,17 +270,18 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       };
       
       // Add additional point styling if configured
+      const datasetWithExtras = dataset as Record<string, unknown>;
       if (datasetConfig.pointBorderColor) {
-        dataset.pointBorderColor = datasetConfig.pointBorderColor;
+        datasetWithExtras.pointBorderColor = datasetConfig.pointBorderColor;
       }
       if (datasetConfig.pointBorderWidth) {
-        dataset.pointBorderWidth = datasetConfig.pointBorderWidth;
+        datasetWithExtras.pointBorderWidth = datasetConfig.pointBorderWidth;
       }
       if (datasetConfig.showLine === false) {
-        dataset.showLine = false;
+        datasetWithExtras.showLine = false;
       }
       
-      return dataset;
+      return datasetWithExtras;
     }),
   };
 
@@ -508,7 +509,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
     bar: Bar,
     scatter: Scatter,
     bubble: Bubble,
-  }[config.type];
+  }[config.type] as React.ComponentType<{ data: unknown; options: unknown; plugins?: unknown[]; ref?: React.Ref<unknown> }>;
 
   const showExportButton = config.showExportButton ?? true;
   const heightStyles = getResponsiveHeightStyles(config.height);
