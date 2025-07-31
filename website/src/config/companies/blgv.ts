@@ -1,6 +1,31 @@
 import { Company, GoogleSheetData } from "@/config/types";
 import { ragnarProcessor } from "@/config/companies/ragnar";
 
+// Google Sheet Column Header Names
+const COLUMN_HEADERS = {
+  // Common columns
+  DATE: "Date",
+  DESCRIPTION: "Description",
+  
+  // Bitcoin and Price columns
+  BTC_PRICE_USD: "BTC Price (USD)",
+  BTC_PURCHASE: "BTC Purchase",
+  BTC_HELD: "BTC Held",
+  CHANGE_IN_BTC: "Change in BTC",
+  
+  // Share and Equity columns
+  CLOSING_PRICE_USD: "Closing Price (USD)",
+  FD_SHARE_COUNT: "FD Share Count",
+  SATS_PER_FD_SHARE: "Sats / FD Share",
+  SATS_EQ_PER_FD_SHARE: "Sats Eq. / FD Share",
+  FWD_SATS_EQ_PER_FD_SHARE: "Fwd Sats Eq. / FD Share",
+  
+  // Financial columns
+  EST_CAD_BALANCE: "Est. CAD Balance",
+  DEBT_CAD: "Debt (CAD)",
+  FWD_EQ_MNAV: "Fwd Eq. mNAV",
+} as const;
+
 // Processor for BLGV Historical chart data
 const blgvHistoricalProcessor = (
   rangeData: {
@@ -35,7 +60,7 @@ const blgvHistoricalProcessor = (
         const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
         const numValue = parseFloat(cleanValue);
 
-        if (!isNaN(numValue) && header !== "Date") {
+        if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
           rowData[header] = numValue;
         } else {
           rowData[header] = String(cellValue).trim();
@@ -44,9 +69,9 @@ const blgvHistoricalProcessor = (
     });
 
     // Only add rows that have at least a date and are on or after July 17th, 2025
-    if (rowData["Date"]) {
+    if (rowData[COLUMN_HEADERS.DATE]) {
       // Parse the date from the row
-      const rowDateStr = String(rowData["Date"]).trim();
+      const rowDateStr = String(rowData[COLUMN_HEADERS.DATE]).trim();
       let rowDate: Date;
 
       // Handle different date formats
@@ -103,7 +128,7 @@ const blgvBitcoinPriceProcessor = (
         const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
         const numValue = parseFloat(cleanValue);
 
-        if (!isNaN(numValue) && header !== "Date") {
+        if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
           rowData[header] = numValue;
         } else {
           rowData[header] = String(cellValue).trim();
@@ -112,7 +137,7 @@ const blgvBitcoinPriceProcessor = (
     });
 
     // Add all rows that have at least a date (no date filtering)
-    if (rowData["Date"]) {
+    if (rowData[COLUMN_HEADERS.DATE]) {
       rows.push(rowData);
     }
   }
@@ -179,35 +204,35 @@ const blgvTreasuryActionsProcessor = (
     };
 
     // Convert all numerical values with debugging
-    const changeInBTC = convertToNumber(changeRaw, "Change in BTC");
-    const btcHeldValue = convertToNumber(btcHeld, "BTC Held");
+    const changeInBTC = convertToNumber(changeRaw, COLUMN_HEADERS.CHANGE_IN_BTC);
+    const btcHeldValue = convertToNumber(btcHeld, COLUMN_HEADERS.BTC_HELD);
     const estCADBalanceValue = convertToNumber(
       estCADBalance,
-      "Est. CAD Balance",
+      COLUMN_HEADERS.EST_CAD_BALANCE,
     );
-    const debtCADValue = convertToNumber(debtCAD, "Debt (CAD)");
-    const fdShareCountValue = convertToNumber(fdShareCount, "FD Share Count");
+    const debtCADValue = convertToNumber(debtCAD, COLUMN_HEADERS.DEBT_CAD);
+    const fdShareCountValue = convertToNumber(fdShareCount, COLUMN_HEADERS.FD_SHARE_COUNT);
     const satsPerFDShareValue = convertToNumber(
       satsPerFDShare,
-      "Sats / FD Share",
+      COLUMN_HEADERS.SATS_PER_FD_SHARE,
     );
     const satsEquityPerFDShareValue = convertToNumber(
       satsEquityPerFDShare,
-      "Sats Eq. / FD Share",
+      COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
     );
 
     // Only include rows where we have at least a date and description
     if (date && description) {
       treasuryActions.push({
-        Date: date,
-        Description: description,
-        "Change in BTC": changeInBTC,
-        "BTC Held": btcHeldValue,
-        "Est. CAD Balance": estCADBalanceValue,
-        "Debt (CAD)": debtCADValue,
-        "FD Share Count": fdShareCountValue,
-        "Sats / FD Share": satsPerFDShareValue,
-        "Sats Eq. / FD Share": satsEquityPerFDShareValue,
+        [COLUMN_HEADERS.DATE]: date,
+        [COLUMN_HEADERS.DESCRIPTION]: description,
+        [COLUMN_HEADERS.CHANGE_IN_BTC]: changeInBTC,
+        [COLUMN_HEADERS.BTC_HELD]: btcHeldValue,
+        [COLUMN_HEADERS.EST_CAD_BALANCE]: estCADBalanceValue,
+        [COLUMN_HEADERS.DEBT_CAD]: debtCADValue,
+        [COLUMN_HEADERS.FD_SHARE_COUNT]: fdShareCountValue,
+        [COLUMN_HEADERS.SATS_PER_FD_SHARE]: satsPerFDShareValue,
+        [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: satsEquityPerFDShareValue,
       });
     }
   }
@@ -257,47 +282,47 @@ export const blgvCompanyConfig: Company = {
         // Column formatting
         columnFormats: [
           {
-            key: "Change in BTC",
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
             type: "number",
             decimals: 8,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: "BTC Held",
+            key: COLUMN_HEADERS.BTC_HELD,
             type: "number",
             decimals: 8,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: "Est. CAD Balance",
+            key: COLUMN_HEADERS.EST_CAD_BALANCE,
             type: "currency",
             decimals: 2,
             textAlign: "right",
           },
           {
-            key: "Debt (CAD)",
+            key: COLUMN_HEADERS.DEBT_CAD,
             type: "currency",
             decimals: 2,
             textAlign: "right",
           },
           {
-            key: "FD Share Count",
+            key: COLUMN_HEADERS.FD_SHARE_COUNT,
             type: "number",
             decimals: 0,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: "Sats / FD Share",
+            key: COLUMN_HEADERS.SATS_PER_FD_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: "Sats Eq. / FD Share",
+            key: COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
@@ -308,7 +333,7 @@ export const blgvCompanyConfig: Company = {
         // Conditional styling for positive/negative changes
         conditionalStyles: [
           {
-            key: "Change in BTC",
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
             condition: "positive",
             style: {
               backgroundColor: "rgba(34, 197, 94, 0.2)", // green-500 with opacity
@@ -317,7 +342,7 @@ export const blgvCompanyConfig: Company = {
             },
           },
           {
-            key: "Change in BTC",
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
             condition: "negative",
             style: {
               backgroundColor: "rgba(239, 68, 68, 0.2)", // red-500 with opacity
@@ -329,15 +354,15 @@ export const blgvCompanyConfig: Company = {
 
         // Column widths for better layout
         columnWidths: {
-          Date: "120px",
-          Description: "250px",
-          "Change in BTC": "140px",
-          "BTC Held": "140px",
-          "Est. CAD Balance": "150px",
-          "Debt (CAD)": "130px",
-          "FD Share Count": "150px",
-          "Sats / FD Share": "130px",
-          "Sats Eq. / FD Share": "130px",
+          [COLUMN_HEADERS.DATE]: "120px",
+          [COLUMN_HEADERS.DESCRIPTION]: "250px",
+          [COLUMN_HEADERS.CHANGE_IN_BTC]: "140px",
+          [COLUMN_HEADERS.BTC_HELD]: "140px",
+          [COLUMN_HEADERS.EST_CAD_BALANCE]: "150px",
+          [COLUMN_HEADERS.DEBT_CAD]: "130px",
+          [COLUMN_HEADERS.FD_SHARE_COUNT]: "150px",
+          [COLUMN_HEADERS.SATS_PER_FD_SHARE]: "130px",
+          [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: "130px",
         },
       },
       {
@@ -361,7 +386,7 @@ export const blgvCompanyConfig: Company = {
           datasets: [
             {
               label: "Bitcoin Price (USD)",
-              mapping: { x: "Date", y: "BTC Price (USD)" },
+              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.BTC_PRICE_USD },
               borderColor: "#f3991f",
               backgroundColor: "rgba(243, 153, 31, 0.1)",
               tension: 0.1,
@@ -372,15 +397,15 @@ export const blgvCompanyConfig: Company = {
             {
               label: "BTC Purchase",
               mapping: { 
-                x: "Date", 
-                y: "BTC Purchase",
-                yPosition: "BTC Price (USD)", 
+                x: COLUMN_HEADERS.DATE, 
+                y: COLUMN_HEADERS.BTC_PURCHASE,
+                yPosition: COLUMN_HEADERS.BTC_PRICE_USD, 
                 filter: {
-                  column: "BTC Purchase",
+                  column: COLUMN_HEADERS.BTC_PURCHASE,
                   condition: "nonzero"
                 },
                 pointSize: {
-                  column: "BTC Purchase",
+                  column: COLUMN_HEADERS.BTC_PURCHASE,
                   minSize: 8,
                   maxSize: 20,
                   scale: "sqrt"
@@ -462,7 +487,7 @@ export const blgvCompanyConfig: Company = {
           datasets: [
             {
               label: "Fwd Sats Eq. / FD Share",
-              mapping: { x: "Date", y: "Fwd Sats Eq. / FD Share" },
+              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE },
               borderColor: "#f3991f",
               backgroundColor: "rgba(243, 153, 31, 0.2)",
               tension: 0,
@@ -472,7 +497,7 @@ export const blgvCompanyConfig: Company = {
             },
             {
               label: "Sats / FD Share",
-              mapping: { x: "Date", y: "Sats / FD Share" },
+              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.SATS_PER_FD_SHARE },
               borderColor: "#f9cc8f",
               backgroundColor: "#f9cc8f",
               borderDash: [5, 5],
@@ -483,7 +508,7 @@ export const blgvCompanyConfig: Company = {
             },
             {
               label: "Share Price (USD)",
-              mapping: { x: "Date", y: "Closing Price (USD)" },
+              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.CLOSING_PRICE_USD },
               borderColor: "#ffffff",
               backgroundColor: "rgba(255, 255, 255, 0.2)",
               borderDash: [5, 5],
@@ -494,7 +519,7 @@ export const blgvCompanyConfig: Company = {
             },
             {
               label: "Fwd Eq. mNAV",
-              mapping: { x: "Date", y: "Fwd Eq. mNAV" },
+              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_EQ_MNAV },
               borderColor: "#10b981",
               backgroundColor: "rgba(16, 185, 129, 0.2)",
               borderDash: [10, 5],

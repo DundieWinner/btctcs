@@ -2,6 +2,65 @@
 
 import { KeyStatistic, ProcessorResult } from "../types";
 
+// Ragnar Metric Names
+const RAGNAR_METRICS = {
+  // Financial metrics
+  TOTAL_FIAT_DEBT: "Total Fiat Debt",
+  CASH: "Cash",
+  BTC_IN_TREASURY: "BTC in Treasury",
+  BTC_NAV: "BTC NAV",
+  DEBT_USD: "Debt (USD)",
+  
+  // Share metrics
+  BASIC_SHARES_OUTSTANDING: "Basic shares outstanding",
+  ASSUMED_FULLY_DILUTED_SHARES: "Assumed fully diluted shares",
+  CURRENT_PRICE: "Current price",
+  MARKET_CAP_LOCAL: "Market cap [local]",
+  CURRENT_MARKET_CAP_USD: "Current market cap USD",
+  
+  // mNAV metrics
+  CURRENT_MNAV_BASIC: "Current mNAV (basic)",
+  CURRENT_MNAV_FULLY_DILUTED: "Current mNAV (fully diluted)",
+  FORWARD_BTC_IN_TREASURY: "Forward BTC in Treasury",
+  FORWARD_MNAV: "Forward mNAV",
+  
+  // Yield metrics
+  BTC_YIELD_YTD_PERCENT: "BTC Yield YTD %",
+  BTC_YIELD_DISCOUNT: "BTC Yield Discount",
+  ADJ_BTC_YIELD_YTD_PERCENT: "Adj. BTC Yield YTD %",
+  BTC_YIELD_MULTIPLE: "BTC Yield Multiple",
+  BTC_YIELD_MULTIPLE_1Y: "BTC Yield Multiple 1Y",
+  TORQUE_ADJ_BTC_YIELD_Q2_PERCENT: "Torque adj. BTC Yield (Q2) %",
+  
+  // Time-based metrics
+  MONTHS: "Months",
+  DAYS_TO_COVER_MNAV_91D: "Days to cover mNAV (91d)",
+  FORWARD_MONTHS_TO_COVER_MNAV_FMC: "Forward Months to Cover mNAV (FMC)",
+  FORWARD_P_BYD: "Forward P/BYD",
+  DAYS_TO_COVER_MNAV: "Days to cover mNAV",
+  MONTHS_TO_COVER_MNAV: "Months to cover mNAV",
+  RISK_ADJ_MONTHS_TO_COVER: "Risk adj. months to cover",
+  
+  // Capital metrics
+  INCREMENTAL_BTC_REQUIRED: "Incremental BTC Required",
+  INCREMENTAL_CAPITAL_REQUIRED: "Incremental Capital Required",
+  
+  // Purchase history metrics
+  FIRST_PURCHASE: "First purchase",
+  DAYS_SINCE_FIRST_PURCHASE: "Days since first purchase",
+  YEARS_SINCE_FIRST_PURCHASE: "Years since first purchase",
+  NUMBER_OF_PURCHASES: "Number of purchases",
+  DAYS_BETWEEN_PURCHASES: "Days between purchases",
+  BTC_BOUGHT_PER_DAY: "BTC bought per day",
+  SATS_PER_SHARE: "Sats per share",
+} as const;
+
+// Table column names
+const TABLE_COLUMNS = {
+  METRIC: "Metric",
+  VALUE: "Value",
+} as const;
+
 // Pairs labels from first range with values from second range
 // Now returns both table data and key statistics
 export function ragnarProcessor(
@@ -23,45 +82,8 @@ export function ragnarProcessor(
     return { data: { rows: [] } };
   }
 
-  // Define allowed labels for filtering
-  const allowedLabels = new Set([
-    "Total Fiat Debt",
-    "Cash",
-    "BTC in Treasury",
-    "BTC NAV",
-    "Basic shares outstanding",
-    "Assumed fully diluted shares",
-    "Current price",
-    "Market cap [local]",
-    "Current market cap USD",
-    "Debt (USD)",
-    "Current mNAV (basic)",
-    "Current mNAV (fully diluted)",
-    "Forward BTC in Treasury",
-    "Forward mNAV",
-    "BTC Yield YTD %",
-    "BTC Yield Discount",
-    "Adj. BTC Yield YTD %",
-    "Months",
-    "BTC Yield Multiple",
-    "BTC Yield Multiple 1Y",
-    "Days to cover mNAV (91d)",
-    "Forward Months to Cover mNAV (FMC)",
-    "Forward P/BYD",
-    "Days to cover mNAV",
-    "Months to cover mNAV",
-    "Risk adj. months to cover",
-    "Torque adj. BTC Yield (Q2) %",
-    "Incremental BTC Required",
-    "Incremental Capital Required",
-    "First purchase",
-    "Days since first purchase",
-    "Years since first purchase",
-    "Number of purchases",
-    "Days between purchases",
-    "BTC bought per day",
-    "Sats per share",
-  ]);
+  // Define allowed labels for filtering - using Object.values() to handle runtime string comparison
+  const allowedLabels = new Set(Object.values(RAGNAR_METRICS));
 
   // Create paired data from the two ranges
   const pairedRows: { [key: string]: string | number }[] = [];
@@ -81,8 +103,8 @@ export function ragnarProcessor(
     // Only include rows where both label and value are non-empty AND label is in allowed list
     if (label && value && allowedLabels.has(label)) {
       pairedRows.push({
-        Metric: label,
-        Value: value,
+        [TABLE_COLUMNS.METRIC]: label,
+        [TABLE_COLUMNS.VALUE]: value,
       });
     }
   }
@@ -96,9 +118,9 @@ export function ragnarProcessor(
     unit?: string,
     prefix?: string,
   ) => {
-    const row = pairedRows.find((row) => row.Metric === metricName);
+    const row = pairedRows.find((row) => row[TABLE_COLUMNS.METRIC] === metricName);
     if (row) {
-      let value = row.Value;
+      let value = row[TABLE_COLUMNS.VALUE];
       // Clean up common prefixes from the value
       if (typeof value === "string") {
         value = value.replace(/^₿ /, "").replace(/^\$ /, "").replace(/^% /, "");
@@ -123,7 +145,7 @@ export function ragnarProcessor(
 
   // Extract key statistics in order
   extractKeyStatistic(
-    "BTC in Treasury",
+    RAGNAR_METRICS.BTC_IN_TREASURY,
     "btc-treasury",
     "BTC Holdings",
     1,
@@ -132,19 +154,19 @@ export function ragnarProcessor(
 
   // Combine basic and diluted mNAV into one card
   const basicMnavRow = pairedRows.find(
-    (row) => row.Metric === "Current mNAV (basic)",
+    (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.CURRENT_MNAV_BASIC,
   );
   const dilutedMnavRow = pairedRows.find(
-    (row) => row.Metric === "Current mNAV (fully diluted)",
+    (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.CURRENT_MNAV_FULLY_DILUTED,
   );
   const forwardMnavRow = pairedRows.find(
-    (row) => row.Metric === "Forward mNAV",
+    (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.FORWARD_MNAV,
   );
 
   if (basicMnavRow && dilutedMnavRow && forwardMnavRow) {
-    let basicValue = basicMnavRow.Value;
-    let dilutedValue = dilutedMnavRow.Value;
-    let forwardValue = forwardMnavRow.Value;
+    let basicValue = basicMnavRow[TABLE_COLUMNS.VALUE];
+    let dilutedValue = dilutedMnavRow[TABLE_COLUMNS.VALUE];
+    let forwardValue = forwardMnavRow[TABLE_COLUMNS.VALUE];
 
     // Clean up prefixes
     if (typeof basicValue === "string") {
@@ -169,22 +191,22 @@ export function ragnarProcessor(
   }
 
   extractKeyStatistic(
-    "Forward Months to Cover mNAV (FMC)",
+    RAGNAR_METRICS.FORWARD_MONTHS_TO_COVER_MNAV_FMC,
     "fmc",
     "Forward MTC",
     4,
     "months",
   );
-  extractKeyStatistic("Forward P/BYD", "forward-pbyd", "Forward P/BYD", 5);
+  extractKeyStatistic(RAGNAR_METRICS.FORWARD_P_BYD, "forward-pbyd", "Forward P/BYD", 5);
   extractKeyStatistic(
-    "Risk adj. months to cover",
+    RAGNAR_METRICS.RISK_ADJ_MONTHS_TO_COVER,
     "risk-adj-mtc",
     "Risk Adj. MTC",
     6,
     "months",
   );
   extractKeyStatistic(
-    "BTC Yield YTD %",
+    RAGNAR_METRICS.BTC_YIELD_YTD_PERCENT,
     "btc-yield-ytd",
     "BTC Yield YTD",
     7,
