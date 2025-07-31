@@ -306,13 +306,13 @@ def create_power_law_chart(df, company_name, output_dir=None):
 
     # Labels and title
     plt.xlabel('Bitcoin Holdings (BTC)', fontsize=14, fontweight='bold')
-    plt.ylabel('Bitcoin per Diluted Share', fontsize=14, fontweight='bold')
+    plt.ylabel('Bitcoin per Fully Diluted Share', fontsize=14, fontweight='bold')
     
     # Get current date for subtitle
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Log-Log BTC Holdings vs Bitcoin per Diluted Share',
+    plt.suptitle(f'{company_name} Log-Log BTC Holdings vs Bitcoin per Fully Diluted Share',
                  fontsize=16, fontweight='bold', y=0.98)
     plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
 
@@ -421,7 +421,7 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
         color = nav_colors[i] if i < len(nav_colors) else f'C{i}'
         column_name = nav_columns[level]
         plt.plot(df['date'], df[column_name], color, linewidth=2, 
-                 label=f'{level}x Bitcoin NAV per Share', alpha=0.8)
+                 label=f'{level}x Bitcoin NAV per FD Share', alpha=0.8)
         
         # Plot future NAV multipliers per share with projected accumulation (solid lines, lighter)
         plt.plot(future_dates, future_nav_per_share[level], color, linewidth=2, 
@@ -439,7 +439,7 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Stock Price vs BTC NAV Multipliers per Share',
+    plt.suptitle(f'{company_name} Stock Price vs BTC NAV Multipliers per Fully Diluted Share',
                  fontsize=16, fontweight='bold', y=0.98)
     plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
 
@@ -709,7 +709,13 @@ def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
 
 
 def create_btc_per_share_chart(df, company_name, config, output_dir=None):
-    """Create a chart showing Sats per diluted share over time"""
+    """Create a chart showing Sats per diluted share over time
+    
+    Supports multiple data series through config:
+    - btc_per_share_columns: List of column names to plot
+    - btc_per_share_labels: List of labels for each column (optional)
+    - btc_per_share_colors: List of colors for each column (optional)
+    """
     print("\nCreating Sats per Diluted Share Over Time Chart")
     print("=" * 60)
 
@@ -728,28 +734,54 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
             print(f"No data available from {global_start_date} onwards for sats per diluted share chart")
             return
     
-    # Convert Bitcoin per diluted share to sats per diluted share (multiply by 100,000,000)
-    sats_per_diluted_share = df['btc_per_diluted_share'] * 100_000_000
+    # Get configuration for multiple data series
+    btc_per_share_columns = config.get('btc_per_share_columns', ['btc_per_diluted_share'])
+    btc_per_share_labels = config.get('btc_per_share_labels', None)
+    btc_per_share_colors = config.get('btc_per_share_colors', ['#0000ff', '#ff6600', '#00aa00', '#ff0000', '#9900cc'])
     
-    # Plot historical sats per diluted share (solid line)
-    plt.plot(df['date'], sats_per_diluted_share, '#0000ff', linewidth=2, 
-             label=f'{company_name} Sats per Diluted Share', alpha=0.8)
+    # Ensure we have enough colors
+    while len(btc_per_share_colors) < len(btc_per_share_columns):
+        btc_per_share_colors.extend(['#0000ff', '#ff6600', '#00aa00', '#ff0000', '#9900cc'])
+    
+    # Plot each data series
+    for i, column in enumerate(btc_per_share_columns):
+        if column not in df.columns:
+            print(f"Warning: Column '{column}' not found in DataFrame. Skipping.")
+            continue
+            
+        # Convert Bitcoin per diluted share to sats per diluted share (multiply by 100,000,000)
+        sats_per_diluted_share = df[column] * 100_000_000
+        
+        # Determine label for this series
+        if btc_per_share_labels and i < len(btc_per_share_labels):
+            label = btc_per_share_labels[i]
+        else:
+            # Use column name as label, cleaned up
+            label = column.replace('_', ' ').title()
+        
+        # Get color for this series
+        color = btc_per_share_colors[i]
+        
+        # Plot historical sats per diluted share
+        plt.plot(df['date'], sats_per_diluted_share, color, linewidth=2, 
+                 label=label, alpha=0.8)
 
-    # Add label for the most recent value
-    if len(sats_per_diluted_share) > 0:
-        most_recent_date = df['date'].iloc[-1]
-        most_recent_value = sats_per_diluted_share.iloc[-1]
-        
-        # Add a point marker for the most recent value
-        plt.plot(most_recent_date, most_recent_value, 'o', color='#0000ff', markersize=8, alpha=0.8)
-        
-        # Add text label with the most recent value
-        plt.annotate(f'{most_recent_value:,.0f} sats', 
-                    xy=(most_recent_date, most_recent_value),
-                    xytext=(10, 10), textcoords='offset points',
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
-                    fontsize=10, fontweight='bold', color='black',
-                    ha='left', va='bottom')
+        # Add label for the most recent value
+        if len(sats_per_diluted_share) > 0:
+            most_recent_date = df['date'].iloc[-1]
+            most_recent_value = sats_per_diluted_share.iloc[-1]
+            
+            # Add a point marker for the most recent value
+            plt.plot(most_recent_date, most_recent_value, 'o', color=color, markersize=8, alpha=0.8)
+            
+            # Add text label with the most recent value (offset each annotation)
+            y_offset = 10 + (i * 25)  # Offset annotations vertically
+            plt.annotate(f'{most_recent_value:,.0f} sats', 
+                        xy=(most_recent_date, most_recent_value),
+                        xytext=(10, y_offset), textcoords='offset points',
+                        bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
+                        fontsize=10, fontweight='bold', color='black',
+                        ha='left', va='bottom')
 
     # Labels and title
     plt.xlabel('Date', fontsize=14, fontweight='bold')
@@ -759,7 +791,7 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Sats per Diluted Share Over Time',
+    plt.suptitle(f'{company_name} Sats per Fully Diluted Share Over Time',
                  fontsize=16, fontweight='bold', y=0.98)
     plt.title(f'https://btctcs.com - {current_date}',
               fontsize=12, pad=20)

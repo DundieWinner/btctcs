@@ -7,7 +7,6 @@ from shared_utils.bitcoin_analysis import (
     setup_plotting,
     create_power_law_chart,
     create_stock_nav_chart,
-    create_mnav_chart,
     create_stacked_mc_btc_nav_chart,
     create_btc_per_share_chart
 )
@@ -20,12 +19,14 @@ BLGV_DATE_COLUMN = "Date"
 BLGV_BTC_BALANCE_COLUMN = "BTC Held"
 BLGV_SHARES_COLUMN = "FD Shares"
 BLGV_STOCK_PRICE_COLUMN = "Closing Price (USD)"
-BLGV_BTC_PER_SHARE_COLUMN = "Equity BTC / Share"
+BLGV_BTC_PER_SHARE_COLUMN = "BTC / FD Share"
+BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN = "Fwd BTC Eq. / FD Share"
 BLGV_BTC_PRICE_COLUMN = "BTC Price (USD)"
 
 
 def load_blgv_data():
     try:
+        # Load the standard columns first
         df = load_bitcoin_data_from_sheet(
             spreadsheet_id=BLGV_SPREADSHEET_ID,
             range_name=BLGV_SHEET_RANGE,
@@ -37,8 +38,24 @@ def load_blgv_data():
             btc_price_column=BLGV_BTC_PRICE_COLUMN
         )
         
+        # Load raw sheet data to get the forward equity BTC per share column
+        from shared_utils.google_sheets import sheet_to_dataframe
+        import pandas as pd
+        
+        raw_df = sheet_to_dataframe(BLGV_SPREADSHEET_ID, BLGV_SHEET_RANGE)
+        
+        # Add the forward equity BTC per share column if it exists
+        if BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN in raw_df.columns:
+            # Convert to numeric and add to our main dataframe
+            fwd_eq_btc_per_share = pd.to_numeric(raw_df[BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN], errors='coerce')
+            df[BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN] = fwd_eq_btc_per_share
+            print(f"✅ Added {BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN} column to DataFrame")
+        else:
+            print(f"⚠️  Warning: {BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN} column not found in sheet")
+        
         print(f"\n✅ Successfully loaded {len(df)} records from Google Sheets")
         print(f"Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
+        print(f"Available columns: {list(df.columns)}")
         
         return df
         
@@ -63,23 +80,20 @@ def run_analysis():
     
     print("Generating stock_nav chart...")
     create_stock_nav_chart(df, company_name, {
-        'nav_reference_levels': [3, 4, 5],
+        'nav_reference_levels': [4, 5, 6],
         'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
         'projection_months': 1
-    }, current_dir)
-
-    print("Generating mnav chart...")
-    create_mnav_chart(df, company_name, {
-        'nav_reference_levels': [6, 7],
-        'nav_reference_colors': ['#008000', '#ff0000'],
-        'mnav_start_date': '2025-07-24'
     }, current_dir)
 
     print("Generating stacked_area chart...")
     create_stacked_mc_btc_nav_chart(df, company_name, {}, current_dir)
 
     print("Generating btc_per_share chart...")
-    create_btc_per_share_chart(df, company_name, {}, current_dir)
+    create_btc_per_share_chart(df, company_name, {
+        'btc_per_share_columns': ['btc_per_diluted_share', BLGV_FWD_EQ_BTC_PER_SHARE_COLUMN],
+        'btc_per_share_labels': ["Sats / FD Share", "Fwd Sats Eq. / FD Share"],
+        'btc_per_share_colors': ['#0000ff', '#ff6600']
+    }, current_dir)
     
     return df, current_dir
 
