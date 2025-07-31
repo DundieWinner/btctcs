@@ -71,7 +71,6 @@ const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
-  currencySymbolsToRemove: ['$', ','], // CAD uses $ symbol
 });
 
 export const blgvCompanyConfig: Company = {

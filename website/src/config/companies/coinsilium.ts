@@ -59,7 +59,6 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
-  currencySymbolsToRemove: ['£', ','], // GBP uses £ symbol
 });
 
 export const coinsiliumCompanyConfig: Company = {

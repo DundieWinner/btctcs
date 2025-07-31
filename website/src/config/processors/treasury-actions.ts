@@ -8,7 +8,6 @@ export interface TreasuryActionsConfig {
   columnMapping: TreasuryActionsColumnMapping;
   dateColumn: string;
   descriptionColumn: string;
-  currencySymbolsToRemove?: string[]; // e.g., ['$', '£', '€']
 }
 
 /**
@@ -30,25 +29,35 @@ export function createTreasuryActionsProcessor(
     }
 
     const treasuryActions: { [key: string]: string | number }[] = [];
-    const currencySymbols = config.currencySymbolsToRemove || ['$', '£', '€', ','];
 
-    // Helper function to convert to number with better parsing
+    // Helper function to convert to number with comprehensive cleaning
     const convertToNumber = (value: string): number | string => {
       if (!value || value === "") {
         return "-";
       }
 
-      // Clean the value - remove currency symbols and extra spaces
+      // Clean the value - remove any non-numeric characters except decimal point, minus sign, and parentheses
       let cleanValue = value.toString().trim();
       
-      // Remove specified currency symbols
-      const symbolsRegex = new RegExp(`[${currencySymbols.map(s => `\\${s}`).join('')}]`, 'g');
-      cleanValue = cleanValue.replace(symbolsRegex, "");
-      cleanValue = cleanValue.replace(/\s+/g, ""); // Remove all whitespace
-
-      // Handle negative values in parentheses (accounting format)
+      // Handle negative values in parentheses (accounting format) first
       if (cleanValue.startsWith("(") && cleanValue.endsWith(")")) {
         cleanValue = "-" + cleanValue.slice(1, -1);
+      }
+
+      // Remove all characters except digits, decimal point, and minus sign
+      // This will handle any currency symbols ($, £, €, ¥, etc.), commas, spaces, etc.
+      cleanValue = cleanValue.replace(/[^\d.-]/g, "");
+
+      // Handle multiple decimal points (keep only the first one)
+      const decimalIndex = cleanValue.indexOf('.');
+      if (decimalIndex !== -1) {
+        cleanValue = cleanValue.substring(0, decimalIndex + 1) + cleanValue.substring(decimalIndex + 1).replace(/\./g, '');
+      }
+
+      // Handle multiple minus signs (keep only the first one)
+      const minusIndex = cleanValue.indexOf('-');
+      if (minusIndex !== -1) {
+        cleanValue = cleanValue.substring(0, minusIndex + 1) + cleanValue.substring(minusIndex + 1).replace(/-/g, '');
       }
 
       const parsed = parseFloat(cleanValue);
