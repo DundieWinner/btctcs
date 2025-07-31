@@ -83,7 +83,7 @@ export function ragnarProcessor(
   }
 
   // Define allowed labels for filtering - using Object.values() to handle runtime string comparison
-  const allowedLabels = new Set(Object.values(RAGNAR_METRICS));
+  const allowedLabels = new Set<string>(Object.values(RAGNAR_METRICS));
 
   // Create paired data from the two ranges
   const pairedRows: { [key: string]: string | number }[] = [];

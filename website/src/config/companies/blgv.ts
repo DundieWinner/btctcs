@@ -1,14 +1,14 @@
 import { Company, GoogleSheetData } from "@/config/types";
 import { ragnarProcessor } from "@/config/companies/ragnar";
-import { 
-  bitcoinOrange, 
-  bitcoinOrangeLight, 
+import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
+import {
+  bitcoinOrange,
   bitcoinOrangeMedium,
+  emeraldGreen,
+  emeraldGreenMedium,
   white,
   whiteGrid,
   whiteMedium,
-  emeraldGreen,
-  emeraldGreenMedium
 } from "@/config/colors";
 
 // Google Sheet Column Header Names
@@ -16,20 +16,20 @@ const COLUMN_HEADERS = {
   // Common columns
   DATE: "Date",
   DESCRIPTION: "Description",
-  
+
   // Bitcoin and Price columns
   BTC_PRICE_USD: "BTC Price (USD)",
   BTC_PURCHASE: "BTC Purchase",
   BTC_HELD: "BTC Held",
   CHANGE_IN_BTC: "Change in BTC",
-  
+
   // Share and Equity columns
   CLOSING_PRICE_USD: "Closing Price (USD)",
   FD_SHARE_COUNT: "FD Share Count",
   SATS_PER_FD_SHARE: "Sats / FD Share",
   SATS_EQ_PER_FD_SHARE: "Sats Eq. / FD Share",
   FWD_SATS_EQ_PER_FD_SHARE: "Fwd Sats Eq. / FD Share",
-  
+
   // Financial columns
   EST_CAD_BALANCE: "Est. CAD Balance",
   DEBT_CAD: "Debt (CAD)",
@@ -58,7 +58,7 @@ const blgvHistoricalProcessor = (
   const startDate = new Date("2025-07-17");
 
   // Define only the columns we actually need for charts
-  const requiredColumns = new Set([
+  const requiredColumns = new Set<string>([
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
     COLUMN_HEADERS.SATS_PER_FD_SHARE,
@@ -73,7 +73,7 @@ const blgvHistoricalProcessor = (
 
     // Only process required columns
     headers.forEach((header, index) => {
-      if (requiredColumns.has(header as any)) {
+      if (requiredColumns.has(header)) {
         const cellValue = rowValues[index];
         if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
           // Try to convert to number if it looks like a number
@@ -137,7 +137,7 @@ const blgvBitcoinPriceProcessor = (
   const rows: { [key: string]: string | number }[] = [];
 
   // Define only the columns we actually need for Bitcoin price chart
-  const requiredColumns = new Set([
+  const requiredColumns = new Set<string>([
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.BTC_PRICE_USD,
     COLUMN_HEADERS.BTC_PURCHASE,
@@ -150,7 +150,7 @@ const blgvBitcoinPriceProcessor = (
 
     // Only process required columns
     headers.forEach((header, index) => {
-      if (requiredColumns.has(header as any)) {
+      if (requiredColumns.has(header)) {
         const cellValue = rowValues[index];
         if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
           // Try to convert to number if it looks like a number
@@ -234,14 +234,20 @@ const blgvTreasuryActionsProcessor = (
     };
 
     // Convert all numerical values with debugging
-    const changeInBTC = convertToNumber(changeRaw, COLUMN_HEADERS.CHANGE_IN_BTC);
+    const changeInBTC = convertToNumber(
+      changeRaw,
+      COLUMN_HEADERS.CHANGE_IN_BTC,
+    );
     const btcHeldValue = convertToNumber(btcHeld, COLUMN_HEADERS.BTC_HELD);
     const estCADBalanceValue = convertToNumber(
       estCADBalance,
       COLUMN_HEADERS.EST_CAD_BALANCE,
     );
     const debtCADValue = convertToNumber(debtCAD, COLUMN_HEADERS.DEBT_CAD);
-    const fdShareCountValue = convertToNumber(fdShareCount, COLUMN_HEADERS.FD_SHARE_COUNT);
+    const fdShareCountValue = convertToNumber(
+      fdShareCount,
+      COLUMN_HEADERS.FD_SHARE_COUNT,
+    );
     const satsPerFDShareValue = convertToNumber(
       satsPerFDShare,
       COLUMN_HEADERS.SATS_PER_FD_SHARE,
@@ -398,104 +404,26 @@ export const blgvCompanyConfig: Company = {
       {
         id: "bitcoin-price-history",
         title: "Bitcoin Price History",
-        description: "Complete Bitcoin price history with purchase events (all data, no date filtering)",
+        description:
+          "Complete Bitcoin price history with purchase events (all data, no date filtering)",
         spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
         ranges: ["'BLGV Historical'!A1:S1000"],
         processor: blgvBitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",
-        charts: [{
-          type: "line",
-          title: "Bitcoin Acquisitions",
-          height: {
-            default: 400,
-            md: 550,
-            lg: 650,
-          },
-          animation: false,
-          datasets: [
-            {
-              label: "Bitcoin Price (USD)",
-              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.BTC_PRICE_USD },
-              borderColor: bitcoinOrange,
-              backgroundColor: bitcoinOrange,
-              tension: 0.1,
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              yAxisID: "btcPrice",
+        charts: [
+          createBitcoinAcquisitionsChart({
+            dateColumn: COLUMN_HEADERS.DATE,
+            priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
+            purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
+            title: "Bitcoin Acquisitions",
+            height: {
+              default: 400,
+              md: 550,
+              lg: 650,
             },
-            {
-              label: "BTC Purchase",
-              mapping: { 
-                x: COLUMN_HEADERS.DATE, 
-                y: COLUMN_HEADERS.BTC_PURCHASE,
-                yPosition: COLUMN_HEADERS.BTC_PRICE_USD, 
-                filter: {
-                  column: COLUMN_HEADERS.BTC_PURCHASE,
-                  condition: "nonzero"
-                },
-                pointSize: {
-                  column: COLUMN_HEADERS.BTC_PURCHASE,
-                  minSize: 8,
-                  maxSize: 20,
-                  scale: "sqrt"
-                }
-              },
-              borderColor: bitcoinOrange,
-              backgroundColor: bitcoinOrangeLight,
-              pointBackgroundColor: bitcoinOrange,
-              pointBorderColor: bitcoinOrange,
-              pointBorderWidth: 2,
-              showLine: false,
-              yAxisID: "btcPrice",
-            },
-          ],
-          axes: [
-            {
-              id: "x",
-              type: "time",
-              position: "bottom",
-              title: {
-                display: true,
-                text: "Date",
-                color: white,
-              },
-              grid: {
-                color: whiteGrid,
-              },
-            },
-            {
-              id: "btcPrice",
-              type: "logarithmic",
-              position: "left",
-              title: {
-                display: true,
-                text: "Bitcoin Price (USD)",
-                color: bitcoinOrange,
-              },
-              ticks: {
-                color: bitcoinOrange,
-                callback: "(value) => '$' + value.toLocaleString()",
-              },
-              grid: {
-                color: whiteGrid,
-              },
-            },
-          ],
-          plugins: {
-            legend: {
-              display: true,
-              position: "top",
-            },
-            tooltip: {
-              enabled: true,
-            },
-            watermark: {
-              enabled: true,
-              text: "btctcs.com",
-            },
-          },
-        }],
+          }),
+        ],
       },
       {
         id: "historical-performance",
@@ -506,138 +434,152 @@ export const blgvCompanyConfig: Company = {
         processor: blgvHistoricalProcessor,
         hasHeaders: true,
         renderLocation: "none",
-        charts: [{
-          type: "line",
-          title: "Historical Performance",
-          height: {
-            default: 350,
-            md: 500,
+        charts: [
+          {
+            type: "line",
+            title: "Historical Performance",
+            height: {
+              default: 350,
+              md: 500,
+            },
+            animation: false,
+            datasets: [
+              {
+                label: "Fwd Sats Eq. / FD Share",
+                mapping: {
+                  x: COLUMN_HEADERS.DATE,
+                  y: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+                },
+                borderColor: bitcoinOrange,
+                backgroundColor: bitcoinOrangeMedium,
+                tension: 0,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                yAxisID: "sats",
+              },
+              {
+                label: "Sats / FD Share",
+                mapping: {
+                  x: COLUMN_HEADERS.DATE,
+                  y: COLUMN_HEADERS.SATS_PER_FD_SHARE,
+                },
+                borderColor: "#f9cc8f",
+                backgroundColor: "#f9cc8f",
+                borderDash: [5, 5],
+                tension: 0,
+                pointRadius: 3,
+                pointHoverRadius: 7,
+                yAxisID: "sats",
+              },
+              {
+                label: "Share Price (USD)",
+                mapping: {
+                  x: COLUMN_HEADERS.DATE,
+                  y: COLUMN_HEADERS.CLOSING_PRICE_USD,
+                },
+                borderColor: white,
+                backgroundColor: whiteMedium,
+                borderDash: [5, 5],
+                tension: 0,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                yAxisID: "price",
+              },
+              {
+                label: "Fwd Eq. mNAV",
+                mapping: {
+                  x: COLUMN_HEADERS.DATE,
+                  y: COLUMN_HEADERS.FWD_EQ_MNAV,
+                },
+                borderColor: emeraldGreen,
+                backgroundColor: emeraldGreenMedium,
+                borderDash: [10, 5],
+                tension: 0,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                yAxisID: "mnav",
+              },
+            ],
+            axes: [
+              {
+                id: "x",
+                type: "time",
+                position: "bottom",
+                title: {
+                  display: true,
+                  text: "Date",
+                  color: white,
+                },
+                grid: {
+                  color: whiteGrid,
+                },
+              },
+              {
+                id: "sats",
+                type: "logarithmic",
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Sats",
+                  color: bitcoinOrange,
+                },
+                ticks: {
+                  color: bitcoinOrange,
+                },
+                grid: {
+                  color: whiteGrid,
+                },
+              },
+              {
+                id: "price",
+                type: "logarithmic",
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Share Price (USD)",
+                  color: white,
+                },
+                ticks: {
+                  color: white,
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+              },
+              {
+                id: "mnav",
+                type: "linear",
+                position: "right",
+                title: {
+                  display: true,
+                  text: "mNAV",
+                  color: emeraldGreen,
+                },
+                ticks: {
+                  color: emeraldGreen,
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+                offset: true,
+                beginAtZero: true,
+              },
+            ],
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              tooltip: {
+                enabled: true,
+              },
+              watermark: {
+                enabled: true,
+                text: "btctcs.com",
+              },
+            },
           },
-          animation: false,
-          datasets: [
-            {
-              label: "Fwd Sats Eq. / FD Share",
-              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE },
-              borderColor: bitcoinOrange,
-              backgroundColor: bitcoinOrangeMedium,
-              tension: 0,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              yAxisID: "sats",
-            },
-            {
-              label: "Sats / FD Share",
-              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.SATS_PER_FD_SHARE },
-              borderColor: "#f9cc8f",
-              backgroundColor: "#f9cc8f",
-              borderDash: [5, 5],
-              tension: 0,
-              pointRadius: 3,
-              pointHoverRadius: 7,
-              yAxisID: "sats",
-            },
-            {
-              label: "Share Price (USD)",
-              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.CLOSING_PRICE_USD },
-              borderColor: white,
-              backgroundColor: whiteMedium,
-              borderDash: [5, 5],
-              tension: 0,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              yAxisID: "price",
-            },
-            {
-              label: "Fwd Eq. mNAV",
-              mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_EQ_MNAV },
-              borderColor: emeraldGreen,
-              backgroundColor: emeraldGreenMedium,
-              borderDash: [10, 5],
-              tension: 0,
-              pointRadius: 2,
-              pointHoverRadius: 4,
-              yAxisID: "mnav",
-            },
-          ],
-          axes: [
-            {
-              id: "x",
-              type: "time",
-              position: "bottom",
-              title: {
-                display: true,
-                text: "Date",
-                color: white,
-              },
-              grid: {
-                color: whiteGrid,
-              },
-            },
-            {
-              id: "sats",
-              type: "logarithmic",
-              position: "left",
-              title: {
-                display: true,
-                text: "Sats",
-                color: bitcoinOrange,
-              },
-              ticks: {
-                color: bitcoinOrange,
-              },
-              grid: {
-                color: whiteGrid,
-              },
-            },
-            {
-              id: "price",
-              type: "logarithmic",
-              position: "right",
-              title: {
-                display: true,
-                text: "Share Price (USD)",
-                color: white,
-              },
-              ticks: {
-                color: white,
-              },
-              grid: {
-                drawOnChartArea: false,
-              },
-            },
-            {
-              id: "mnav",
-              type: "linear",
-              position: "right",
-              title: {
-                display: true,
-                text: "mNAV",
-                color: emeraldGreen,
-              },
-              ticks: {
-                color: emeraldGreen,
-              },
-              grid: {
-                drawOnChartArea: false,
-              },
-              offset: true,
-              beginAtZero: true,
-            },
-          ],
-          plugins: {
-            legend: {
-              display: true,
-              position: "top",
-            },
-            tooltip: {
-              enabled: true,
-            },
-            watermark: {
-              enabled: true,
-              text: "btctcs.com",
-            },
-          },
-        }],
+        ],
       },
     ],
   },
