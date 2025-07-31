@@ -1,30 +1,29 @@
-import { ChartConfiguration } from '../types';
-import {
-  bitcoinOrange,
-  bitcoinOrangeLight,
-  white,
-  whiteGrid,
-} from '../colors';
+import { ChartConfiguration } from "../types";
+import { bitcoinOrange, bitcoinOrangeLight, white, whiteGrid } from "../colors";
 
 export interface BitcoinAcquisitionsConfig {
   dateColumn: string;
   priceColumn: string;
   purchaseColumn: string;
   title?: string;
-  height?: number | {
-    default: number;
-    md?: number;
-    lg?: number;
-    xl?: number;
-    "2xl"?: number;
-  };
+  height?:
+    | number
+    | {
+        default: number;
+        md?: number;
+        lg?: number;
+        xl?: number;
+        "2xl"?: number;
+      };
 }
 
 /**
  * Creates a standardized Bitcoin acquisitions chart configuration
  * Shows Bitcoin price history with purchase events overlaid as scatter points
  */
-export function createBitcoinAcquisitionsChart(config: BitcoinAcquisitionsConfig): ChartConfiguration {
+export function createBitcoinAcquisitionsChart(
+  config: BitcoinAcquisitionsConfig,
+): ChartConfiguration {
   return {
     type: "line",
     title: config.title || "Bitcoin Acquisitions",
@@ -47,20 +46,20 @@ export function createBitcoinAcquisitionsChart(config: BitcoinAcquisitionsConfig
       },
       {
         label: "BTC Purchase",
-        mapping: { 
-          x: config.dateColumn, 
+        mapping: {
+          x: config.dateColumn,
           y: config.purchaseColumn,
-          yPosition: config.priceColumn, 
+          yPosition: config.priceColumn,
           filter: {
             column: config.purchaseColumn,
-            condition: "nonzero"
+            condition: "nonzero",
           },
           pointSize: {
             column: config.purchaseColumn,
             minSize: 8,
-            maxSize: 20,
-            scale: "sqrt"
-          }
+            maxSize: 18,
+            scale: "sqrt",
+          },
         },
         borderColor: bitcoinOrange,
         backgroundColor: bitcoinOrangeLight,
