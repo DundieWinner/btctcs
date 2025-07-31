@@ -57,23 +57,34 @@ const blgvHistoricalProcessor = (
   // Define the start date filter (July 17th, 2025)
   const startDate = new Date("2025-07-17");
 
+  // Define only the columns we actually need for charts
+  const requiredColumns = new Set([
+    COLUMN_HEADERS.DATE,
+    COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+    COLUMN_HEADERS.SATS_PER_FD_SHARE,
+    COLUMN_HEADERS.CLOSING_PRICE_USD,
+    COLUMN_HEADERS.FWD_EQ_MNAV,
+  ]);
+
   // Process each data row (skip header row)
   for (let i = 1; i < dataRange.values.length; i++) {
     const rowValues = dataRange.values[i];
     const rowData: { [key: string]: string | number } = {};
 
-    // Map each cell to its corresponding header
+    // Only process required columns
     headers.forEach((header, index) => {
-      const cellValue = rowValues[index];
-      if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-        // Try to convert to number if it looks like a number
-        const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-        const numValue = parseFloat(cleanValue);
+      if (requiredColumns.has(header as any)) {
+        const cellValue = rowValues[index];
+        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+          // Try to convert to number if it looks like a number
+          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
+          const numValue = parseFloat(cleanValue);
 
-        if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-          rowData[header] = numValue;
-        } else {
-          rowData[header] = String(cellValue).trim();
+          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
+            rowData[header] = numValue;
+          } else {
+            rowData[header] = String(cellValue).trim();
+          }
         }
       }
     });
@@ -125,23 +136,32 @@ const blgvBitcoinPriceProcessor = (
   const headers = dataRange.values[0];
   const rows: { [key: string]: string | number }[] = [];
 
+  // Define only the columns we actually need for Bitcoin price chart
+  const requiredColumns = new Set([
+    COLUMN_HEADERS.DATE,
+    COLUMN_HEADERS.BTC_PRICE_USD,
+    COLUMN_HEADERS.BTC_PURCHASE,
+  ]);
+
   // Process each data row (skip header row) - NO DATE FILTERING
   for (let i = 1; i < dataRange.values.length; i++) {
     const rowValues = dataRange.values[i];
     const rowData: { [key: string]: string | number } = {};
 
-    // Map each cell to its corresponding header
+    // Only process required columns
     headers.forEach((header, index) => {
-      const cellValue = rowValues[index];
-      if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-        // Try to convert to number if it looks like a number
-        const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-        const numValue = parseFloat(cleanValue);
+      if (requiredColumns.has(header as any)) {
+        const cellValue = rowValues[index];
+        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+          // Try to convert to number if it looks like a number
+          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
+          const numValue = parseFloat(cleanValue);
 
-        if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-          rowData[header] = numValue;
-        } else {
-          rowData[header] = String(cellValue).trim();
+          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
+            rowData[header] = numValue;
+          } else {
+            rowData[header] = String(cellValue).trim();
+          }
         }
       }
     });
