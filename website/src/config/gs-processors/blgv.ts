@@ -68,6 +68,8 @@ export const blgvHistoricalProcessor = (
     }
   }
 
+  console.log(rows);
+
   return { rows };
 };
 
@@ -97,9 +99,9 @@ export const blgvTreasuryActionsProcessor = (
     const btcHeld = row && row[3] ? String(row[3]).trim() : ""; // Column D (index 3)
     const estCADBalance = row && row[5] ? String(row[5]).trim() : ""; // Column F (index 5)
     const debtCAD = row && row[7] ? String(row[7]).trim() : ""; // Column H (index 7)
-    const fdShareCount = row && row[11] ? String(row[11]).trim() : ""; // Column L (index 11)
-    const satsPerFDShare = row && row[13] ? String(row[13]).trim() : ""; // Column N (index 13)
-    const satsEquityPerFDShare = row && row[15] ? String(row[15]).trim() : ""; // Column P (index 15)
+    const fdShareCount = row && row[13] ? String(row[13]).trim() : ""; // Column N (index 13)
+    const satsPerFDShare = row && row[15] ? String(row[15]).trim() : ""; // Column P (index 15)
+    const satsEquityPerFDShare = row && row[17] ? String(row[17]).trim() : ""; // Column R (index 17)
 
     // Helper function to convert to number with better parsing
     const convertToNumber = (
@@ -144,7 +146,7 @@ export const blgvTreasuryActionsProcessor = (
     );
     const satsEquityPerFDShareValue = convertToNumber(
       satsEquityPerFDShare,
-      "Sats Equity / FD Share",
+      "Sats Eq. / FD Share",
     );
 
     // Only include rows where we have at least a date and description
@@ -158,7 +160,7 @@ export const blgvTreasuryActionsProcessor = (
         "Debt (CAD)": debtCADValue,
         "FD Share Count": fdShareCountValue,
         "Sats / FD Share": satsPerFDShareValue,
-        "Sats Equity / FD Share": satsEquityPerFDShareValue,
+        "Sats Eq. / FD Share": satsEquityPerFDShareValue,
       });
     }
   }

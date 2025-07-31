@@ -9,7 +9,6 @@ interface CompanyHeaderProps {
 }
 
 export default function CompanyHeader({
-  company,
   companyData,
   companyName,
 }: CompanyHeaderProps) {

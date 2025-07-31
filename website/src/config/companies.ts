@@ -81,14 +81,14 @@ export const companies: Company[] = [
             {
               key: "Sats / FD Share",
               type: "number",
-              decimals: 8,
+              decimals: 1,
               thousandsSeparator: true,
               textAlign: "right",
             },
             {
-              key: "Sats Equity / FD Share",
+              key: "Sats Eq. / FD Share",
               type: "number",
-              decimals: 8,
+              decimals: 1,
               thousandsSeparator: true,
               textAlign: "right",
             },
@@ -124,9 +124,9 @@ export const companies: Company[] = [
             "BTC Held": "140px",
             "Est. CAD Balance": "150px",
             "Debt (CAD)": "130px",
-            "FD Share Count": "140px",
-            "Sats / FD Share": "150px",
-            "Sats Equity / FD Share": "170px",
+            "FD Share Count": "150px",
+            "Sats / FD Share": "130px",
+            "Sats Eq. / FD Share": "130px",
           },
         },
         {
@@ -135,7 +135,7 @@ export const companies: Company[] = [
           description:
             "Historical performance tracking of key financial metrics",
           spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
-          ranges: ["'BLGV Historical'!A1:Q1000"],
+          ranges: ["'BLGV Historical'!A1:S1000"],
           processor: blgvHistoricalProcessor,
           hasHeaders: true,
           renderLocation: "none",
@@ -149,12 +149,23 @@ export const companies: Company[] = [
             animation: false,
             datasets: [
               {
-                label: "Equity Sats / FD Share",
-                mapping: { x: "Date", y: "Equity Sats / Share" },
+                label: "Fwd Sats Eq. / FD Share",
+                mapping: { x: "Date", y: "Fwd Sats Eq. / FD Share" },
                 borderColor: "#f3991f",
                 backgroundColor: "rgba(243, 153, 31, 0.2)",
                 tension: 0,
                 pointRadius: 5,
+                pointHoverRadius: 7,
+                yAxisID: "sats",
+              },
+              {
+                label: "Sats / FD Share",
+                mapping: { x: "Date", y: "Sats / FD Share" },
+                borderColor: "#f9cc8f",
+                backgroundColor: "#f9cc8f",
+                borderDash: [5, 5],
+                tension: 0,
+                pointRadius: 3,
                 pointHoverRadius: 7,
                 yAxisID: "sats",
               },
@@ -201,7 +212,7 @@ export const companies: Company[] = [
                 position: "left",
                 title: {
                   display: true,
-                  text: "Sats Per Share",
+                  text: "Sats",
                   color: "#f3991f",
                 },
                 ticks: {
@@ -233,7 +244,7 @@ export const companies: Company[] = [
                 position: "right",
                 title: {
                   display: true,
-                  text: "Fwd Eq. mNAV",
+                  text: "mNAV",
                   color: "#10b981",
                 },
                 ticks: {
