@@ -6,6 +6,7 @@ import {
   createTreasuryActionsProcessor,
   ragnarProcessor,
 } from "@/config/processors";
+import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 
 const COLUMN_HEADERS = {
   // Common columns
@@ -79,7 +80,7 @@ export const coinsiliumCompanyConfig: Company = {
         title: "Ragnar Stats",
         description:
           "Data extracted from <a href='https://x.com/RoaringRagnar' target='_blank' rel='noopener noreferrer'>@RoaringRagnar</a>'s open-source <a href='https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
-        spreadsheetId: "1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE",
+        spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
         ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!G2:G70"],
         processor: ragnarProcessor,
         renderLocation: "sidebar",
@@ -89,7 +90,7 @@ export const coinsiliumCompanyConfig: Company = {
         title: "Treasury Actions",
         description:
           "Data extracted from BTCTC's <a href='https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing' target='_blank' rel='noopener noreferrer'>community-sheet</a>.",
-        spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
+        spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'Coinsilium Treasury Actions'!A1:AA1000"],
         processor: treasuryActionsProcessor,
         renderLocation: "bottom",
@@ -177,7 +178,7 @@ export const coinsiliumCompanyConfig: Company = {
         title: "Bitcoin Price History",
         description:
           "Complete Bitcoin price history with purchase events (all data, no date filtering)",
-        spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
+        spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'Coinsilium Historical'!A1:S1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
