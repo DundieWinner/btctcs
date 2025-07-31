@@ -89,7 +89,20 @@ export interface TableStyle {
 export interface ChartDataMapping {
   x: string; // Column name for X-axis data
   y: string; // Column name for Y-axis data
+  yPosition?: string; // Optional column for Y-axis positioning (different from tooltip value)
   label?: string; // Optional label override for this dataset
+  filter?: {
+    column: string; // Column name to filter on
+    condition: "nonzero" | "zero" | "nonempty" | "empty" | "greater" | "less" | "equals" | "custom"; // Filter condition type
+    value?: string | number; // Value to compare against (for greater, less, equals)
+    customFunction?: string; // Custom filter function as string (for custom condition)
+  }; // Optional filtering configuration
+  pointSize?: {
+    column: string; // Column name to use for point sizing
+    minSize: number; // Minimum point radius
+    maxSize: number; // Maximum point radius
+    scale?: "linear" | "logarithmic" | "sqrt"; // Scaling method (default: linear)
+  }; // Optional dynamic point sizing
 }
 
 export interface ChartDataset {
@@ -101,6 +114,10 @@ export interface ChartDataset {
   tension?: number; // Line tension (0 = straight lines)
   pointRadius?: number; // Point size
   pointHoverRadius?: number; // Point size on hover
+  pointBackgroundColor?: string; // Point background color
+  pointBorderColor?: string; // Point border color
+  pointBorderWidth?: number; // Point border width
+  showLine?: boolean; // Whether to show connecting lines (default: true)
   yAxisID?: string; // Which Y-axis to use
   hidden?: boolean; // Start hidden
 }

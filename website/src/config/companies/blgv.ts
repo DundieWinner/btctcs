@@ -72,6 +72,54 @@ const blgvHistoricalProcessor = (
   return { rows };
 };
 
+// Processor for BLGV Bitcoin acquisitions chart data (no date filtering)
+const blgvBitcoinPriceProcessor = (
+  rangeData: {
+    range: string;
+    majorDimension: string;
+    values?: string[][];
+  }[],
+): GoogleSheetData => {
+  const dataRange = rangeData[0]; // Single range with all data
+
+  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
+    return { rows: [] };
+  }
+
+  // First row contains headers
+  const headers = dataRange.values[0];
+  const rows: { [key: string]: string | number }[] = [];
+
+  // Process each data row (skip header row) - NO DATE FILTERING
+  for (let i = 1; i < dataRange.values.length; i++) {
+    const rowValues = dataRange.values[i];
+    const rowData: { [key: string]: string | number } = {};
+
+    // Map each cell to its corresponding header
+    headers.forEach((header, index) => {
+      const cellValue = rowValues[index];
+      if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+        // Try to convert to number if it looks like a number
+        const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
+        const numValue = parseFloat(cleanValue);
+
+        if (!isNaN(numValue) && header !== "Date") {
+          rowData[header] = numValue;
+        } else {
+          rowData[header] = String(cellValue).trim();
+        }
+      }
+    });
+
+    // Add all rows that have at least a date (no date filtering)
+    if (rowData["Date"]) {
+      rows.push(rowData);
+    }
+  }
+
+  return { rows };
+};
+
 const blgvTreasuryActionsProcessor = (
   rangeData: {
     range: string;
@@ -291,6 +339,108 @@ export const blgvCompanyConfig: Company = {
           "Sats / FD Share": "130px",
           "Sats Eq. / FD Share": "130px",
         },
+      },
+      {
+        id: "bitcoin-price-history",
+        title: "Bitcoin Price History",
+        description: "Complete Bitcoin price history with purchase events (all data, no date filtering)",
+        spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
+        ranges: ["'BLGV Historical'!A1:S1000"],
+        processor: blgvBitcoinPriceProcessor,
+        hasHeaders: true,
+        renderLocation: "none",
+        charts: [{
+          type: "line",
+          title: "Bitcoin Acquisitions",
+          height: {
+            default: 400,
+            md: 550,
+            lg: 650,
+          },
+          animation: false,
+          datasets: [
+            {
+              label: "Bitcoin Price (USD)",
+              mapping: { x: "Date", y: "BTC Price (USD)" },
+              borderColor: "#f3991f",
+              backgroundColor: "rgba(243, 153, 31, 0.1)",
+              tension: 0.1,
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              yAxisID: "btcPrice",
+            },
+            {
+              label: "BTC Purchase",
+              mapping: { 
+                x: "Date", 
+                y: "BTC Purchase",
+                yPosition: "BTC Price (USD)", 
+                filter: {
+                  column: "BTC Purchase",
+                  condition: "nonzero"
+                },
+                pointSize: {
+                  column: "BTC Purchase",
+                  minSize: 8,
+                  maxSize: 20,
+                  scale: "sqrt"
+                }
+              },
+              borderColor: "#f3991f",
+              backgroundColor: "rgba(243, 153, 31, 0.1)",
+              pointBackgroundColor: "#f3991f",
+              pointBorderColor: "#f3991f",
+              pointBorderWidth: 2,
+              showLine: false,
+              yAxisID: "btcPrice",
+            },
+          ],
+          axes: [
+            {
+              id: "x",
+              type: "time",
+              position: "bottom",
+              title: {
+                display: true,
+                text: "Date",
+                color: "#ffffff",
+              },
+              grid: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+            {
+              id: "btcPrice",
+              type: "logarithmic",
+              position: "left",
+              title: {
+                display: true,
+                text: "Bitcoin Price (USD)",
+                color: "#f3991f",
+              },
+              ticks: {
+                color: "#f3991f",
+                callback: "(value) => '$' + value.toLocaleString()",
+              },
+              grid: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          ],
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+            },
+            tooltip: {
+              enabled: true,
+            },
+            watermark: {
+              enabled: true,
+              text: "btctcs.com",
+            },
+          },
+        }],
       },
       {
         id: "historical-performance",
