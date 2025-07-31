@@ -7,6 +7,8 @@ import {
   ragnarProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
+import { DESCRIPTIONS } from "@/config/extractions/descriptions";
+import { DISCLOSURES } from "./disclosures";
 
 // Google Sheet Column Header Names
 const COLUMN_HEADERS = {
@@ -33,7 +35,6 @@ const COLUMN_HEADERS = {
   FWD_EQ_MNAV: "Fwd Eq. mNAV",
 } as const;
 
-// Processor for BLGV Historical chart data
 const blgvHistoricalProcessor = createColumnFilterProcessor({
   requiredColumns: [
     COLUMN_HEADERS.DATE,
@@ -43,7 +44,7 @@ const blgvHistoricalProcessor = createColumnFilterProcessor({
     COLUMN_HEADERS.FWD_EQ_MNAV,
   ],
   dateColumn: COLUMN_HEADERS.DATE,
-  startDate: "2025-07-17", // Filter to July 17th, 2025 and after
+  startDate: "2025-07-17",
 });
 
 const blgvBitcoinPriceProcessor = createColumnFilterProcessor({
@@ -76,8 +77,7 @@ const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
 export const blgvCompanyConfig: Company = {
   id: "blgv",
   name: "Belgravia Hartford",
-  disclosure:
-    "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592) as well as BTCTCs's [community-sheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?gid=1527424383#gid=1527424383).",
+  disclosure: DISCLOSURES.ragnarAndBtctcs(),
   emoji: "🇨🇦",
   curators: [
     {
@@ -91,8 +91,7 @@ export const blgvCompanyConfig: Company = {
       {
         id: "ragnar",
         title: "Ragnar Stats",
-        description:
-          "Data extracted from <a href='https://x.com/RoaringRagnar' target='_blank' rel='noopener noreferrer'>@RoaringRagnar</a>'s open-source <a href='https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
+        description: DESCRIPTIONS.ragnarStats(),
         spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
         ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!H2:H70"],
         processor: ragnarProcessor,
@@ -101,8 +100,7 @@ export const blgvCompanyConfig: Company = {
       {
         id: "history",
         title: "Treasury Actions",
-        description:
-          "Data extracted from BTCTC's <a href='https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing' target='_blank' rel='noopener noreferrer'>community-sheet</a>.",
+        description: DESCRIPTIONS.treasuryActions(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'BLGV Treasury Actions'!A1:AA1000"],
         processor: blgvTreasuryActionsProcessor,
@@ -198,8 +196,7 @@ export const blgvCompanyConfig: Company = {
       {
         id: "bitcoin-price-history",
         title: "Bitcoin Price History",
-        description:
-          "Complete Bitcoin price history with purchase events (all data, no date filtering)",
+        description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'BLGV Historical'!A1:S1000"],
         processor: blgvBitcoinPriceProcessor,
@@ -222,7 +219,7 @@ export const blgvCompanyConfig: Company = {
       {
         id: "historical-performance",
         title: "Historical Performance",
-        description: "Historical performance tracking of key financial metrics",
+        description: DESCRIPTIONS.historicalPerformance(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'BLGV Historical'!A1:S1000"],
         processor: blgvHistoricalProcessor,

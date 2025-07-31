@@ -1,12 +1,13 @@
 import { ragnarProcessor } from "@/config/processors";
 import { Company } from "@/config/types";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
+import { DESCRIPTIONS } from "@/config/extractions/descriptions";
+import { DISCLOSURES } from "./disclosures";
 
 export const metaplanetCompanyConfig: Company = {
   id: "metaplanet",
   name: "Metaplanet",
-  disclosure:
-    "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592).",
+  disclosure: DISCLOSURES.ragnarOnly(),
   emoji: "🇯🇵",
   curators: [
     {
@@ -20,8 +21,7 @@ export const metaplanetCompanyConfig: Company = {
       {
         id: "ragnar",
         title: "Ragnar Stats",
-        description:
-          "Data extracted from <a href='https://x.com/RoaringRagnar' target='_blank' rel='noopener noreferrer'>@RoaringRagnar</a>'s open-source <a href='https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
+        description: DESCRIPTIONS.ragnarStats(),
         spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
         ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!C2:C70"],
         processor: ragnarProcessor,

@@ -7,6 +7,8 @@ import {
   ragnarProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
+import { DESCRIPTIONS } from "@/config/extractions/descriptions";
+import { DISCLOSURES } from "./disclosures";
 
 const COLUMN_HEADERS = {
   // Common columns
@@ -63,8 +65,7 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
 export const coinsiliumCompanyConfig: Company = {
   id: "coinsilium",
   name: "Coinsilium",
-  disclosure:
-    "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592) as well as BTCTCs's [community-sheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?gid=1527424383#gid=1527424383).",
+  disclosure: DISCLOSURES.ragnarAndBtctcs(),
   emoji: "🇬🇧",
   curators: [
     {
@@ -78,8 +79,7 @@ export const coinsiliumCompanyConfig: Company = {
       {
         id: "ragnar",
         title: "Ragnar Stats",
-        description:
-          "Data extracted from <a href='https://x.com/RoaringRagnar' target='_blank' rel='noopener noreferrer'>@RoaringRagnar</a>'s open-source <a href='https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
+        description: DESCRIPTIONS.ragnarStats(),
         spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
         ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!G2:G70"],
         processor: ragnarProcessor,
@@ -88,8 +88,7 @@ export const coinsiliumCompanyConfig: Company = {
       {
         id: "history",
         title: "Treasury Actions",
-        description:
-          "Data extracted from BTCTC's <a href='https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing' target='_blank' rel='noopener noreferrer'>community-sheet</a>.",
+        description: DESCRIPTIONS.treasuryActions(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'Coinsilium Treasury Actions'!A1:AA1000"],
         processor: treasuryActionsProcessor,
@@ -176,8 +175,7 @@ export const coinsiliumCompanyConfig: Company = {
       {
         id: "bitcoin-price-history",
         title: "Bitcoin Price History",
-        description:
-          "Complete Bitcoin price history with purchase events (all data, no date filtering)",
+        description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'Coinsilium Historical'!A1:S1000"],
         processor: bitcoinPriceProcessor,
