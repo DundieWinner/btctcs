@@ -7,7 +7,6 @@ import KeyStatistics from "@/components/KeyStatistics";
 import GoogleSheetsSection from "@/components/GoogleSheetsSection";
 import CompanyNavigation from "@/components/CompanyNavigation";
 import CompanyHeader from "@/components/CompanyHeader";
-import CuratorsSection from "@/components/CuratorsSection";
 import LoadingDashboard from "@/components/LoadingDashboard";
 import ErrorDashboard from "@/components/ErrorDashboard";
 import { getCompanyById } from "@/config/companies";
@@ -89,7 +88,7 @@ async function CompanyDashboard({ company }: { company: string }) {
     const chartExtractions = getChartExtractions(extractedData, companyData);
 
     return (
-      <div className="min-h-screen p-3 sm:py-8">
+      <div className="min-h-screen px-2 py-3 sm:px-3 sm:py-8">
         <div className="max-w-[115rem] mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header */}
           <CompanyHeader
@@ -133,9 +132,6 @@ async function CompanyDashboard({ company }: { company: string }) {
               {sidebarExtractions.length > 0 && (
                 <GoogleSheetsSection extractions={sidebarExtractions} />
               )}
-
-              {/* Curators */}
-              <CuratorsSection companyData={companyData} />
             </div>
           </div>
 

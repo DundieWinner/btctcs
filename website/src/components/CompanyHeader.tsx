@@ -1,6 +1,8 @@
 import Link from "next/link";
 import MarkdownLinkParser from "./MarkdownLinkParser";
 import { getCompanyById } from "@/config/companies";
+import React from "react";
+import CuratorsSection from "@/components/CuratorsSection";
 
 interface CompanyHeaderProps {
   company: string;
@@ -25,19 +27,23 @@ export default function CompanyHeader({
           </span>
         </nav>
       </div>
-
       <h1
         className="text-3xl sm:text-4xl md:text-6xl font-bold"
         style={{ color: "rgb(249, 115, 22)" }}
       >
         {companyData?.emoji} {companyName}
       </h1>
-      {companyData?.disclosure && (
-        <MarkdownLinkParser
-          text={companyData.disclosure}
-          className="mt-4 text-xs sm:text-sm lg:text-md text-gray-300"
-        />
-      )}
+      <div className={"flex flex-col gap-2 text-xs sm:text-sm lg:text-md "}>
+        {companyData?.disclosure && (
+          <MarkdownLinkParser
+            text={companyData.disclosure}
+            className="mt-4 text-gray-300"
+          />
+        )}
+
+        {/* Curators */}
+        <CuratorsSection companyData={companyData} />
+      </div>
     </header>
   );
 }

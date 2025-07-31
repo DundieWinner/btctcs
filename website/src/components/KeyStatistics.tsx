@@ -16,7 +16,7 @@ export default function KeyStatistics({ keyStatistics }: KeyStatisticsProps) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2 md:gap-4 mb-8">
       {sortedStats.map((stat) => {
         const defaultStyle = {
           backgroundColor: "rgb(3, 7, 18, 0.9)",

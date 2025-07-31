@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { getCompanyById } from "@/config/companies";
 
@@ -11,40 +12,32 @@ export default function CuratorsSection({ companyData }: CuratorsSectionProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className="text-gray-400 text-sm items-center">Curators:</div>
-      <div className="flex flex-wrap gap-2 sm:gap-4">
-        {companyData.curators.map((curator, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <span className="text-gray-300">{curator.name}</span>
-            <div className="flex gap-1">
-              <Link
-                href={`https://github.com/${curator.github}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-orange-500 hover:text-orange-400 transition-colors"
-                title={`${curator.name} on GitHub`}
-              >
-                GitHub
-              </Link>
-              {curator.x && (
-                <>
-                  <span className="text-gray-500">•</span>
-                  <Link
-                    href={`https://x.com/${curator.x}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-orange-500 hover:text-orange-400 transition-colors"
-                    title={`${curator.name} on X`}
-                  >
-                    X
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+    <div className="flex flex-wrap gap-x-0 gap-y-1 items-center">
+      <div className="text-gray-400">
+        Curator{companyData.curators.length > 1 && "s"}:
       </div>
+      {companyData.curators.map((curator, index) => (
+        <React.Fragment key={`${curator.name}-${index}`}>
+          <span className={index === 0 ? "ml-2" : ""}>
+            {index > 0 && ", "}
+            <Link
+              href={
+                curator.x
+                  ? `https://x.com/${curator.x}`
+                  : `https://github.com/${curator.github}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-500 hover:text-orange-400 transition-colors"
+              title={
+                curator.x ? `${curator.name} on X` : `${curator.name} on GitHub`
+              }
+            >
+              {curator.name}
+            </Link>
+          </span>
+        </React.Fragment>
+      ))}
     </div>
   );
 }

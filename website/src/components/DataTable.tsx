@@ -118,7 +118,7 @@ export default function DataTable({ extraction }: DataTableProps) {
       }}
     >
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs md:text-sm">
           {extraction.hasHeaders && rows.length > 0 && (
             <thead>
               <tr
@@ -222,7 +222,7 @@ export default function DataTable({ extraction }: DataTableProps) {
                       return (
                         <td
                           key={columnKey}
-                          className="py-1 px-2 md:whitespace-nowrap"
+                          className="py-1 px-2 whitespace-nowrap"
                           style={combinedStyles}
                         >
                           {formattedValue}
