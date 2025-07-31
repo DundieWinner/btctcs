@@ -1,5 +1,5 @@
-import { Company, GoogleSheetData } from "@/config/types";
 import { ragnarProcessor } from "@/config/companies/ragnar";
+import { Company, GoogleSheetData } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import {
   bitcoinOrange,
@@ -25,100 +25,18 @@ const COLUMN_HEADERS = {
 
   // Share and Equity columns
   CLOSING_PRICE_USD: "Closing Price (USD)",
-  FD_SHARE_COUNT: "FD Share Count",
-  SATS_PER_FD_SHARE: "Sats / FD Share",
+  SHARE_COUNT: "Share Count",
+  SATS_PER_SHARE: "Sats / Share",
+  FWD_SATS_PER_SHARE: "Fwd Sats / Share",
   SATS_EQ_PER_FD_SHARE: "Sats Eq. / FD Share",
   FWD_SATS_EQ_PER_FD_SHARE: "Fwd Sats Eq. / FD Share",
 
   // Financial columns
-  EST_CAD_BALANCE: "Est. CAD Balance",
-  DEBT_CAD: "Debt (CAD)",
-  FWD_EQ_MNAV: "Fwd Eq. mNAV",
+  EST_GBP_BALANCE: "Est. Fiat Balance (GBP)",
+  FWD_MNAV: "Fwd mNAV",
 } as const;
 
-// Processor for BLGV Historical chart data
-const blgvHistoricalProcessor = (
-  rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[],
-): GoogleSheetData => {
-  const dataRange = rangeData[0]; // Single range with all data
-
-  if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
-    return { rows: [] };
-  }
-
-  // First row contains headers
-  const headers = dataRange.values[0];
-  const rows: { [key: string]: string | number }[] = [];
-
-  // Define the start date filter (July 17th, 2025)
-  const startDate = new Date("2025-07-17");
-
-  // Define only the columns we actually need for charts
-  const requiredColumns = new Set<string>([
-    COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
-    COLUMN_HEADERS.SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.CLOSING_PRICE_USD,
-    COLUMN_HEADERS.FWD_EQ_MNAV,
-  ]);
-
-  // Process each data row (skip header row)
-  for (let i = 1; i < dataRange.values.length; i++) {
-    const rowValues = dataRange.values[i];
-    const rowData: { [key: string]: string | number } = {};
-
-    // Only process required columns
-    headers.forEach((header, index) => {
-      if (requiredColumns.has(header)) {
-        const cellValue = rowValues[index];
-        if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-          // Try to convert to number if it looks like a number
-          const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
-          const numValue = parseFloat(cleanValue);
-
-          if (!isNaN(numValue) && header !== COLUMN_HEADERS.DATE) {
-            rowData[header] = numValue;
-          } else {
-            rowData[header] = String(cellValue).trim();
-          }
-        }
-      }
-    });
-
-    // Only add rows that have at least a date and are on or after July 17th, 2025
-    if (rowData[COLUMN_HEADERS.DATE]) {
-      // Parse the date from the row
-      const rowDateStr = String(rowData[COLUMN_HEADERS.DATE]).trim();
-      let rowDate: Date;
-
-      // Handle different date formats
-      if (rowDateStr.includes("/")) {
-        // Handle M/D/YYYY format
-        const [month, day, year] = rowDateStr.split("/");
-        rowDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      } else if (rowDateStr.includes("-")) {
-        // Handle YYYY-MM-DD format
-        rowDate = new Date(rowDateStr);
-      } else {
-        // Fallback to direct parsing
-        rowDate = new Date(rowDateStr);
-      }
-
-      // Only include rows on or after July 17th, 2025
-      if (rowDate >= startDate) {
-        rows.push(rowData);
-      }
-    }
-  }
-
-  return { rows };
-};
-
-const blgvBitcoinPriceProcessor = (
+const bitcoinPriceProcessor = (
   rangeData: {
     range: string;
     majorDimension: string;
@@ -140,6 +58,9 @@ const blgvBitcoinPriceProcessor = (
     COLUMN_HEADERS.DATE,
     COLUMN_HEADERS.BTC_PRICE_USD,
     COLUMN_HEADERS.BTC_PURCHASE,
+    COLUMN_HEADERS.SATS_PER_SHARE,
+    COLUMN_HEADERS.FWD_SATS_PER_SHARE,
+    COLUMN_HEADERS.FWD_MNAV,
   ]);
 
   // Process each data row (skip header row) - NO DATE FILTERING
@@ -174,7 +95,7 @@ const blgvBitcoinPriceProcessor = (
   return { rows };
 };
 
-const blgvTreasuryActionsProcessor = (
+const treasuryActionsProcessor = (
   rangeData: {
     range: string;
     majorDimension: string;
@@ -198,11 +119,10 @@ const blgvTreasuryActionsProcessor = (
     const description = row && row[1] ? String(row[1]).trim() : ""; // Column B
     const changeRaw = row && row[2] ? String(row[2]).trim() : ""; // Column C (index 2)
     const btcHeld = row && row[3] ? String(row[3]).trim() : ""; // Column D (index 3)
-    const estCADBalance = row && row[5] ? String(row[5]).trim() : ""; // Column F (index 5)
-    const debtCAD = row && row[7] ? String(row[7]).trim() : ""; // Column H (index 7)
-    const fdShareCount = row && row[13] ? String(row[13]).trim() : ""; // Column N (index 13)
-    const satsPerFDShare = row && row[15] ? String(row[15]).trim() : ""; // Column P (index 15)
-    const satsEquityPerFDShare = row && row[17] ? String(row[17]).trim() : ""; // Column R (index 17)
+    const estGBPBalance = row && row[5] ? String(row[5]).trim() : ""; // Column F (index 5)
+    const shareCount = row && row[7] ? String(row[7]).trim() : ""; // Column H (index 7)
+    const satsPerShare = row && row[9] ? String(row[9]).trim() : ""; // Column J (index 9)
+    const fwdSatsPerShare = row && row[11] ? String(row[11]).trim() : ""; // Column L (index 11)
 
     // Helper function to convert to number with better parsing
     const convertToNumber = (
@@ -216,7 +136,7 @@ const blgvTreasuryActionsProcessor = (
 
       // Clean the value - remove commas, currency symbols, and extra spaces
       let cleanValue = value.toString().trim();
-      cleanValue = cleanValue.replace(/[,$]/g, ""); // Remove commas and dollar signs
+      cleanValue = cleanValue.replace(/[,£]/g, ""); // Remove commas and dollar signs
       cleanValue = cleanValue.replace(/\s+/g, ""); // Remove all whitespace
 
       // Handle negative values in parentheses (accounting format)
@@ -238,22 +158,21 @@ const blgvTreasuryActionsProcessor = (
       COLUMN_HEADERS.CHANGE_IN_BTC,
     );
     const btcHeldValue = convertToNumber(btcHeld, COLUMN_HEADERS.BTC_HELD);
-    const estCADBalanceValue = convertToNumber(
-      estCADBalance,
-      COLUMN_HEADERS.EST_CAD_BALANCE,
+    const estGBPBalanceValue = convertToNumber(
+      estGBPBalance,
+      COLUMN_HEADERS.EST_GBP_BALANCE,
     );
-    const debtCADValue = convertToNumber(debtCAD, COLUMN_HEADERS.DEBT_CAD);
-    const fdShareCountValue = convertToNumber(
-      fdShareCount,
-      COLUMN_HEADERS.FD_SHARE_COUNT,
+    const shareCountValue = convertToNumber(
+      shareCount,
+      COLUMN_HEADERS.SHARE_COUNT,
     );
-    const satsPerFDShareValue = convertToNumber(
-      satsPerFDShare,
-      COLUMN_HEADERS.SATS_PER_FD_SHARE,
+    const satsPerShareValue = convertToNumber(
+      satsPerShare,
+      COLUMN_HEADERS.SATS_PER_SHARE,
     );
-    const satsEquityPerFDShareValue = convertToNumber(
-      satsEquityPerFDShare,
-      COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
+    const fwdSatsPerShareValue = convertToNumber(
+      fwdSatsPerShare,
+      COLUMN_HEADERS.FWD_SATS_PER_SHARE,
     );
 
     // Only include rows where we have at least a date and description
@@ -263,26 +182,27 @@ const blgvTreasuryActionsProcessor = (
         [COLUMN_HEADERS.DESCRIPTION]: description,
         [COLUMN_HEADERS.CHANGE_IN_BTC]: changeInBTC,
         [COLUMN_HEADERS.BTC_HELD]: btcHeldValue,
-        [COLUMN_HEADERS.EST_CAD_BALANCE]: estCADBalanceValue,
-        [COLUMN_HEADERS.DEBT_CAD]: debtCADValue,
-        [COLUMN_HEADERS.FD_SHARE_COUNT]: fdShareCountValue,
-        [COLUMN_HEADERS.SATS_PER_FD_SHARE]: satsPerFDShareValue,
-        [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: satsEquityPerFDShareValue,
+        [COLUMN_HEADERS.EST_GBP_BALANCE]: estGBPBalanceValue,
+        [COLUMN_HEADERS.SHARE_COUNT]: shareCountValue,
+        [COLUMN_HEADERS.SATS_PER_SHARE]: satsPerShareValue,
+        [COLUMN_HEADERS.FWD_SATS_PER_SHARE]: fwdSatsPerShareValue,
       });
     }
   }
+
+  console.log(dataRange.values);
 
   return {
     rows: treasuryActions,
   };
 };
 
-export const blgvCompanyConfig: Company = {
-  id: "blgv",
-  name: "Belgravia Hartford",
+export const coinsiliumCompanyConfig: Company = {
+  id: "coinsilium",
+  name: "Coinsilium",
   disclosure:
     "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592) as well as BTCTCs's [community-sheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?gid=1527424383#gid=1527424383).",
-  emoji: "🇨🇦",
+  emoji: "🇬🇧",
   curators: [
     {
       name: "DunderHodl",
@@ -298,7 +218,7 @@ export const blgvCompanyConfig: Company = {
         description:
           "Data extracted from <a href='https://x.com/RoaringRagnar' target='_blank' rel='noopener noreferrer'>@RoaringRagnar</a>'s open-source <a href='https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592' target='_blank' rel='noopener noreferrer'>Google Sheet</a>.",
         spreadsheetId: "1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE",
-        ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!H2:H70"],
+        ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!G2:G70"],
         processor: ragnarProcessor,
         renderLocation: "sidebar",
       },
@@ -308,8 +228,8 @@ export const blgvCompanyConfig: Company = {
         description:
           "Data extracted from BTCTC's <a href='https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing' target='_blank' rel='noopener noreferrer'>community-sheet</a>.",
         spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
-        ranges: ["'BLGV Treasury Actions'!A1:AA1000"],
-        processor: blgvTreasuryActionsProcessor,
+        ranges: ["'Coinsilium Treasury Actions'!A1:AA1000"],
+        processor: treasuryActionsProcessor,
         renderLocation: "bottom",
         hasHeaders: true,
 
@@ -330,33 +250,27 @@ export const blgvCompanyConfig: Company = {
             textAlign: "right",
           },
           {
-            key: COLUMN_HEADERS.EST_CAD_BALANCE,
+            key: COLUMN_HEADERS.EST_GBP_BALANCE,
             type: "currency",
             decimals: 0,
             textAlign: "right",
           },
           {
-            key: COLUMN_HEADERS.DEBT_CAD,
-            type: "currency",
-            decimals: 2,
-            textAlign: "right",
-          },
-          {
-            key: COLUMN_HEADERS.FD_SHARE_COUNT,
+            key: COLUMN_HEADERS.SHARE_COUNT,
             type: "number",
             decimals: 0,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: COLUMN_HEADERS.SATS_PER_FD_SHARE,
+            key: COLUMN_HEADERS.SATS_PER_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
             textAlign: "right",
           },
           {
-            key: COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
+            key: COLUMN_HEADERS.FWD_SATS_PER_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
@@ -385,18 +299,15 @@ export const blgvCompanyConfig: Company = {
             },
           },
         ],
-
-        // Column widths for better layout
         columnWidths: {
           [COLUMN_HEADERS.DATE]: "120px",
           [COLUMN_HEADERS.DESCRIPTION]: "250px",
           [COLUMN_HEADERS.CHANGE_IN_BTC]: "140px",
           [COLUMN_HEADERS.BTC_HELD]: "140px",
-          [COLUMN_HEADERS.EST_CAD_BALANCE]: "150px",
-          [COLUMN_HEADERS.DEBT_CAD]: "130px",
-          [COLUMN_HEADERS.FD_SHARE_COUNT]: "150px",
-          [COLUMN_HEADERS.SATS_PER_FD_SHARE]: "130px",
-          [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: "130px",
+          [COLUMN_HEADERS.EST_GBP_BALANCE]: "150px",
+          [COLUMN_HEADERS.SHARE_COUNT]: "150px",
+          [COLUMN_HEADERS.SATS_PER_SHARE]: "130px",
+          [COLUMN_HEADERS.FWD_SATS_PER_SHARE]: "130px",
         },
       },
       {
@@ -405,8 +316,8 @@ export const blgvCompanyConfig: Company = {
         description:
           "Complete Bitcoin price history with purchase events (all data, no date filtering)",
         spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
-        ranges: ["'BLGV Historical'!A1:S1000"],
-        processor: blgvBitcoinPriceProcessor,
+        ranges: ["'Coinsilium Historical'!A1:S1000"],
+        processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",
         charts: [
@@ -421,18 +332,6 @@ export const blgvCompanyConfig: Company = {
               lg: 650,
             },
           }),
-        ],
-      },
-      {
-        id: "historical-performance",
-        title: "Historical Performance",
-        description: "Historical performance tracking of key financial metrics",
-        spreadsheetId: "1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw",
-        ranges: ["'BLGV Historical'!A1:S1000"],
-        processor: blgvHistoricalProcessor,
-        hasHeaders: true,
-        renderLocation: "none",
-        charts: [
           {
             type: "line",
             title: "Historical Performance",
@@ -443,10 +342,10 @@ export const blgvCompanyConfig: Company = {
             animation: false,
             datasets: [
               {
-                label: "Fwd Sats Eq. / FD Share",
+                label: "Fwd Sats / Share",
                 mapping: {
                   x: COLUMN_HEADERS.DATE,
-                  y: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+                  y: COLUMN_HEADERS.FWD_SATS_PER_SHARE,
                 },
                 borderColor: bitcoinOrange,
                 backgroundColor: bitcoinOrangeMedium,
@@ -456,10 +355,10 @@ export const blgvCompanyConfig: Company = {
                 yAxisID: "sats",
               },
               {
-                label: "Sats / FD Share",
+                label: "Sats / Share",
                 mapping: {
                   x: COLUMN_HEADERS.DATE,
-                  y: COLUMN_HEADERS.SATS_PER_FD_SHARE,
+                  y: COLUMN_HEADERS.SATS_PER_SHARE,
                 },
                 borderColor: "#f9cc8f",
                 backgroundColor: "#f9cc8f",
@@ -484,10 +383,10 @@ export const blgvCompanyConfig: Company = {
                 yAxisID: "price",
               },
               {
-                label: "Fwd Eq. mNAV",
+                label: "Fwd mNAV",
                 mapping: {
                   x: COLUMN_HEADERS.DATE,
-                  y: COLUMN_HEADERS.FWD_EQ_MNAV,
+                  y: COLUMN_HEADERS.FWD_MNAV,
                 },
                 borderColor: emeraldGreen,
                 backgroundColor: emeraldGreenMedium,

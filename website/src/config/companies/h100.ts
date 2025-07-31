@@ -4,7 +4,8 @@ import { Company } from "@/config/types";
 export const h100CompanyConfig: Company = {
   id: "h100",
   name: "H100",
-  displayName: "H100 Company Dashboard",
+  disclosure:
+    "Data on this dashboard is sourced from @RoaringRagnar's [open-source Google Sheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592).",
   emoji: "🇸🇪",
   curators: [
     {

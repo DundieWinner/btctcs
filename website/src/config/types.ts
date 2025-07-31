@@ -93,7 +93,15 @@ export interface ChartDataMapping {
   label?: string; // Optional label override for this dataset
   filter?: {
     column: string; // Column name to filter on
-    condition: "nonzero" | "zero" | "nonempty" | "empty" | "greater" | "less" | "equals" | "custom"; // Filter condition type
+    condition:
+      | "nonzero"
+      | "zero"
+      | "nonempty"
+      | "empty"
+      | "greater"
+      | "less"
+      | "equals"
+      | "custom"; // Filter condition type
     value?: string | number; // Value to compare against (for greater, less, equals)
     customFunction?: string; // Custom filter function as string (for custom condition)
   }; // Optional filtering configuration
@@ -220,7 +228,6 @@ export interface GoogleSheetConfig {
 export interface Company {
   id: string;
   name: string;
-  displayName: string;
   emoji: string;
   disclosure?: string;
   curators: Curator[];
