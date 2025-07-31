@@ -388,7 +388,7 @@ export const blgvCompanyConfig: Company = {
               label: "Bitcoin Price (USD)",
               mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.BTC_PRICE_USD },
               borderColor: "#f3991f",
-              backgroundColor: "rgba(243, 153, 31, 0.1)",
+              backgroundColor: "#f3991f",
               tension: 0.1,
               pointRadius: 0,
               pointHoverRadius: 0,
