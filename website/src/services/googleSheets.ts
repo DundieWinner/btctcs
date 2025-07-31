@@ -54,7 +54,7 @@ export async function fetchGoogleSheetDataBatch(
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${rangeParams}&key=${googleSheetsApiKey}`;
 
     const response = await fetch(url, {
-      next: { revalidate: 600 }, // Cache for 10 minutes
+      next: { revalidate: 300 }, // Cache for 5 minutes
     } as RequestInit & { next: { revalidate: number } });
 
     if (!response.ok) {

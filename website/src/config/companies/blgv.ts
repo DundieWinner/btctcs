@@ -1,5 +1,15 @@
 import { Company, GoogleSheetData } from "@/config/types";
 import { ragnarProcessor } from "@/config/companies/ragnar";
+import { 
+  bitcoinOrange, 
+  bitcoinOrangeLight, 
+  bitcoinOrangeMedium,
+  white,
+  whiteGrid,
+  whiteMedium,
+  emeraldGreen,
+  emeraldGreenMedium
+} from "@/config/colors";
 
 // Google Sheet Column Header Names
 const COLUMN_HEADERS = {
@@ -387,8 +397,8 @@ export const blgvCompanyConfig: Company = {
             {
               label: "Bitcoin Price (USD)",
               mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.BTC_PRICE_USD },
-              borderColor: "#f3991f",
-              backgroundColor: "#f3991f",
+              borderColor: bitcoinOrange,
+              backgroundColor: bitcoinOrange,
               tension: 0.1,
               pointRadius: 0,
               pointHoverRadius: 0,
@@ -411,10 +421,10 @@ export const blgvCompanyConfig: Company = {
                   scale: "sqrt"
                 }
               },
-              borderColor: "#f3991f",
-              backgroundColor: "rgba(243, 153, 31, 0.1)",
-              pointBackgroundColor: "#f3991f",
-              pointBorderColor: "#f3991f",
+              borderColor: bitcoinOrange,
+              backgroundColor: bitcoinOrangeLight,
+              pointBackgroundColor: bitcoinOrange,
+              pointBorderColor: bitcoinOrange,
               pointBorderWidth: 2,
               showLine: false,
               yAxisID: "btcPrice",
@@ -428,10 +438,10 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "Date",
-                color: "#ffffff",
+                color: white,
               },
               grid: {
-                color: "rgba(255, 255, 255, 0.1)",
+                color: whiteGrid,
               },
             },
             {
@@ -441,14 +451,14 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "Bitcoin Price (USD)",
-                color: "#f3991f",
+                color: bitcoinOrange,
               },
               ticks: {
-                color: "#f3991f",
+                color: bitcoinOrange,
                 callback: "(value) => '$' + value.toLocaleString()",
               },
               grid: {
-                color: "rgba(255, 255, 255, 0.1)",
+                color: whiteGrid,
               },
             },
           ],
@@ -488,8 +498,8 @@ export const blgvCompanyConfig: Company = {
             {
               label: "Fwd Sats Eq. / FD Share",
               mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE },
-              borderColor: "#f3991f",
-              backgroundColor: "rgba(243, 153, 31, 0.2)",
+              borderColor: bitcoinOrange,
+              backgroundColor: bitcoinOrangeMedium,
               tension: 0,
               pointRadius: 5,
               pointHoverRadius: 7,
@@ -509,8 +519,8 @@ export const blgvCompanyConfig: Company = {
             {
               label: "Share Price (USD)",
               mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.CLOSING_PRICE_USD },
-              borderColor: "#ffffff",
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              borderColor: white,
+              backgroundColor: whiteMedium,
               borderDash: [5, 5],
               tension: 0,
               pointRadius: 4,
@@ -520,8 +530,8 @@ export const blgvCompanyConfig: Company = {
             {
               label: "Fwd Eq. mNAV",
               mapping: { x: COLUMN_HEADERS.DATE, y: COLUMN_HEADERS.FWD_EQ_MNAV },
-              borderColor: "#10b981",
-              backgroundColor: "rgba(16, 185, 129, 0.2)",
+              borderColor: emeraldGreen,
+              backgroundColor: emeraldGreenMedium,
               borderDash: [10, 5],
               tension: 0,
               pointRadius: 2,
@@ -537,10 +547,10 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "Date",
-                color: "#ffffff",
+                color: white,
               },
               grid: {
-                color: "rgba(255, 255, 255, 0.1)",
+                color: whiteGrid,
               },
             },
             {
@@ -550,13 +560,13 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "Sats",
-                color: "#f3991f",
+                color: bitcoinOrange,
               },
               ticks: {
-                color: "#f3991f",
+                color: bitcoinOrange,
               },
               grid: {
-                color: "rgba(255, 255, 255, 0.1)",
+                color: whiteGrid,
               },
             },
             {
@@ -566,10 +576,10 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "Share Price (USD)",
-                color: "#ffffff",
+                color: white,
               },
               ticks: {
-                color: "#ffffff",
+                color: white,
               },
               grid: {
                 drawOnChartArea: false,
@@ -582,10 +592,10 @@ export const blgvCompanyConfig: Company = {
               title: {
                 display: true,
                 text: "mNAV",
-                color: "#10b981",
+                color: emeraldGreen,
               },
               ticks: {
-                color: "#10b981",
+                color: emeraldGreen,
               },
               grid: {
                 drawOnChartArea: false,
