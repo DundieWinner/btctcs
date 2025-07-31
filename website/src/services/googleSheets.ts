@@ -1,11 +1,11 @@
 import { googleSheetsApiKey } from "@/config/environment-be";
 import {
+  type CellStyle,
+  type ColumnFormat,
+  type ConditionalStyle,
   type GoogleSheetData,
   type GoogleSheetExtraction,
   type KeyStatistic,
-  type ColumnFormat,
-  type ConditionalStyle,
-  type CellStyle,
   type TableStyle,
 } from "@/config/types";
 

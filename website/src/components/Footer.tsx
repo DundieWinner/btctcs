@@ -10,9 +10,11 @@ export default function Footer() {
             dashboards, and community-provided Google Sheets.
           </p>
           <p className="mt-2 text-xs text-gray-500">
-            <strong>Disclaimer:</strong> The information provided on this site is for informational purposes only. 
-            We make no guarantees regarding the accuracy, completeness, or reliability of any data presented. 
-            Users should verify information independently and consult professional advisors before making any financial decisions.
+            <strong>Disclaimer:</strong> The information provided on this site
+            is for informational purposes only. We make no guarantees regarding
+            the accuracy, completeness, or reliability of any data presented.
+            Users should verify information independently and consult
+            professional advisors before making any financial decisions.
           </p>
           <p className="mt-1">
             This site is a creation of{" "}
