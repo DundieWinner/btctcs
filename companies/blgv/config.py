@@ -97,4 +97,4 @@ def run_analysis():
 
 def upload_charts(current_dir):
     from shared_utils import upload_charts as shared_upload_charts
-    return shared_upload_charts(current_dir, "BLGV")
+    return shared_upload_charts(current_dir)
