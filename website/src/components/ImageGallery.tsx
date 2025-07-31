@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 interface ImageBoardProps {
   images: string[];
   companyName: string;
+  variant: "main-charts" | "accent-charts";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,7 +23,11 @@ function getImageTitle(imageUrl: string, index: number): string {
   return cleanName || `Chart ${index + 1}`;
 }
 
-export default function ImageBoard({ images, companyName }: ImageBoardProps) {
+export default function ImageBoard({
+  images,
+  companyName,
+  variant,
+}: ImageBoardProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
@@ -54,8 +59,8 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
       // Store original overflow value
       const originalOverflow = document.body.style.overflow;
       // Disable scrolling
-      document.body.style.overflow = 'hidden';
-      
+      document.body.style.overflow = "hidden";
+
       // Cleanup function to restore scrolling when modal closes
       return () => {
         document.body.style.overflow = originalOverflow;
@@ -97,48 +102,99 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
 
   return (
     <div className="w-full">
-      {/* Pinterest-style Masonry Grid */}
-      <div className="columns-1 sm:columns-2 gap-4 space-y-4">
-        {images.map((imageUrl, index) => {
-          return (
-            <div
-              key={imageUrl}
-              className="break-inside-avoid mb-4 group cursor-pointer"
-              onClick={() => openModal(imageUrl)}
-            >
-              <div className="relative overflow-hidden rounded-lg border border-gray-700 bg-gray-900/50 ">
-                <div className="relative">
-                  <Image
-                    src={imageUrl}
-                    alt={`${companyName} chart ${index + 1}`}
-                    width={400}
-                    height={300}
-                    className="w-full h-auto object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                  />
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0">
-                      <svg
-                        className="w-8 h-8 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
+      {/* Mobile: Horizontal Scroll, Desktop: Masonry Grid */}
+      {/* Mobile Horizontal Scroll */}
+      <div className="sm:hidden">
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          {images.map((imageUrl, index) => {
+            return (
+              <div
+                key={imageUrl}
+                className="flex-shrink-0 w-80 group cursor-pointer"
+                onClick={() => openModal(imageUrl)}
+              >
+                <div className="relative overflow-hidden rounded-lg border border-gray-700 bg-gray-900/50">
+                  <div className="relative">
+                    <Image
+                      src={imageUrl}
+                      alt={`${companyName} chart ${index + 1}`}
+                      width={320}
+                      height={240}
+                      className="w-full h-auto object-cover"
+                      sizes="320px"
+                    />
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+                      <div className="opacity-0">
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop: Pinterest-style Masonry Grid */}
+      <div className="hidden sm:block">
+        <div
+          className={`columns-1 sm:columns-2 ${variant === "accent-charts" ? "lg:columns-3" : ""} gap-4 space-y-4`}
+        >
+          {images.map((imageUrl, index) => {
+            return (
+              <div
+                key={imageUrl}
+                className="break-inside-avoid mb-4 group cursor-pointer"
+                onClick={() => openModal(imageUrl)}
+              >
+                <div className="relative overflow-hidden rounded-lg border border-gray-700 bg-gray-900/50">
+                  <div className="relative">
+                    <Image
+                      src={imageUrl}
+                      alt={`${companyName} chart ${index + 1}`}
+                      width={400}
+                      height={300}
+                      className="w-full h-auto object-cover"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                    />
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+                      <div className="opacity-0">
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Enhanced Full-screen Modal with Pinch-to-Zoom */}
@@ -212,17 +268,17 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
             </div>
 
             {/* Enhanced Image Container with Pinch-to-Zoom */}
-            <div 
+            <div
               className="relative w-full h-full flex items-center justify-center p-4 sm:p-8 md:p-12 lg:p-16 overflow-hidden"
               style={{
-                touchAction: 'pan-x pan-y pinch-zoom'
+                touchAction: "pan-x pan-y pinch-zoom",
               }}
             >
-              <div 
+              <div
                 className="relative w-full h-full flex items-center justify-center"
                 style={{
-                  maxWidth: '100vw',
-                  maxHeight: '100vh'
+                  maxWidth: "100vw",
+                  maxHeight: "100vh",
                 }}
               >
                 <Image
@@ -233,18 +289,20 @@ export default function ImageBoard({ images, companyName }: ImageBoardProps) {
                   sizes="100vw"
                   priority
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: 'none',
-                    maxHeight: 'none'
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "none",
+                    maxHeight: "none",
                   }}
                 />
               </div>
             </div>
-            
+
             {/* Image Counter */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-black/80 text-gray-300 px-4 py-2 rounded-lg text-sm border border-gray-600 shadow-lg">
-              <span>{currentIndex + 1} of {images.length}</span>
+              <span>
+                {currentIndex + 1} of {images.length}
+              </span>
             </div>
           </div>
         </div>

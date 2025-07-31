@@ -112,20 +112,31 @@ async function CompanyDashboard({ company }: { company: string }) {
           {/* Main Content Area with Responsive Layout */}
           <div className={"flex flex-col xl:flex-row gap-6 lg:gap-8"}>
             {/* Main Content */}
-            <div className={"flex-1"}>
-              {/* Generic Charts */}
-              {chartExtractions.map(({ extraction, config, chartIndex }) => (
-                <GenericChart
-                  key={`${extraction.id}-chart-${chartIndex}`}
-                  data={extraction.data!}
-                  config={config}
-                  title={config.title || `${extraction.title} - Chart ${chartIndex + 1}`}
+            {chartExtractions.length === 0 ? (
+              <div className={"flex-1"}>
+                {/* Images Swiper */}
+                <ImageBoard
+                  variant={"main-charts"}
+                  images={images}
+                  companyName={companyName}
                 />
-              ))}
-
-              {/* Images Swiper */}
-              <ImageBoard images={images} companyName={companyName} />
-            </div>
+              </div>
+            ) : (
+              <div className={"flex-1"}>
+                {/* Generic Charts */}
+                {chartExtractions.map(({ extraction, config, chartIndex }) => (
+                  <GenericChart
+                    key={`${extraction.id}-chart-${chartIndex}`}
+                    data={extraction.data!}
+                    config={config}
+                    title={
+                      config.title ||
+                      `${extraction.title} - Chart ${chartIndex + 1}`
+                    }
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Sidebar - Responsive */}
             <div className="w-full xl:w-96 2xl:w-130 flex-shrink-0 flex flex-col gap-6">
@@ -134,6 +145,17 @@ async function CompanyDashboard({ company }: { company: string }) {
               )}
             </div>
           </div>
+
+          {chartExtractions.length > 0 && (
+            <div className={"mt-6"}>
+              {/* Images Swiper */}
+              <ImageBoard
+                variant={"accent-charts"}
+                images={images}
+                companyName={companyName}
+              />
+            </div>
+          )}
 
           {/* Bottom Google Sheets Data */}
           {bottomExtractions.length > 0 && (
