@@ -866,77 +866,70 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
 
     # Add intelligent annotation positioning after all data series are plotted
     if 'annotations' in locals() and annotations:
-        # Sort annotations by value to handle positioning better
-        annotations.sort(key=lambda x: x['value'], reverse=True)
-        
-        # Get current axis limits to calculate relative positioning
-        ax = plt.gca()
-        y_min, y_max = ax.get_ylim()
-        x_min, x_max = ax.get_xlim()
-        
-        # Convert dates to numeric for calculations
-        x_range = (x_max - x_min)
-        y_range_log = np.log10(y_max) - np.log10(y_min)  # Since we're using log scale
-        
-        # Track used positions to avoid overlaps
-        used_positions = []
-        
-        for i, ann in enumerate(annotations):
-            # Convert date to matplotlib numeric format for positioning
-            date_num = plt.matplotlib.dates.date2num(ann['date'])
+        try:
+            # Sort annotations by value to handle positioning better
+            annotations.sort(key=lambda x: x['value'], reverse=True)
             
-            # Calculate base position closer to the point
-            base_x_offset = x_range * 0.01  # 1% of x-range to the right
-            base_y_offset_log = y_range_log * 0.02  # 2% of log y-range
+            # Get current axis limits to calculate relative positioning
+            ax = plt.gca()
+            y_min, y_max = ax.get_ylim()
+            x_min, x_max = ax.get_xlim()
             
-            # Find a position that doesn't overlap with existing annotations
-            position_found = False
-            attempt = 0
-            max_attempts = 10
+            # Ensure we have positive values for log calculations
+            if y_min <= 0:
+                y_min = min([ann['value'] for ann in annotations]) * 0.5
+            if y_max <= 0:
+                y_max = max([ann['value'] for ann in annotations]) * 2
             
-            while not position_found and attempt < max_attempts:
-                # Calculate position in data coordinates
-                x_pos = date_num + base_x_offset
-                
-                # For log scale, work in log space then convert back
-                log_y = np.log10(ann['value'])
-                y_offset_direction = 1 if i % 2 == 0 else -1  # Alternate above/below
-                y_pos_log = log_y + (base_y_offset_log * y_offset_direction * (1 + attempt * 0.5))
-                y_pos = 10 ** y_pos_log
-                
-                # Check for overlaps with existing positions
-                overlap = False
-                for used_pos in used_positions:
-                    x_diff = abs(x_pos - used_pos['x']) / x_range
-                    y_diff_log = abs(np.log10(y_pos) - np.log10(used_pos['y'])) / y_range_log
+            # Convert dates to numeric for calculations
+            x_range = (x_max - x_min)
+            
+            # Safe log calculation
+            try:
+                y_range_log = np.log10(y_max) - np.log10(y_min)
+            except (ValueError, RuntimeWarning):
+                # Fallback to simple linear spacing if log fails
+                y_range_log = 1.0  # Default spacing
+            
+            # Track used positions to avoid overlaps
+            used_positions = []
+            
+            for i, ann in enumerate(annotations):
+                try:
+                    # Simple offset-based positioning (more reliable)
+                    x_offset = 15 + (i * 5)  # Pixels to the right
+                    y_offset = 10 + (i * 20)  # Pixels up/down alternating
+                    if i % 2 == 1:
+                        y_offset = -y_offset  # Alternate above/below
                     
-                    # Consider it an overlap if too close in both dimensions
-                    if x_diff < 0.05 and y_diff_log < 0.08:  # 5% x-range and 8% log y-range
-                        overlap = True
-                        break
-                
-                if not overlap:
-                    position_found = True
-                    used_positions.append({'x': x_pos, 'y': y_pos})
-                else:
-                    attempt += 1
-            
-            # If we couldn't find a non-overlapping position, use the last calculated one
-            if not position_found:
-                x_pos = date_num + base_x_offset
-                y_pos_log = np.log10(ann['value']) + (base_y_offset_log * (1 + i * 0.3))
-                y_pos = 10 ** y_pos_log
-            
-            # Create the annotation with a line connecting to the point
-            plt.annotate(ann['text'],
-                        xy=(ann['date'], ann['value']),  # Point to annotate
-                        xytext=(plt.matplotlib.dates.num2date(x_pos), y_pos),  # Text position
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                                edgecolor=ann['color'], alpha=0.9, linewidth=1.5),
-                        fontsize=9, fontweight='bold', color=ann['color'],
-                        ha='left', va='center',
-                        arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1',
-                                      color=ann['color'], alpha=0.7, linewidth=1.5))
+                    # Create the annotation with simpler positioning
+                    plt.annotate(ann['text'],
+                                xy=(ann['date'], ann['value']),  # Point to annotate
+                                xytext=(x_offset, y_offset), textcoords='offset points',
+                                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
+                                        edgecolor=ann['color'], alpha=0.9, linewidth=1.5),
+                                fontsize=9, fontweight='bold', color=ann['color'],
+                                ha='left', va='center',
+                                arrowprops=dict(arrowstyle='->', color=ann['color'], 
+                                              alpha=0.7, linewidth=1.5))
+                except Exception as e:
+                    print(f"Warning: Could not create annotation for {ann['text']}: {e}")
+                    continue
+                    
+        except Exception as e:
+            print(f"Warning: Annotation system failed, using simple labels: {e}")
+            # Fallback to simple annotations without arrows
+            for i, ann in enumerate(annotations):
+                try:
+                    y_offset = 10 + (i * 25)
+                    plt.annotate(ann['text'], 
+                                xy=(ann['date'], ann['value']),
+                                xytext=(10, y_offset), textcoords='offset points',
+                                bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
+                                fontsize=10, fontweight='bold', color='black',
+                                ha='left', va='bottom')
+                except Exception:
+                    continue
 
     # Get configuration values with defaults
     x_axis_label = config.get('x_axis_label', 'Date')
