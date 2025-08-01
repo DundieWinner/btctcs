@@ -70,25 +70,35 @@ def run_analysis():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
     
+    # Configuration for Coinsilium's "Outstanding Share" terminology
+    share_config = {
+        'share_type': 'Outstanding Share'
+    }
+    
     print("\nGenerating charts...")
     print("Generating power_law chart...")
-    create_power_law_chart(df, company_name, current_dir)
+    create_power_law_chart(df, company_name, share_config, current_dir)
     
     print("Generating stock_nav chart...")
     create_stock_nav_chart(df, company_name, {
-        'nav_reference_levels': [4, 5, 6],
+        'nav_reference_levels': [2, 4, 6],
         'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-        'projection_months': 1
+        'projection_months': 1,
+        'share_type': 'Outstanding Share'
     }, current_dir)
 
     print("Generating stacked_area chart...")
-    create_stacked_mc_btc_nav_chart(df, company_name, {}, current_dir)
+    create_stacked_mc_btc_nav_chart(df, company_name, {
+        'share_type': 'Outstanding Share',
+        'market_cap_label': 'Outstanding Share Market Cap'
+    }, current_dir)
 
     print("Generating btc_per_share chart...")
     create_btc_per_share_chart(df, company_name, {
         'btc_per_share_columns': ['btc_per_diluted_share', COIN_FWD_BTC_PER_SHARE_COLUMN],
-        'btc_per_share_labels': ["Sats / Share", "Fwd Sats / Share"],
-        'btc_per_share_colors': ['#0000ff', '#ff6600']
+        'btc_per_share_labels': ["Sats / Outstanding Share", "Fwd Sats / Outstanding Share"],
+        'btc_per_share_colors': ['#0000ff', '#ff6600'],
+        'share_type': 'Outstanding Share'
     }, current_dir)
     
     return df, current_dir

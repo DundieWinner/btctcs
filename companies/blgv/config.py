@@ -73,7 +73,7 @@ def run_analysis():
     
     print("\nGenerating charts...")
     print("Generating power_law chart...")
-    create_power_law_chart(df, company_name, current_dir)
+    create_power_law_chart(df, company_name, {}, current_dir)  # Added empty config
     
     print("Generating stock_nav chart...")
     create_stock_nav_chart(df, company_name, {

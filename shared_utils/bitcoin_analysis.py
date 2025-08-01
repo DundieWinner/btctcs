@@ -189,7 +189,7 @@ def _generate_default_charts(processed_data, company_name, output_dir):
     }
     
     # Generate all standard charts with default configuration
-    create_power_law_chart(df, company_name, output_dir)
+    create_power_law_chart(df, company_name, {}, output_dir)  # Added empty config
     
     create_stock_nav_chart(df, company_name, default_config, output_dir)
     
@@ -274,12 +274,19 @@ def calculate_statistics(log_btc_balance_unique, log_btc_per_diluted_share_uniqu
     return correlation, slope, intercept, a_coeff
 
 
-def create_power_law_chart(df, company_name, output_dir=None):
+def create_power_law_chart(df, company_name, config=None, output_dir=None):
     """Create and save the log-log chart with power law fit
     
     Args:
         df (pd.DataFrame): DataFrame with columns 'btc_balance' and 'btc_per_diluted_share'
         company_name (str): Name of the company
+        config (dict, optional): Configuration for customizing chart appearance
+            - chart_title: Custom main title (default: '{company_name} Log-Log BTC Holdings vs Bitcoin per {share_type}')
+            - chart_subtitle: Custom subtitle (default: 'https://btctcs.com - {current_date}')
+            - x_axis_label: Custom x-axis label (default: 'Bitcoin Holdings (BTC)')
+            - y_axis_label: Custom y-axis label (default: 'Bitcoin per {share_type}')
+            - data_series_label: Custom data series label (default: '{company_name} Treasury Updates ({count})')
+            - share_type: Type of shares (default: 'Fully Diluted Share')
         output_dir (str, optional): Directory to save the chart
     """
     print("\nCreating Log-Log Chart with Fitted Power Law Function")
@@ -293,10 +300,13 @@ def create_power_law_chart(df, company_name, output_dir=None):
 
     plt.figure(figsize=(12, 8))
 
+    # Get data series label with default
+    data_series_label = config.get('data_series_label', f'{company_name} Treasury Updates ({len(unique_data)})')
+    
     # Highlight unique points used for regression
     plt.scatter(log_btc_balance_unique, log_btc_per_diluted_share_unique,
                 alpha=0.9, s=80, c='#ff0000', edgecolors='#8b0a1a', linewidth=1,
-                label=f'{company_name} Treasury Updates ({len(unique_data)})', zorder=5)
+                label=data_series_label, zorder=5)
 
     # Plot fitted line
     X_plot = np.linspace(log_btc_balance.min(), log_btc_balance.max(), 100)
@@ -304,17 +314,27 @@ def create_power_law_chart(df, company_name, output_dir=None):
     plt.plot(X_plot, y_pred_plot,
              '#ff0000', linewidth=3, label='Fitted Power Law', alpha=0.8, zorder=4)
 
-    # Labels and title
-    plt.xlabel('Bitcoin Holdings (BTC)', fontsize=14, fontweight='bold')
-    plt.ylabel('Bitcoin per Fully Diluted Share', fontsize=14, fontweight='bold')
+    # Get configuration values with defaults
+    if config is None:
+        config = {}
+    
+    share_type = config.get('share_type', 'Fully Diluted Share')
+    x_axis_label = config.get('x_axis_label', 'Bitcoin Holdings (BTC)')
+    y_axis_label = config.get('y_axis_label', f'Bitcoin per {share_type}')
     
     # Get current date for subtitle
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Log-Log BTC Holdings vs Bitcoin per Fully Diluted Share',
-                 fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
+    chart_title = config.get('chart_title', f'{company_name} Log-Log BTC Holdings vs Bitcoin per {share_type}')
+    chart_subtitle = config.get('chart_subtitle', f'https://btctcs.com - {current_date}')
+    
+    # Labels and title
+    plt.xlabel(x_axis_label, fontsize=14, fontweight='bold')
+    plt.ylabel(y_axis_label, fontsize=14, fontweight='bold')
+    
+    plt.suptitle(chart_title, fontsize=16, fontweight='bold', y=0.98)
+    plt.title(chart_subtitle, fontsize=12, pad=10)
 
     # Create equation text
     equation_text = f'Power Law: y = {a_coeff:.2e} × x^{slope:.3f}'
@@ -331,8 +351,9 @@ def create_power_law_chart(df, company_name, output_dir=None):
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
 
-    # Save the plot
-    filename = f'{company_name.lower()}_log_log_btc_holdings_vs_btc_per_diluted_share.png'
+    # Save the plot with customizable filename
+    filename_base = config.get('filename', f'{company_name.lower()}_log_log_btc_holdings_vs_btc_per_share')
+    filename = f'{filename_base}.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -342,7 +363,22 @@ def create_power_law_chart(df, company_name, output_dir=None):
 
 
 def create_stock_nav_chart(df, company_name, config, output_dir=None):
-    """Create stock price vs NAV multipliers per share chart with time extension"""
+    """Create stock price vs NAV multipliers per share chart with time extension
+    
+    Args:
+        df (pd.DataFrame): DataFrame with required columns
+        company_name (str): Name of the company
+        config (dict): Configuration including:
+            - nav_reference_levels: NAV multiplier levels (default: [3, 5, 7])
+            - nav_reference_colors: Colors for NAV lines (default: ['#0000ff', '#008000', '#ff0000'])
+            - projection_months: Months to project forward (default: 2)
+            - chart_title: Custom main title (default: '{company_name} Stock Price vs BTC NAV Multipliers per {share_type}')
+            - chart_subtitle: Custom subtitle (default: 'https://btctcs.com - {current_date}')
+            - x_axis_label: Custom x-axis label (default: 'Date')
+            - y_axis_label: Custom y-axis label (default: 'Price (USD)')
+            - share_type: Type of shares (default: 'Fully Diluted Share')
+        output_dir (str, optional): Directory to save the chart
+    """
     print("\nCreating Stock Price vs NAV Multipliers Per Share Chart")
     print("=" * 60)
 
@@ -418,30 +454,40 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     
     # Plot NAV multipliers per share (solid lines)
     for i, level in enumerate(nav_levels):
-        color = nav_colors[i] if i < len(nav_colors) else f'C{i}'
-        column_name = nav_columns[level]
-        plt.plot(df['date'], df[column_name], color, linewidth=2, 
-                 label=f'{level}x Bitcoin NAV per FD Share', alpha=0.8)
+        color = nav_colors[i % len(nav_colors)]
         
-        # Plot future NAV multipliers per share with projected accumulation (solid lines, lighter)
-        plt.plot(future_dates, future_nav_per_share[level], color, linewidth=2, 
-                 alpha=0.5)
+        # Historical data
+        plt.plot(df['date'], df[nav_columns[level]], color, linewidth=2, 
+                 label=f'{level}x NAV per {config.get("share_type", "Fully Diluted Share")}', alpha=0.8)
+        
+        # Future projection (dashed line)
+        plt.plot(future_dates, future_nav_per_share[level], color, linestyle='--', 
+                 linewidth=2, alpha=0.6)
     
     # Add vertical line to separate historical from projected data
     plt.axvline(x=last_date, color='#808080', linestyle=':', alpha=0.7, 
                 label='Projection Start')
 
-    # Labels and title
-    plt.xlabel('Date', fontsize=14, fontweight='bold')
-    plt.ylabel('Price per Share (USD)', fontsize=14, fontweight='bold')
+    # Labels and title (will be set after config is processed)
+    
+    # Get configuration values with defaults
+    share_type = config.get('share_type', 'Fully Diluted Share')
+    x_axis_label = config.get('x_axis_label', 'Date')
+    y_axis_label = config.get('y_axis_label', 'Price (USD)')
     
     # Get current date for subtitle
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Stock Price vs BTC NAV Multipliers per Fully Diluted Share',
-                 fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'https://btctcs.com - {current_date}', fontsize=12, pad=10)
+    chart_title = config.get('chart_title', f'{company_name} Stock Price vs BTC NAV Multipliers per {share_type}')
+    chart_subtitle = config.get('chart_subtitle', f'https://btctcs.com - {current_date}')
+    
+    plt.suptitle(chart_title, fontsize=16, fontweight='bold', y=0.98)
+    plt.title(chart_subtitle, fontsize=12, pad=10)
+    
+    # Set axis labels
+    plt.xlabel(x_axis_label, fontsize=14, fontweight='bold')
+    plt.ylabel(y_axis_label, fontsize=14, fontweight='bold')
 
     # Set log scale for y-axis
     plt.yscale('log')
@@ -463,8 +509,9 @@ def create_stock_nav_chart(df, company_name, config, output_dir=None):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # Save the plot
-    filename = f'{company_name.lower()}_stock_price_vs_bitcoin_nav_multiples.png'
+    # Save the plot with customizable filename
+    filename_base = config.get('filename', f'{company_name.lower()}_stock_price_vs_bitcoin_nav_multiples')
+    filename = f'{filename_base}.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -578,7 +625,21 @@ def create_mnav_chart(df, company_name, config, output_dir=None):
 
 
 def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
-    """Create a stacked area chart showing market cap and bitcoin NAV with intersection analysis"""
+    """Create a stacked area chart showing market cap and bitcoin NAV with intersection analysis
+    
+    Args:
+        df (pd.DataFrame): DataFrame with required columns
+        company_name (str): Name of the company
+        config (dict): Configuration including:
+            - chart_title: Custom main title (default: '{company_name} Market Cap vs Bitcoin NAV Over Time')
+            - chart_subtitle: Custom subtitle (default: 'https://btctcs.com - {current_date}')
+            - x_axis_label: Custom x-axis label (default: 'Date')
+            - y_axis_label: Custom y-axis label (default: 'Value (USD)')
+            - share_type: Type of shares (default: 'Fully Diluted Share')
+            - market_cap_label: Label for market cap series (default: '{share_type} Market Cap')
+            - nav_label: Label for NAV series (default: 'Bitcoin Net Asset Value')
+        output_dir (str, optional): Directory to save the chart
+    """
     print("\nCreating Stacked Area Chart (Market Cap vs Bitcoin NAV)")
     print("=" * 60)
 
@@ -607,11 +668,16 @@ def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
     print(f"Market cap range: ${df['fully_diluted_market_cap'].min():,.0f} to ${df['fully_diluted_market_cap'].max():,.0f}")
     print(f"Bitcoin NAV range: ${df['bitcoin_nav'].min():,.0f} to ${df['bitcoin_nav'].max():,.0f}")
     
+    # Get configuration values with defaults
+    share_type = config.get('share_type', 'Fully Diluted Share')
+    market_cap_label = config.get('market_cap_label', f'{share_type} Market Cap')
+    nav_label = config.get('nav_label', 'Bitcoin Net Asset Value')
+    
     # Create stacked area chart
     plt.fill_between(df['date'], 0, df['fully_diluted_market_cap'], 
-                     alpha=0.7, color='#add8e6', label='Fully Diluted Market Cap')
+                     alpha=0.7, color='#add8e6', label=market_cap_label)
     plt.fill_between(df['date'], 0, df['bitcoin_nav'], 
-                     alpha=0.7, color='#ffa07a', label='Bitcoin Net Asset Value')
+                     alpha=0.7, color='#ffa07a', label=nav_label)
     
     # Plot the lines on top for clarity
     plt.plot(df['date'], df['fully_diluted_market_cap'], '#0000ff', linewidth=2, alpha=0.8)
@@ -662,18 +728,23 @@ def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
         days_difference = 0
         intersection_market_cap = 0
     
-    # Labels and title
-    plt.xlabel('Date', fontsize=14, fontweight='bold')
-    plt.ylabel('Value (USD)', fontsize=14, fontweight='bold')
+    # Get configuration values with defaults
+    x_axis_label = config.get('x_axis_label', 'Date')
+    y_axis_label = config.get('y_axis_label', 'Value (USD)')
     
     # Get current date for subtitle
     from datetime import datetime
     chart_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Market Cap vs Bitcoin NAV Over Time',
-                 fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'https://btctcs.com - {chart_date}',
-              fontsize=12, pad=20)
+    chart_title = config.get('chart_title', f'{company_name} Market Cap vs Bitcoin NAV Over Time')
+    chart_subtitle = config.get('chart_subtitle', f'https://btctcs.com - {chart_date}')
+    
+    # Labels and title
+    plt.xlabel(x_axis_label, fontsize=14, fontweight='bold')
+    plt.ylabel(y_axis_label, fontsize=14, fontweight='bold')
+    
+    plt.suptitle(chart_title, fontsize=16, fontweight='bold', y=0.98)
+    plt.title(chart_subtitle, fontsize=12, pad=20)
 
     # Format y-axis to show values in millions without scientific notation
     from matplotlib.ticker import FuncFormatter
@@ -697,8 +768,9 @@ def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # Save the plot
-    filename = f'{company_name.lower()}_market_cap_vs_bitcoin_nav_stacked.png'
+    # Save the plot with customizable filename
+    filename_base = config.get('filename', f'{company_name.lower()}_market_cap_vs_bitcoin_nav_stacked')
+    filename = f'{filename_base}.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -709,14 +781,21 @@ def create_stacked_mc_btc_nav_chart(df, company_name, config, output_dir=None):
 
 
 def create_btc_per_share_chart(df, company_name, config, output_dir=None):
-    """Create a chart showing Sats per diluted share over time
+    """Create a chart showing Sats per share over time
     
     Supports multiple data series through config:
     - btc_per_share_columns: List of column names to plot
     - btc_per_share_labels: List of labels for each column (optional)
     - btc_per_share_colors: List of colors for each column (optional)
+    - chart_title: Custom main title (default: '{company_name} Sats per {share_type} Over Time')
+    - chart_subtitle: Custom subtitle (default: 'https://btctcs.com - {current_date}')
+    - x_axis_label: Custom x-axis label (default: 'Date')
+    - y_axis_label: Custom y-axis label (default: 'Sats per {share_type}')
+    - share_type: Type of shares (default: 'Fully Diluted Share')
     """
-    print("\nCreating Sats per Diluted Share Over Time Chart")
+    # Get share type for print message
+    share_type = config.get('share_type', 'Fully Diluted Share')
+    print(f"\nCreating Sats per {share_type} Over Time Chart")
     print("=" * 60)
 
     plt.figure(figsize=(14, 10))
@@ -731,7 +810,7 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
         df = df[df['date'] >= filter_date].copy()
         
         if len(df) == 0:
-            print(f"No data available from {global_start_date} onwards for sats per diluted share chart")
+            print(f"No data available from {global_start_date} onwards for sats per {share_type} chart")
             return
     
     # Get configuration for multiple data series
@@ -783,18 +862,23 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
                         fontsize=10, fontweight='bold', color='black',
                         ha='left', va='bottom')
 
-    # Labels and title
-    plt.xlabel('Date', fontsize=14, fontweight='bold')
-    plt.ylabel('Sats per Diluted Share', fontsize=14, fontweight='bold')
+    # Get configuration values with defaults
+    x_axis_label = config.get('x_axis_label', 'Date')
+    y_axis_label = config.get('y_axis_label', f'Sats per {share_type}')
     
     # Get current date for subtitle
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    plt.suptitle(f'{company_name} Sats per Fully Diluted Share Over Time',
-                 fontsize=16, fontweight='bold', y=0.98)
-    plt.title(f'https://btctcs.com - {current_date}',
-              fontsize=12, pad=20)
+    chart_title = config.get('chart_title', f'{company_name} Sats per {share_type} Over Time')
+    chart_subtitle = config.get('chart_subtitle', f'https://btctcs.com - {current_date}')
+    
+    # Labels and title
+    plt.xlabel(x_axis_label, fontsize=14, fontweight='bold')
+    plt.ylabel(y_axis_label, fontsize=14, fontweight='bold')
+    
+    plt.suptitle(chart_title, fontsize=16, fontweight='bold', y=0.98)
+    plt.title(chart_subtitle, fontsize=12, pad=20)
 
     # Set logarithmic y-axis
     plt.yscale('log')
@@ -807,8 +891,9 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # Save the plot
-    filename = f'{company_name.lower()}_bitcoin_sats_per_share_over_time.png'
+    # Save the plot with customizable filename
+    filename_base = config.get('filename', f'{company_name.lower()}_bitcoin_sats_per_share_over_time')
+    filename = f'{filename_base}.png'
     if output_dir:
         filepath = os.path.join(output_dir, filename)
     else:
@@ -832,14 +917,25 @@ def print_detailed_summary(df, valid_data, unique_data, duplicates, correlation,
 
 
 # Helper functions for creating custom chart generators
-def create_power_law_generator(custom_colors=None, custom_title=None, custom_filename=None):
+def create_power_law_generator(custom_colors=None, custom_title=None, custom_filename=None, share_type=None, **kwargs):
     """Create a custom power law chart generator with customizable options"""
     def power_law_chart(processed_data, company_name, output_dir):
-        create_power_law_chart(processed_data['df'], company_name, output_dir)
+        # Create configuration with custom parameters
+        config = {}
+        if share_type is not None:
+            config['share_type'] = share_type
+        if custom_title is not None:
+            config['chart_title'] = custom_title
+        if custom_filename is not None:
+            config['filename'] = custom_filename
+        # Add any additional kwargs to config
+        config.update(kwargs)
+        
+        create_power_law_chart(processed_data['df'], company_name, config, output_dir)
     return power_law_chart
 
 
-def create_stock_nav_generator(nav_levels=None, nav_colors=None, projection_months=None):
+def create_stock_nav_generator(nav_levels=None, nav_colors=None, projection_months=None, share_type=None, **kwargs):
     """Create a custom stock NAV chart generator with customizable NAV levels and colors"""
     def stock_nav_chart(processed_data, company_name, output_dir):
         # Create configuration with custom parameters
@@ -848,53 +944,71 @@ def create_stock_nav_generator(nav_levels=None, nav_colors=None, projection_mont
             'nav_reference_colors': nav_colors or ['#0000ff', '#008000', '#ff0000'],
             'projection_months': projection_months or 2,
         }
+        if share_type is not None:
+            config['share_type'] = share_type
+        # Add any additional kwargs to config
+        config.update(kwargs)
             
         create_stock_nav_chart(processed_data['df'], company_name, config, output_dir)
     return stock_nav_chart
 
 
-def create_mnav_generator(mnav_start_date=None, custom_colors=None):
+def create_mnav_generator(mnav_start_date=None, custom_colors=None, share_type=None, **kwargs):
     """Create a custom mNAV chart generator with customizable start date and colors"""
     def mnav_chart(processed_data, company_name, output_dir):
         # Create configuration with custom parameters
         config = {
             'nav_reference_levels': [3, 5, 7],
-            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
+            'nav_reference_colors': custom_colors or ['#0000ff', '#008000', '#ff0000'],
             'projection_months': 2,
         }
         if mnav_start_date is not None:
             config['mnav_start_date'] = mnav_start_date
-        # Add custom color logic here if needed
+        if share_type is not None:
+            config['share_type'] = share_type
+        # Add any additional kwargs to config
+        config.update(kwargs)
         
         create_mnav_chart(processed_data['df'], company_name, config, output_dir)
     return mnav_chart
 
 
-def create_stacked_area_generator(custom_colors=None, show_intersection=True):
+def create_stacked_area_generator(custom_colors=None, show_intersection=True, share_type=None, **kwargs):
     """Create a custom stacked area chart generator"""
     def stacked_area_chart(processed_data, company_name, output_dir):
         # Create configuration with custom parameters
-        config = {
-            'nav_reference_levels': [3, 5, 7],
-            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-            'projection_months': 2,
-        }
-        # Add custom configuration logic here
+        config = {}
+        if share_type is not None:
+            config['share_type'] = share_type
+            config['market_cap_label'] = f'{share_type} Market Cap'
+        if custom_colors is not None:
+            config['custom_colors'] = custom_colors
+        if not show_intersection:
+            config['show_intersection'] = False
+        # Add any additional kwargs to config
+        config.update(kwargs)
         
         create_stacked_mc_btc_nav_chart(processed_data['df'], company_name, config, output_dir)
     return stacked_area_chart
 
 
-def create_btc_per_share_generator(custom_colors=None, show_annotations=True):
+def create_btc_per_share_generator(custom_colors=None, show_annotations=True, share_type=None, btc_per_share_columns=None, btc_per_share_labels=None, **kwargs):
     """Create a custom BTC per share chart generator"""
     def btc_per_share_chart(processed_data, company_name, output_dir):
         # Create configuration with custom parameters
-        config = {
-            'nav_reference_levels': [3, 5, 7],
-            'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
-            'projection_months': 2,
-        }
-        # Add custom configuration logic here
+        config = {}
+        if share_type is not None:
+            config['share_type'] = share_type
+        if custom_colors is not None:
+            config['btc_per_share_colors'] = custom_colors
+        if btc_per_share_columns is not None:
+            config['btc_per_share_columns'] = btc_per_share_columns
+        if btc_per_share_labels is not None:
+            config['btc_per_share_labels'] = btc_per_share_labels
+        if not show_annotations:
+            config['show_annotations'] = False
+        # Add any additional kwargs to config
+        config.update(kwargs)
         
         create_btc_per_share_chart(processed_data['df'], company_name, config, output_dir)
     return btc_per_share_chart
