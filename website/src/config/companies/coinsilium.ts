@@ -43,7 +43,6 @@ const bitcoinPriceProcessor = createColumnFilterProcessor({
     COLUMN_HEADERS.FWD_MNAV,
   ],
   dateColumn: COLUMN_HEADERS.DATE,
-  // No startDate specified - includes all rows
 });
 
 const treasuryActionsProcessor = createTreasuryActionsProcessor({

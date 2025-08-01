@@ -10,14 +10,14 @@ export interface ColumnFilterConfig {
  * Creates a processor that filters Google Sheets data to only include specified columns
  * and optionally filters rows by date
  */
-export function createColumnFilterProcessor(
-  config: ColumnFilterConfig,
-) {
-  return (rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[]): GoogleSheetData => {
+export function createColumnFilterProcessor(config: ColumnFilterConfig) {
+  return (
+    rangeData: {
+      range: string;
+      majorDimension: string;
+      values?: string[][];
+    }[],
+  ): GoogleSheetData => {
     const dataRange = rangeData[0]; // Single range with all data
 
     if (!dataRange || !dataRange.values || dataRange.values.length < 2) {
@@ -46,7 +46,11 @@ export function createColumnFilterProcessor(
       headers.forEach((header, index) => {
         if (requiredColumns.has(header)) {
           const cellValue = rowValues[index];
-          if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+          if (
+            cellValue !== undefined &&
+            cellValue !== null &&
+            cellValue !== ""
+          ) {
             // Try to convert to number if it looks like a number
             const cleanValue = String(cellValue).trim().replace(/[,$]/g, "");
             const numValue = parseFloat(cleanValue);
@@ -73,7 +77,11 @@ export function createColumnFilterProcessor(
           if (rowDateStr.includes("/")) {
             // Handle M/D/YYYY format
             const [month, day, year] = rowDateStr.split("/");
-            rowDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            rowDate = new Date(
+              parseInt(year),
+              parseInt(month) - 1,
+              parseInt(day),
+            );
           } else if (rowDateStr.includes("-")) {
             // Handle YYYY-MM-DD format
             rowDate = new Date(rowDateStr);
