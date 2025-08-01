@@ -1,9 +1,9 @@
-# Generated image files
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
+# Generated image files in companies directory
+companies/**/*.png
+companies/**/*.jpg
+companies/**/*.jpeg
+companies/**/*.gif
+companies/**/*.svg
 
 # Python cache files
 __pycache__/
