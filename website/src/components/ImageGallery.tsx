@@ -118,10 +118,10 @@ export default function ImageBoard({
                     <Image
                       src={imageUrl}
                       alt={`${companyName} chart ${index + 1}`}
-                      width={320}
-                      height={240}
+                      width={800}
+                      height={600}
                       className="w-full h-auto object-cover"
-                      sizes="320px"
+                      sizes="800px"
                     />
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
