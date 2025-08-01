@@ -14,12 +14,14 @@ const DATA_SOURCES = {
   RAGNAR: {
     name: "@RoaringRagnar",
     twitterUrl: "https://x.com/RoaringRagnar",
-    sheetUrl: "https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592",
+    sheetUrl:
+      "https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE/edit?gid=963629592#gid=963629592",
     sheetName: "Google Sheet",
   },
   BTCTCS: {
     name: "BTCTC",
-    sheetUrl: "https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing",
+    sheetUrl:
+      "https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing",
     sheetName: "community-sheet",
   },
 } as const;
@@ -32,8 +34,14 @@ export const DESCRIPTIONS = {
    * Creates description for Ragnar comparison data
    */
   ragnarStats(): string {
-    const ragnarLink = createLink(DATA_SOURCES.RAGNAR.twitterUrl, DATA_SOURCES.RAGNAR.name);
-    const sheetLink = createLink(DATA_SOURCES.RAGNAR.sheetUrl, DATA_SOURCES.RAGNAR.sheetName);
+    const ragnarLink = createLink(
+      DATA_SOURCES.RAGNAR.twitterUrl,
+      DATA_SOURCES.RAGNAR.name,
+    );
+    const sheetLink = createLink(
+      DATA_SOURCES.RAGNAR.sheetUrl,
+      DATA_SOURCES.RAGNAR.sheetName,
+    );
     return `Data extracted from ${ragnarLink}'s open-source ${sheetLink}.`;
   },
 
@@ -41,7 +49,10 @@ export const DESCRIPTIONS = {
    * Creates description for BTCTCS community sheet data
    */
   btctcsData(): string {
-    const sheetLink = createLink(DATA_SOURCES.BTCTCS.sheetUrl, DATA_SOURCES.BTCTCS.sheetName);
+    const sheetLink = createLink(
+      DATA_SOURCES.BTCTCS.sheetUrl,
+      DATA_SOURCES.BTCTCS.sheetName,
+    );
     return `Data extracted from ${DATA_SOURCES.BTCTCS.name}'s ${sheetLink}.`;
   },
 
@@ -71,8 +82,9 @@ export const DESCRIPTIONS = {
    * @param customText - Custom description text
    * @param source - Data source ('ragnar' or 'btctcs')
    */
-  custom(customText: string, source: 'ragnar' | 'btctcs'): string {
-    const sourceAttribution = source === 'ragnar' ? this.ragnarStats() : this.btctcsData();
+  custom(customText: string, source: "ragnar" | "btctcs"): string {
+    const sourceAttribution =
+      source === "ragnar" ? this.ragnarStats() : this.btctcsData();
     return `${customText}. ${sourceAttribution}`;
   },
 } as const;

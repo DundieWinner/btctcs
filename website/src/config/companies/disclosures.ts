@@ -11,7 +11,7 @@ const DATA_SOURCES = {
   },
   BTCTCS: {
     name: "BTCTCs",
-    url: "https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?gid=1527424383#gid=1527424383",
+    url: "https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?gid=1527424383#gid=1527424383",
     displayName: "community-sheet",
   },
 } as const;
@@ -45,17 +45,17 @@ export const DISCLOSURES = {
    * Creates a custom disclosure with specified data sources
    * @param sources - Array of data source keys to include
    */
-  custom(sources: ('ragnar' | 'btctcs')[]): string {
+  custom(sources: ("ragnar" | "btctcs")[]): string {
     if (sources.length === 0) {
       return "Data sources not specified.";
     }
 
     if (sources.length === 1) {
-      return sources[0] === 'ragnar' ? this.ragnarOnly() : this.btctcsOnly();
+      return sources[0] === "ragnar" ? this.ragnarOnly() : this.btctcsOnly();
     }
 
     // Multiple sources
-    if (sources.includes('ragnar') && sources.includes('btctcs')) {
+    if (sources.includes("ragnar") && sources.includes("btctcs")) {
       return this.ragnarAndBtctcs();
     }
 
