@@ -845,7 +845,7 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
         plt.plot(df['date'], sats_per_diluted_share, color, linewidth=2, 
                  label=label, alpha=0.8)
 
-        # Add label for the most recent value
+        # Store annotation data for intelligent positioning
         if len(sats_per_diluted_share) > 0:
             most_recent_date = df['date'].iloc[-1]
             most_recent_value = sats_per_diluted_share.iloc[-1]
@@ -853,14 +853,90 @@ def create_btc_per_share_chart(df, company_name, config, output_dir=None):
             # Add a point marker for the most recent value
             plt.plot(most_recent_date, most_recent_value, 'o', color=color, markersize=8, alpha=0.8)
             
-            # Add text label with the most recent value (offset each annotation)
-            y_offset = 10 + (i * 25)  # Offset annotations vertically
-            plt.annotate(f'{most_recent_value:,.0f} sats', 
-                        xy=(most_recent_date, most_recent_value),
-                        xytext=(10, y_offset), textcoords='offset points',
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
-                        fontsize=10, fontweight='bold', color='black',
-                        ha='left', va='bottom')
+            # Store annotation info for later positioning
+            if 'annotations' not in locals():
+                annotations = []
+            annotations.append({
+                'date': most_recent_date,
+                'value': most_recent_value,
+                'text': f'{most_recent_value:,.0f} sats',
+                'color': color,
+                'series_index': i
+            })
+
+    # Add intelligent annotation positioning after all data series are plotted
+    if 'annotations' in locals() and annotations:
+        # Sort annotations by value to handle positioning better
+        annotations.sort(key=lambda x: x['value'], reverse=True)
+        
+        # Get current axis limits to calculate relative positioning
+        ax = plt.gca()
+        y_min, y_max = ax.get_ylim()
+        x_min, x_max = ax.get_xlim()
+        
+        # Convert dates to numeric for calculations
+        x_range = (x_max - x_min)
+        y_range_log = np.log10(y_max) - np.log10(y_min)  # Since we're using log scale
+        
+        # Track used positions to avoid overlaps
+        used_positions = []
+        
+        for i, ann in enumerate(annotations):
+            # Convert date to matplotlib numeric format for positioning
+            date_num = plt.matplotlib.dates.date2num(ann['date'])
+            
+            # Calculate base position closer to the point
+            base_x_offset = x_range * 0.01  # 1% of x-range to the right
+            base_y_offset_log = y_range_log * 0.02  # 2% of log y-range
+            
+            # Find a position that doesn't overlap with existing annotations
+            position_found = False
+            attempt = 0
+            max_attempts = 10
+            
+            while not position_found and attempt < max_attempts:
+                # Calculate position in data coordinates
+                x_pos = date_num + base_x_offset
+                
+                # For log scale, work in log space then convert back
+                log_y = np.log10(ann['value'])
+                y_offset_direction = 1 if i % 2 == 0 else -1  # Alternate above/below
+                y_pos_log = log_y + (base_y_offset_log * y_offset_direction * (1 + attempt * 0.5))
+                y_pos = 10 ** y_pos_log
+                
+                # Check for overlaps with existing positions
+                overlap = False
+                for used_pos in used_positions:
+                    x_diff = abs(x_pos - used_pos['x']) / x_range
+                    y_diff_log = abs(np.log10(y_pos) - np.log10(used_pos['y'])) / y_range_log
+                    
+                    # Consider it an overlap if too close in both dimensions
+                    if x_diff < 0.05 and y_diff_log < 0.08:  # 5% x-range and 8% log y-range
+                        overlap = True
+                        break
+                
+                if not overlap:
+                    position_found = True
+                    used_positions.append({'x': x_pos, 'y': y_pos})
+                else:
+                    attempt += 1
+            
+            # If we couldn't find a non-overlapping position, use the last calculated one
+            if not position_found:
+                x_pos = date_num + base_x_offset
+                y_pos_log = np.log10(ann['value']) + (base_y_offset_log * (1 + i * 0.3))
+                y_pos = 10 ** y_pos_log
+            
+            # Create the annotation with a line connecting to the point
+            plt.annotate(ann['text'],
+                        xy=(ann['date'], ann['value']),  # Point to annotate
+                        xytext=(plt.matplotlib.dates.num2date(x_pos), y_pos),  # Text position
+                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
+                                edgecolor=ann['color'], alpha=0.9, linewidth=1.5),
+                        fontsize=9, fontweight='bold', color=ann['color'],
+                        ha='left', va='center',
+                        arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1',
+                                      color=ann['color'], alpha=0.7, linewidth=1.5))
 
     # Get configuration values with defaults
     x_axis_label = config.get('x_axis_label', 'Date')

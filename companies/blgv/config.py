@@ -77,7 +77,7 @@ def run_analysis():
     
     print("Generating stock_nav chart...")
     create_stock_nav_chart(df, company_name, {
-        'nav_reference_levels': [4, 5, 6],
+        'nav_reference_levels': [3, 4, 5],
         'nav_reference_colors': ['#0000ff', '#008000', '#ff0000'],
         'projection_months': 1
     }, current_dir)
