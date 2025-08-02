@@ -6,7 +6,11 @@ import { type ProcessedExtraction } from "@/services/googleSheets";
 export function getChartExtractions(
   extractedData: ProcessedExtraction[],
   companyData: ReturnType<typeof getCompanyById>,
-): Array<{ extraction: ProcessedExtraction; config: ChartConfiguration; chartIndex: number }> {
+): Array<{
+  extraction: ProcessedExtraction;
+  config: ChartConfiguration;
+  chartIndex: number;
+}> {
   const chartExtractions: Array<{
     extraction: ProcessedExtraction;
     config: ChartConfiguration;
@@ -25,10 +29,10 @@ export function getChartExtractions(
 
     // Add each chart configuration as a separate entry
     config.charts.forEach((chartConfig, index) => {
-      chartExtractions.push({ 
-        extraction, 
-        config: chartConfig, 
-        chartIndex: index 
+      chartExtractions.push({
+        extraction,
+        config: chartConfig,
+        chartIndex: index,
       });
     });
   }

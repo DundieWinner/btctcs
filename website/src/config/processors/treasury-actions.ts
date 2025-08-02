@@ -117,8 +117,6 @@ export function createTreasuryActionsProcessor(config: TreasuryActionsConfig) {
       }
     }
 
-    console.log("treasuryActions", treasuryActions);
-
     return {
       rows: treasuryActions,
     };

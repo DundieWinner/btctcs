@@ -1,10 +1,9 @@
-import { Company, GoogleSheetData } from "@/config/types";
+import { Company, KeyStatistic, ProcessorResult } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
 import {
   createColumnFilterProcessor,
   createTreasuryActionsProcessor,
-  ragnarProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 import { DESCRIPTIONS } from "@/config/extractions/descriptions";
@@ -74,6 +73,184 @@ const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
 });
 
+const TABLE_COLUMNS = {
+  METRIC: "Metric",
+  VALUE: "Value",
+} as const;
+
+/**
+ * Processor for BLGV stats from BTCTCS community sheet
+ * Handles data where column D contains metric names and column E contains values
+ */
+function blgvStatsProcessor(
+  rangeData: {
+    range: string;
+    majorDimension: string;
+    values?: string[][];
+  }[],
+): ProcessorResult {
+  const statsRange = rangeData[0]; // Single range with D and E columns
+
+  if (!statsRange || !statsRange.values) {
+    return { data: { rows: [] } };
+  }
+
+  // Process the data where column D (index 0) is metric names and column E (index 1) is values
+  const pairedRows: { [key: string]: string | number }[] = [];
+
+  for (let i = 0; i < statsRange.values.length; i++) {
+    const row = statsRange.values[i];
+
+    // Column D (index 0) = metric name, Column E (index 1) = value
+    const metric = row && row[0] ? String(row[0]).trim() : "";
+    const value = row && row[1] ? String(row[1]).trim() : "";
+
+    // Only include rows where both metric and value are non-empty
+    if (metric && value) {
+      pairedRows.push({
+        [TABLE_COLUMNS.METRIC]: metric,
+        [TABLE_COLUMNS.VALUE]: value,
+      });
+    }
+  }
+
+  // Helper function to extract and format key statistics
+  const extractKeyStatistic = (
+    metricName: string,
+    id: string,
+    label: string,
+    order: number,
+    unit?: string,
+    prefix?: string,
+  ): KeyStatistic | null => {
+    const row = pairedRows.find(
+      (row) => row[TABLE_COLUMNS.METRIC] === metricName,
+    );
+    if (row) {
+      let value = row[TABLE_COLUMNS.VALUE];
+      // Clean up common prefixes from the value
+      if (typeof value === "string") {
+        value = value
+          .replace(/^[$£€¥]/, "")
+          .replace(/^CAD\s*/, "")
+          .replace(/^USD\s*/, "");
+      }
+
+      const displayValue = prefix ? `${prefix}${value}` : value;
+      const finalValue = unit ? `${displayValue} ${unit}` : displayValue;
+
+      return {
+        id,
+        label,
+        value: finalValue,
+        order,
+      };
+    }
+    return null;
+  };
+
+  // Extract key statistics - you can customize these based on what metrics are available in your sheet
+  const keyStatistics: KeyStatistic[] = [];
+
+  // First statistic: BTC in Treasury
+  const btcStat = extractKeyStatistic(
+    "BTC in Treasury",
+    "btc-treasury",
+    "BTC in Treasury",
+    1,
+  );
+  if (btcStat) keyStatistics.push(btcStat);
+
+  // Combine basic, diluted, and forward mNAV into one card
+  const basicMnavRow = pairedRows.find(
+    (row) => row[TABLE_COLUMNS.METRIC] === "mNAV (Basic)",
+  );
+  const dilutedMnavRow = pairedRows.find(
+    (row) => row[TABLE_COLUMNS.METRIC] === "mNAV (Fully Diluted)",
+  );
+  const forwardMnavRow = pairedRows.find(
+    (row) => row[TABLE_COLUMNS.METRIC] === "Forward mNAV",
+  );
+
+  if (basicMnavRow && dilutedMnavRow && forwardMnavRow) {
+    let basicValue = basicMnavRow[TABLE_COLUMNS.VALUE];
+    let dilutedValue = dilutedMnavRow[TABLE_COLUMNS.VALUE];
+    let forwardValue = forwardMnavRow[TABLE_COLUMNS.VALUE];
+
+    // Clean up prefixes
+    if (typeof basicValue === "string") {
+      basicValue = basicValue
+        .replace(/^[$£€¥]\s*/, "")
+        .replace(/^CAD\s*/, "")
+        .replace(/^USD\s*/, "");
+    }
+    if (typeof dilutedValue === "string") {
+      dilutedValue = dilutedValue
+        .replace(/^[$£€¥]\s*/, "")
+        .replace(/^CAD\s*/, "")
+        .replace(/^USD\s*/, "");
+    }
+    if (typeof forwardValue === "string") {
+      forwardValue = forwardValue
+        .replace(/^[$£€¥]\s*/, "")
+        .replace(/^CAD\s*/, "")
+        .replace(/^USD\s*/, "");
+    }
+
+    keyStatistics.push({
+      id: "mnav-combined",
+      label: "mNAV (Basic / Fully Diluted / Fwd)",
+      value: `${basicValue} / ${dilutedValue} / ${forwardValue}`,
+      order: 2,
+      style: {
+        accentColor: "rgb(249, 115, 22)", // Orange to match theme
+      },
+    });
+  }
+
+  // Additional key statistics
+  const additionalStats = [
+    extractKeyStatistic(
+      "Fwd Months to Cover mNAV",
+      "fwd-mtc-mnav",
+      "Fwd MTC mNAV",
+      3,
+    ),
+    extractKeyStatistic("Forward P/BYD", "fwd-p-byd", "Fwd P/BYD", 4),
+    extractKeyStatistic(
+      "BTC Yield 30D",
+      "btc-yield-30d",
+      "BTC Yield YTD (30D)",
+      5,
+    ),
+    extractKeyStatistic(
+      "Current Price (USD)",
+      "current-price-usd",
+      "Current Price (USD)",
+      6,
+      undefined,
+      "$",
+    ),
+    extractKeyStatistic(
+      "Market Cap (USD)",
+      "market-cap-usd",
+      "Market Cap (USD)",
+      7,
+      undefined,
+      "$",
+    ),
+  ].filter((stat): stat is KeyStatistic => stat !== null);
+
+  keyStatistics.push(...additionalStats);
+
+  return {
+    data: {
+      rows: pairedRows,
+    },
+    keyStatistics,
+  };
+}
+
 export const blgvCompanyConfig: Company = {
   id: "blgv",
   name: "Belgravia Hartford",
@@ -89,12 +266,12 @@ export const blgvCompanyConfig: Company = {
   googleSheet: {
     extractions: [
       {
-        id: "ragnar",
-        title: "Ragnar Stats",
-        description: DESCRIPTIONS.ragnarStats(),
-        spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
-        ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!H2:H70"],
-        processor: ragnarProcessor,
+        id: "blgv-stats",
+        title: "BLGV Key Stats",
+        description: DESCRIPTIONS.btctcsData(),
+        spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
+        ranges: ["'Stats'!D2:E25"],
+        processor: blgvStatsProcessor,
         renderLocation: "sidebar",
       },
       {

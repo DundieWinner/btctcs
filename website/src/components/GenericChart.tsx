@@ -143,27 +143,47 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           if (datasetConfig.mapping.filter) {
             const filterConfig = datasetConfig.mapping.filter;
             const filterValue = row[filterConfig.column];
-            
+
             let shouldInclude = true;
-            
+
             switch (filterConfig.condition) {
               case "nonzero":
-                shouldInclude = filterValue !== undefined && filterValue !== null && filterValue !== 0 && filterValue !== "0" && filterValue !== "";
+                shouldInclude =
+                  filterValue !== undefined &&
+                  filterValue !== null &&
+                  filterValue !== 0 &&
+                  filterValue !== "0" &&
+                  filterValue !== "";
                 break;
               case "zero":
-                shouldInclude = filterValue === undefined || filterValue === null || filterValue === 0 || filterValue === "0" || filterValue === "";
+                shouldInclude =
+                  filterValue === undefined ||
+                  filterValue === null ||
+                  filterValue === 0 ||
+                  filterValue === "0" ||
+                  filterValue === "";
                 break;
               case "nonempty":
-                shouldInclude = filterValue !== undefined && filterValue !== null && filterValue !== "";
+                shouldInclude =
+                  filterValue !== undefined &&
+                  filterValue !== null &&
+                  filterValue !== "";
                 break;
               case "empty":
-                shouldInclude = filterValue === undefined || filterValue === null || filterValue === "";
+                shouldInclude =
+                  filterValue === undefined ||
+                  filterValue === null ||
+                  filterValue === "";
                 break;
               case "greater":
-                shouldInclude = filterConfig.value !== undefined && Number(filterValue) > Number(filterConfig.value);
+                shouldInclude =
+                  filterConfig.value !== undefined &&
+                  Number(filterValue) > Number(filterConfig.value);
                 break;
               case "less":
-                shouldInclude = filterConfig.value !== undefined && Number(filterValue) < Number(filterConfig.value);
+                shouldInclude =
+                  filterConfig.value !== undefined &&
+                  Number(filterValue) < Number(filterConfig.value);
                 break;
               case "equals":
                 shouldInclude = filterValue === filterConfig.value;
@@ -172,16 +192,20 @@ export const GenericChart: React.FC<GenericChartProps> = ({
                 if (filterConfig.customFunction) {
                   try {
                     // Evaluate custom function (be careful with this in production)
-                    const customFn = new Function('value', 'row', filterConfig.customFunction);
+                    const customFn = new Function(
+                      "value",
+                      "row",
+                      filterConfig.customFunction,
+                    );
                     shouldInclude = customFn(filterValue, row);
                   } catch (e) {
-                    console.warn('Custom filter function failed:', e);
+                    console.warn("Custom filter function failed:", e);
                     shouldInclude = true;
                   }
                 }
                 break;
             }
-            
+
             if (!shouldInclude) {
               return null;
             }
@@ -196,11 +220,16 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           );
 
           // Handle yPosition for different positioning vs tooltip values
-          const yPositionValue = datasetConfig.mapping.yPosition 
-            ? row[datasetConfig.mapping.yPosition] 
+          const yPositionValue = datasetConfig.mapping.yPosition
+            ? row[datasetConfig.mapping.yPosition]
             : yValue;
-          
-          const dataPoint: { x: unknown; y: unknown; tooltipValue?: unknown; sizeValue?: number } = {
+
+          const dataPoint: {
+            x: unknown;
+            y: unknown;
+            tooltipValue?: unknown;
+            sizeValue?: number;
+          } = {
             x: processValue(xValue, xAxis?.type),
             y: processValue(yPositionValue, yAxis?.type), // Use yPosition for chart positioning
             tooltipValue: yValue, // Store original y value for tooltip
@@ -218,40 +247,53 @@ export const GenericChart: React.FC<GenericChartProps> = ({
 
       // Calculate dynamic point radii if pointSize is configured
       let pointRadii: number[] | number = datasetConfig.pointRadius ?? 4;
-      let pointHoverRadii: number[] | number = datasetConfig.pointHoverRadius ?? 6;
-      
+      let pointHoverRadii: number[] | number =
+        datasetConfig.pointHoverRadius ?? 6;
+
       if (datasetConfig.mapping.pointSize && mappedData.length > 0) {
         const sizeConfig = datasetConfig.mapping.pointSize;
-        const sizeValues = mappedData.map((point: { sizeValue?: number }) => point.sizeValue || 0).filter(val => val > 0);
-        
+        const sizeValues = mappedData
+          .map((point: { sizeValue?: number }) => point.sizeValue || 0)
+          .filter((val) => val > 0);
+
         if (sizeValues.length > 0) {
           const minValue = Math.min(...sizeValues);
           const maxValue = Math.max(...sizeValues);
-          
+
           pointRadii = mappedData.map((point: { sizeValue?: number }) => {
             const sizeValue = point.sizeValue || 0;
             if (sizeValue <= 0) return 0; // Hidden point
-            
+
             let normalizedValue: number;
             if (maxValue === minValue) {
               normalizedValue = 1;
             } else {
-              switch (sizeConfig.scale || 'linear') {
-                case 'logarithmic':
-                  normalizedValue = (Math.log(sizeValue) - Math.log(minValue)) / (Math.log(maxValue) - Math.log(minValue));
+              switch (sizeConfig.scale || "linear") {
+                case "logarithmic":
+                  normalizedValue =
+                    (Math.log(sizeValue) - Math.log(minValue)) /
+                    (Math.log(maxValue) - Math.log(minValue));
                   break;
-                case 'sqrt':
-                  normalizedValue = (Math.sqrt(sizeValue) - Math.sqrt(minValue)) / (Math.sqrt(maxValue) - Math.sqrt(minValue));
+                case "sqrt":
+                  normalizedValue =
+                    (Math.sqrt(sizeValue) - Math.sqrt(minValue)) /
+                    (Math.sqrt(maxValue) - Math.sqrt(minValue));
                   break;
                 default: // linear
-                  normalizedValue = (sizeValue - minValue) / (maxValue - minValue);
+                  normalizedValue =
+                    (sizeValue - minValue) / (maxValue - minValue);
               }
             }
-            
-            return sizeConfig.minSize + (normalizedValue * (sizeConfig.maxSize - sizeConfig.minSize));
+
+            return (
+              sizeConfig.minSize +
+              normalizedValue * (sizeConfig.maxSize - sizeConfig.minSize)
+            );
           });
-          
-          pointHoverRadii = (pointRadii as number[]).map(radius => radius * 1.5);
+
+          pointHoverRadii = (pointRadii as number[]).map(
+            (radius) => radius * 1.5,
+          );
         }
       }
 
@@ -268,7 +310,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
         yAxisID: datasetConfig.yAxisID,
         hidden: datasetConfig.hidden,
       };
-      
+
       // Add additional point styling if configured
       const datasetWithExtras = dataset as Record<string, unknown>;
       if (datasetConfig.pointBorderColor) {
@@ -280,7 +322,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       if (datasetConfig.showLine === false) {
         datasetWithExtras.showLine = false;
       }
-      
+
       return datasetWithExtras;
     }),
   };
@@ -395,11 +437,11 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           labelColor: (context: any) => {
             const dataset = context.dataset;
-            
+
             // Always use the dataset's configured colors
             return {
-              borderColor: dataset.borderColor || '#f3991f',
-              backgroundColor: dataset.borderColor || '#f3991f', // Use borderColor for both to ensure consistency
+              borderColor: dataset.borderColor || "#f3991f",
+              backgroundColor: dataset.borderColor || "#f3991f", // Use borderColor for both to ensure consistency
               borderWidth: 2,
             };
           },
@@ -407,14 +449,20 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           label: (context: any) => {
             // Use tooltipValue if available (for purchase amounts), otherwise use chart position value
             const dataPoint = context.dataset.data[context.dataIndex];
-            const value = dataPoint?.tooltipValue !== undefined ? dataPoint.tooltipValue : context.parsed.y;
+            const value =
+              dataPoint?.tooltipValue !== undefined
+                ? dataPoint.tooltipValue
+                : context.parsed.y;
             const metricName = context.dataset.label;
-            
+
             // Format purchase amounts with BTC suffix and add proper spacing
-            if (dataPoint?.tooltipValue !== undefined && metricName.includes("Purchase")) {
+            if (
+              dataPoint?.tooltipValue !== undefined &&
+              metricName.includes("Purchase")
+            ) {
               return ` ${metricName}: ${typeof value === "number" ? value.toLocaleString() : value} BTC`;
             }
-            
+
             return ` ${metricName}: ${typeof value === "number" ? value.toLocaleString() : value}`;
           },
         },
@@ -440,7 +488,10 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           ? {
               color: axis.ticks.color || "#ffffff",
               callback: axis.ticks.callback
-                ? new Function("value", `return (${axis.ticks.callback})(value)`)
+                ? new Function(
+                    "value",
+                    `return (${axis.ticks.callback})(value)`,
+                  )
                 : undefined,
             }
           : {
@@ -509,7 +560,12 @@ export const GenericChart: React.FC<GenericChartProps> = ({
     bar: Bar,
     scatter: Scatter,
     bubble: Bubble,
-  }[config.type] as React.ComponentType<{ data: unknown; options: unknown; plugins?: unknown[]; ref?: React.Ref<unknown> }>;
+  }[config.type] as React.ComponentType<{
+    data: unknown;
+    options: unknown;
+    plugins?: unknown[];
+    ref?: React.Ref<unknown>;
+  }>;
 
   const showExportButton = config.showExportButton ?? true;
   const heightStyles = getResponsiveHeightStyles(config.height);

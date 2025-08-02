@@ -1,4 +1,4 @@
-import { GoogleSheetData, KeyStatistic, ProcessorResult } from "../types";
+import { KeyStatistic, ProcessorResult } from "../types";
 
 // Ragnar Metric Names
 const RAGNAR_METRICS = {
@@ -8,20 +8,20 @@ const RAGNAR_METRICS = {
   BTC_IN_TREASURY: "BTC in Treasury",
   BTC_NAV: "BTC NAV",
   DEBT_USD: "Debt (USD)",
-  
+
   // Share metrics
   BASIC_SHARES_OUTSTANDING: "Basic shares outstanding",
   ASSUMED_FULLY_DILUTED_SHARES: "Assumed fully diluted shares",
   CURRENT_PRICE: "Current price",
   MARKET_CAP_LOCAL: "Market cap [local]",
   CURRENT_MARKET_CAP_USD: "Current market cap USD",
-  
+
   // mNAV metrics
   CURRENT_MNAV_BASIC: "Current mNAV (basic)",
   CURRENT_MNAV_FULLY_DILUTED: "Current mNAV (fully diluted)",
   FORWARD_BTC_IN_TREASURY: "Forward BTC in Treasury",
   FORWARD_MNAV: "Forward mNAV",
-  
+
   // Yield metrics
   BTC_YIELD_YTD_PERCENT: "BTC Yield YTD %",
   BTC_YIELD_DISCOUNT: "BTC Yield Discount",
@@ -29,7 +29,7 @@ const RAGNAR_METRICS = {
   BTC_YIELD_MULTIPLE: "BTC Yield Multiple",
   BTC_YIELD_MULTIPLE_1Y: "BTC Yield Multiple 1Y",
   TORQUE_ADJ_BTC_YIELD_Q2_PERCENT: "Torque adj. BTC Yield (Q2) %",
-  
+
   // Time-based metrics
   MONTHS: "Months",
   DAYS_TO_COVER_MNAV_91D: "Days to cover mNAV (91d)",
@@ -38,11 +38,11 @@ const RAGNAR_METRICS = {
   DAYS_TO_COVER_MNAV: "Days to cover mNAV",
   MONTHS_TO_COVER_MNAV: "Months to cover mNAV",
   RISK_ADJ_MONTHS_TO_COVER: "Risk adj. months to cover",
-  
+
   // Capital metrics
   INCREMENTAL_BTC_REQUIRED: "Incremental BTC Required",
   INCREMENTAL_CAPITAL_REQUIRED: "Incremental Capital Required",
-  
+
   // Purchase history metrics
   FIRST_PURCHASE: "First purchase",
   DAYS_SINCE_FIRST_PURCHASE: "Days since first purchase",
@@ -113,7 +113,9 @@ export function ragnarProcessor(
     unit?: string,
     prefix?: string,
   ) => {
-    const row = pairedRows.find((row) => row[TABLE_COLUMNS.METRIC] === metricName);
+    const row = pairedRows.find(
+      (row) => row[TABLE_COLUMNS.METRIC] === metricName,
+    );
     if (row) {
       let value = row[TABLE_COLUMNS.VALUE];
       // Clean up common prefixes from the value
@@ -152,7 +154,8 @@ export function ragnarProcessor(
     (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.CURRENT_MNAV_BASIC,
   );
   const dilutedMnavRow = pairedRows.find(
-    (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.CURRENT_MNAV_FULLY_DILUTED,
+    (row) =>
+      row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.CURRENT_MNAV_FULLY_DILUTED,
   );
   const forwardMnavRow = pairedRows.find(
     (row) => row[TABLE_COLUMNS.METRIC] === RAGNAR_METRICS.FORWARD_MNAV,
@@ -192,7 +195,12 @@ export function ragnarProcessor(
     4,
     "months",
   );
-  extractKeyStatistic(RAGNAR_METRICS.FORWARD_P_BYD, "forward-pbyd", "Forward P/BYD", 5);
+  extractKeyStatistic(
+    RAGNAR_METRICS.FORWARD_P_BYD,
+    "forward-pbyd",
+    "Forward P/BYD",
+    5,
+  );
   extractKeyStatistic(
     RAGNAR_METRICS.RISK_ADJ_MONTHS_TO_COVER,
     "risk-adj-mtc",

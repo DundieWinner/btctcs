@@ -1,4 +1,4 @@
-import { Company, GoogleSheetData } from "@/config/types";
+import { Company } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
 import {
