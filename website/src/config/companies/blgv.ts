@@ -267,7 +267,7 @@ export const blgvCompanyConfig: Company = {
     extractions: [
       {
         id: "blgv-stats",
-        title: "BLGV Key Stats",
+        title: "Key Stats",
         description: DESCRIPTIONS.btctcsData(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'Stats'!D2:E25"],
