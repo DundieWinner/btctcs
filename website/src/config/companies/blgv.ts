@@ -254,7 +254,7 @@ function blgvStatsProcessor(
 export const blgvCompanyConfig: Company = {
   id: "blgv",
   name: "Belgravia Hartford",
-  disclosure: DISCLOSURES.ragnarAndBtctcs(),
+  disclosure: DISCLOSURES.btctcsOnly(),
   emoji: "🇨🇦",
   curators: [
     {
