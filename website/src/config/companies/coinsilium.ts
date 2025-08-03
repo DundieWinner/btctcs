@@ -2,9 +2,10 @@ import { Company } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
 import {
+  type CompanyStatsConfig,
   createColumnFilterProcessor,
+  createCompanyStatsProcessor,
   createTreasuryActionsProcessor,
-  ragnarProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 import { DESCRIPTIONS } from "@/config/extractions/descriptions";
@@ -60,10 +61,103 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
 });
 
+const coinsiliumStatsConfig: CompanyStatsConfig = {
+  keyStatistics: [
+    {
+      metricName: "BTC in Treasury",
+      id: "btc-treasury",
+      label: "BTC in Treasury",
+      order: 1,
+    },
+    {
+      metricName: "Fwd Months to Cover mNAV",
+      id: "fwd-mtc-mnav",
+      label: "Fwd MTC mNAV",
+      order: 3,
+    },
+    {
+      metricName: "Forward P/BYD",
+      id: "fwd-p-byd",
+      label: "Fwd P/BYD",
+      order: 4,
+    },
+    {
+      metricName: "BTC Yield 30D",
+      id: "btc-yield-30d",
+      label: "BTC Yield YTD (30D)",
+      order: 5,
+    },
+  ],
+  combinedMetrics: [
+    {
+      id: "mnav-combined",
+      label: "mNAV (Basic / Fwd)",
+      order: 2,
+      metrics: [
+        { metricName: "mNAV", required: true },
+        { metricName: "Forward mNAV", required: true },
+      ],
+      separator: " / ",
+      style: {
+        accentColor: "rgb(249, 115, 22)",
+      },
+    },
+    {
+      id: "price-combined",
+      label: "Stock Price (Pence / USD)",
+      order: 6,
+      metrics: [
+        {
+          metricName: "Local Price (Pence)",
+          required: true,
+          format: "shorthand",
+        },
+        {
+          metricName: "Current Price (USD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+      ],
+      separator: " / ",
+      style: {
+        accentColor: "rgb(249, 115, 22)",
+      },
+    },
+    {
+      id: "mc-combined",
+      label: "Market Cap (GBP / USD)",
+      order: 7,
+      metrics: [
+        {
+          metricName: "Market Cap (GBP)",
+          required: true,
+          prefix: "£",
+          format: "shorthand",
+        },
+        {
+          metricName: "Market Cap (USD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+      ],
+      separator: " / ",
+      style: {
+        accentColor: "rgb(249, 115, 22)",
+      },
+    },
+  ],
+};
+
+const coinsiliumStatsProcessor = createCompanyStatsProcessor(
+  coinsiliumStatsConfig,
+);
+
 export const coinsiliumCompanyConfig: Company = {
   id: "coinsilium",
   name: "Coinsilium",
-  disclosure: DISCLOSURES.ragnarAndBtctcs(),
+  disclosure: DISCLOSURES.btctcsOnly(),
   emoji: "🇬🇧",
   curators: [
     {
@@ -75,12 +169,12 @@ export const coinsiliumCompanyConfig: Company = {
   googleSheet: {
     extractions: [
       {
-        id: "ragnar",
-        title: "Ragnar Stats",
-        description: DESCRIPTIONS.ragnarStats(),
-        spreadsheetId: GOOGLE_SHEET_IDS.RAGNAR_COMPARISON,
-        ranges: ["'Ragnar Comparison'!A2:A70", "'Ragnar Comparison'!G2:G70"],
-        processor: ragnarProcessor,
+        id: "coinsilium-stats",
+        title: "Key Stats",
+        description: DESCRIPTIONS.btctcsData(),
+        spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
+        ranges: ["Stats!G2:H19"],
+        processor: coinsiliumStatsProcessor,
         renderLocation: "sidebar",
       },
       {
