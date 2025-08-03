@@ -14,7 +14,7 @@ from shared_utils.google_sheets import load_bitcoin_data_from_sheet
 
 company_name = "Coinsilium"
 COIN_SPREADSHEET_ID = "1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q"
-COIN_SHEET_RANGE = "Coinsilium Historical"
+COIN_SHEET_RANGE = "Coinsilium|H"
 COIN_DATE_COLUMN = "Date"
 COIN_BTC_BALANCE_COLUMN = "BTC Held"
 COIN_SHARES_COLUMN = "Outstanding Shares"

@@ -24,6 +24,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from typing import List
+from urllib.parse import quote
 
 import pandas as pd
 import requests
@@ -80,7 +81,7 @@ def get_sheet_data(spreadsheet_id: str, range_name: str = 'Sheet1') -> List[List
         )
     
     # Build API URL
-    url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/{range_name}"
+    url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/{quote(range_name)}"
     params = {
         'key': api_key,
         'majorDimension': 'ROWS',
@@ -88,7 +89,7 @@ def get_sheet_data(spreadsheet_id: str, range_name: str = 'Sheet1') -> List[List
     }
     
     try:
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=4)
         response.raise_for_status()
         
         data = response.json()

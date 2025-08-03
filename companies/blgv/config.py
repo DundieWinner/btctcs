@@ -14,7 +14,7 @@ from shared_utils.google_sheets import load_bitcoin_data_from_sheet
 
 company_name = "BLGV"
 BLGV_SPREADSHEET_ID = "1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q"
-BLGV_SHEET_RANGE = "BLGV Historical"
+BLGV_SHEET_RANGE = "BLGV|H"
 BLGV_DATE_COLUMN = "Date"
 BLGV_BTC_BALANCE_COLUMN = "BTC Held"
 BLGV_SHARES_COLUMN = "FD Shares"
