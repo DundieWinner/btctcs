@@ -57,7 +57,7 @@ export function createBitcoinAcquisitionsChart(
           pointSize: {
             column: config.purchaseColumn,
             minSize: 8,
-            maxSize: 18,
+            maxSize: 16,
             scale: "sqrt",
           },
         },
@@ -95,7 +95,7 @@ export function createBitcoinAcquisitionsChart(
         },
         ticks: {
           color: bitcoinOrange,
-          callback: "(value) => '$' + value.toLocaleString()",
+          callback: "(value) => { if (value >= 1000000) { return '$' + (value / 1000000).toFixed(0) + 'M'; } else if (value >= 1000) { return '$' + (value / 1000).toFixed(0) + 'k'; } else { return '$' + value.toString(); } }",
         },
         grid: {
           color: whiteGrid,
