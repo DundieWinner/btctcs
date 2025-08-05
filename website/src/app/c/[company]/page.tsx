@@ -177,7 +177,7 @@ async function CompanyDashboard({ company }: { company: string }) {
 
 export default async function CompanyPage({ params }: CompanyPageProps) {
   const { company } = await params;
-  const companyName = company.toUpperCase();
+  const companyName = company.toUpperCase().split("-").join(" ");
 
   return (
     <>

@@ -91,13 +91,7 @@ export default function ImageBoard({
   }, [selectedImage, currentIndex, goToNext, goToPrevious]);
 
   if (images.length === 0) {
-    return (
-      <div className="text-center py-8 sm:py-12">
-        <p className="text-gray-300 text-lg">
-          No images found for {companyName}
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (

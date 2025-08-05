@@ -1,6 +1,6 @@
 export interface Curator {
   name: string;
-  github: string;
+  github?: string;
   x?: string; // Optional X handle
 }
 
