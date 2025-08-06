@@ -17,6 +17,8 @@ export interface HistoricalPerformanceConfig {
   mnavColumn: string;
   primarySatsLabel: string;
   secondarySatsLabel: string;
+  sharePriceLabel?: string;
+  sharePriceAxisTitle?: string;
   mnavLabel: string;
   title?: string;
   height?:
@@ -34,6 +36,9 @@ export interface HistoricalPerformanceConfig {
 /**
  * Creates a standardized historical performance chart configuration
  * Shows sats per share, share price, and mNAV metrics over time with multiple axes
+ * 
+ * @param config.sharePriceLabel - Optional label for the stock price series (defaults to "Share Price (USD)")
+ * @param config.sharePriceAxisTitle - Optional title for the stock price axis (defaults to "Share Price (USD)")
  */
 export function createHistoricalPerformanceChart(
   config: HistoricalPerformanceConfig,
@@ -75,7 +80,7 @@ export function createHistoricalPerformanceChart(
         yAxisID: "sats",
       },
       {
-        label: "Share Price (USD)",
+        label: config.sharePriceLabel || "Share Price (USD)",
         mapping: {
           x: config.dateColumn,
           y: config.sharePriceColumn,
@@ -139,7 +144,7 @@ export function createHistoricalPerformanceChart(
         position: "right",
         title: {
           display: true,
-          text: "Share Price (USD)",
+          text: config.sharePriceAxisTitle || "Share Price (USD)",
           color: white,
         },
         ticks: {

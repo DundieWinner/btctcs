@@ -17,13 +17,13 @@ const COLUMN_HEADERS = {
   DESCRIPTION: "Description",
 
   // Bitcoin and Price columns
-  BTC_PRICE_USD: "BTC Price (USD)",
+  BTC_PRICE_AUD: "BTC Price (AUD)",
   BTC_PURCHASE: "BTC Purchase",
   BTC_HELD: "BTC Held",
   CHANGE_IN_BTC: "Change in BTC",
 
   // Share and Equity columns
-  CLOSING_PRICE_USD: "Closing Price (USD)",
+  CLOSING_PRICE_AUD: "Closing Price (AUD)",
   SHARE_COUNT: "Share Count",
   FD_SHARE_COUNT: "FD Share Count",
   SATS_PER_FD_SHARE: "Sats / FD Share",
@@ -37,9 +37,9 @@ const COLUMN_HEADERS = {
 const bitcoinPriceProcessor = createColumnFilterProcessor({
   requiredColumns: [
     COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.BTC_PRICE_USD,
+    COLUMN_HEADERS.BTC_PRICE_AUD,
     COLUMN_HEADERS.BTC_PURCHASE,
-    COLUMN_HEADERS.CLOSING_PRICE_USD,
+    COLUMN_HEADERS.CLOSING_PRICE_AUD,
     COLUMN_HEADERS.SATS_PER_FD_SHARE,
     COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
     COLUMN_HEADERS.FWD_MNAV,
@@ -276,7 +276,7 @@ export const locateCompanyConfig: Company = {
         charts: [
           createBitcoinAcquisitionsChart({
             dateColumn: COLUMN_HEADERS.DATE,
-            priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
+            priceColumn: COLUMN_HEADERS.BTC_PRICE_AUD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
             title: "Bitcoin Acquisitions",
             height: {
@@ -289,10 +289,12 @@ export const locateCompanyConfig: Company = {
             dateColumn: COLUMN_HEADERS.DATE,
             primarySatsColumn: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
             secondarySatsColumn: COLUMN_HEADERS.SATS_PER_FD_SHARE,
-            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_USD,
+            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_AUD,
             mnavColumn: COLUMN_HEADERS.FWD_MNAV,
             primarySatsLabel: "Fwd Sats / Share",
             secondarySatsLabel: "Sats / Share",
+            sharePriceLabel: "Share Price (AUD)",
+            sharePriceAxisTitle: "Share Price (AUD)",
             mnavLabel: "Fwd mNAV",
             title: "Historical Performance",
             height: {
