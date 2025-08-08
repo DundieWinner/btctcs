@@ -8,10 +8,11 @@ Currently tracking the following Bitcoin treasury companies:
 
 | Company | Curator(s) | Country | Data Source(s) |
 |---------|------------|---------|----------------|
-| 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada | [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE), [GSheet](https://docs.google.com/spreadsheets/d/1tDNcdBkiQn8HJ-UkWDsKDlgeFwNa_ck3fiPPDtIVPlw/edit?usp=sharing) |
+| 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada | [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE), [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
 | 🇸🇪 H100 | [@DunderHodl](https://x.com/DunderHodl) | Sweden | https://treasury.h100.group, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
-| 🇨🇦 LQWD | [@DunderHodl](https://x.com/DunderHodl) | Canada | https://treasury.lqwdtech.com |
+| 🇦🇺 Locate Technologies | [@Eh_0z](https://x.com/Eh_0z) | Australia | [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
 | 🇯🇵 Metaplanet | [@DunderHodl](https://x.com/DunderHodl) | Japan | https://metaplanet.strategytracker.com, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
+| 🇫🇷 SQNS | [@american_roci](https://x.com/american_roci) | France | [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
 
 *Want to help curate data for these or other companies? See [Contributing](http://btctcs.com/contributing).
 
