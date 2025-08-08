@@ -43,7 +43,7 @@ async function CompanyDashboard({ company }: { company: string }) {
 
   try {
     // Fetch both S3 images and Google Sheets data
-    const images = await fetchCompanyImages(company);
+    const images = await fetchCompanyImages(companyData?.s3Key ?? company);
 
     // Check if this company has Google Sheets configuration
     let extractedData: ProcessedExtraction[] = [];

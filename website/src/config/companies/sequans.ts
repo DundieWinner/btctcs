@@ -125,6 +125,7 @@ const sequansStatsProcessor = createCompanyStatsProcessor(sequansStatsConfig);
 
 export const sequansCompanyConfig: Company = {
   id: "sequans-communications",
+  s3Key: "sequans",
   name: "Sequans Communications",
   disclosure: DISCLOSURES.btctcsOnly(),
   emoji: "🇫🇷",

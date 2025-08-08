@@ -227,6 +227,7 @@ export interface GoogleSheetConfig {
 
 export interface Company {
   id: string;
+  s3Key?: string;
   name: string;
   emoji: string;
   disclosure?: string;
