@@ -1,4 +1,7 @@
 export const bitcoinOrange = "#f3991f";
+
+// BTCTCS accent orange (used for company stats, combined metrics, etc)
+export const btctcsOrange = "rgb(249, 115, 22)";
 export const bitcoinOrangeLight = "rgba(243, 153, 31, 0.1)";
 export const bitcoinOrangeMedium = "rgba(243, 153, 31, 0.2)";
 

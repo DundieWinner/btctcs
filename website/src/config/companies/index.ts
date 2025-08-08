@@ -4,6 +4,7 @@ import { metaplanetCompanyConfig } from "@/config/companies/metaplanet";
 import { Company } from "../types";
 import { coinsiliumCompanyConfig } from "@/config/companies/coinsilium";
 import { locateCompanyConfig } from "@/config/companies/locate";
+import { sequansCompanyConfig } from "@/config/companies/sequans";
 
 export const companies: Company[] = [
   blgvCompanyConfig,
@@ -11,6 +12,7 @@ export const companies: Company[] = [
   h100CompanyConfig,
   metaplanetCompanyConfig,
   locateCompanyConfig,
+  sequansCompanyConfig,
 ];
 
 export const getCompanyById = (id: string): Company | undefined => {

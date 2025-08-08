@@ -162,7 +162,7 @@ export const locateCompanyConfig: Company = {
   emoji: "🇦🇺",
   curators: [
     {
-      name: "Eh_0z",
+      name: "@Eh_0z",
       x: "Eh_0z",
     },
   ],
