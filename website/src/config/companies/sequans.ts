@@ -118,7 +118,6 @@ const sequansStatsConfig: CompanyStatsConfig = {
         accentColor: btctcsOrange,
       },
     },
-
   ],
 };
 
