@@ -9,6 +9,7 @@ Currently tracking the following Bitcoin treasury companies:
 | Company | Curator(s) | Country | Data Source(s) |
 |---------|------------|---------|----------------|
 | 🇬🇧 BLGV | [@DunderHodl](https://x.com/DunderHodl) | Canada | [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE), [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
+| 🇬🇮 Coinsilium | [@DunderHodl](https://x.com/DunderHodl) | Gibraltar | [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
 | 🇸🇪 H100 | [@DunderHodl](https://x.com/DunderHodl) | Sweden | https://treasury.h100.group, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
 | 🇦🇺 Locate Technologies | [@Eh_0z](https://x.com/Eh_0z) | Australia | [GSheet](https://docs.google.com/spreadsheets/d/1hyRTvjiXQbXU6UnPmZoRDF9Rs7vL8YYYfFsrqu6Jk8Q/edit?usp=sharing) |
 | 🇯🇵 Metaplanet | [@DunderHodl](https://x.com/DunderHodl) | Japan | https://metaplanet.strategytracker.com, [Ragnar GSheet](https://docs.google.com/spreadsheets/d/1hzlHsDwhcwRr3cPrZZBlavMU3mFda1CX6gVHJvURhzE) |
