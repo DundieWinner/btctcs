@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { uiHost } from "@/config/environment";
+import { baseUrl } from "@/config/environment";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    host: uiHost,
-    sitemap: `${uiHost}/sitemap.xml`,
+    host: baseUrl,
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
