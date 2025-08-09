@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getCompanyById } from "@/config/companies";
 import { baseUrl } from "@/config/environment";
-import { fetchCompanyImages } from "@/services/s3Images";
 
 // Generate metadata for each company page
 export async function generateCompanyMetadata(
@@ -9,15 +8,8 @@ export async function generateCompanyMetadata(
 ): Promise<Metadata> {
   const companyData = getCompanyById(company);
 
-  // Fetch the first image for the feature image
-  let featureImage: string | undefined;
-  try {
-    const images = await fetchCompanyImages(company);
-    featureImage = images.length > 0 ? images[0] : undefined;
-  } catch (error) {
-    console.error("Error fetching images for metadata:", error);
-    featureImage = undefined;
-  }
+  // Use standardized feature image path
+  const featureImage = `${baseUrl}/images/companies/${company}.jpg`;
 
   if (!companyData) {
     const baseMetadata = {
