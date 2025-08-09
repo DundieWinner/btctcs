@@ -50,6 +50,7 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
     [COLUMN_HEADERS.EST_FIAT_BALANCE]: 5, // Column F
     [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
     [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
+    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 17, // Column R
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
@@ -185,6 +186,13 @@ export const sequansCompanyConfig: Company = {
           },
           {
             key: COLUMN_HEADERS.SATS_PER_FD_SHARE,
+            type: "number",
+            decimals: 1,
+            thousandsSeparator: true,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
