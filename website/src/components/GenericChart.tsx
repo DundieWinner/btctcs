@@ -577,7 +577,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
       : null;
 
   return (
-    <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
+    <div className="bg-gray-900/50 rounded-lg p-2 md:p-4 mb-6">
       {/* Inject responsive CSS */}
       {responsiveCSS && (
         <style dangerouslySetInnerHTML={{ __html: responsiveCSS }} />
