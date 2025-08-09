@@ -3,8 +3,8 @@ import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisit
 import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
 import {
   type CompanyStatsConfig,
-  createCompanyStatsProcessor,
   createColumnFilterProcessor,
+  createCompanyStatsProcessor,
   createTreasuryActionsProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
@@ -48,9 +48,8 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
     [COLUMN_HEADERS.CHANGE_IN_BTC]: 2, // Column C
     [COLUMN_HEADERS.BTC_HELD]: 3, // Column D
     [COLUMN_HEADERS.EST_FIAT_BALANCE]: 5, // Column F
-    [COLUMN_HEADERS.FD_SHARE_COUNT]: 11, // Column L
-    [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 13, // Column N
-    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 15, // Column P
+    [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
+    [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
@@ -77,9 +76,9 @@ const sequansStatsConfig: CompanyStatsConfig = {
       order: 4,
     },
     {
-      metricName: "BTC Yield YTD",
-      id: "btc-yield-ytd",
-      label: "BTC Yield YTD",
+      metricName: "BTC Yield T30D",
+      id: "btc-yield-t30d",
+      label: "BTC Yield T30D",
       order: 5,
     },
     {
@@ -148,20 +147,89 @@ export const sequansCompanyConfig: Company = {
       },
       {
         id: "history-sqns-ta",
-        title: "Treasury Actions (SQNS|TA)",
+        title: "Treasury Actions",
         description: DESCRIPTIONS.treasuryActions(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
         ranges: ["'SQNS|TA'!A1:AA1000"],
         processor: treasuryActionsProcessor,
         renderLocation: "bottom",
         hasHeaders: true,
+        // Column formatting
+        columnFormats: [
+          {
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
+            type: "number",
+            decimals: 8,
+            thousandsSeparator: true,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.BTC_HELD,
+            type: "number",
+            decimals: 8,
+            thousandsSeparator: true,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.EST_FIAT_BALANCE,
+            type: "currency",
+            decimals: 0,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.FD_SHARE_COUNT,
+            type: "number",
+            decimals: 0,
+            thousandsSeparator: true,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.SATS_PER_FD_SHARE,
+            type: "number",
+            decimals: 1,
+            thousandsSeparator: true,
+            textAlign: "right",
+          },
+        ],
+
+        // Conditional styling for positive/negative changes
+        conditionalStyles: [
+          {
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
+            condition: "positive",
+            style: {
+              backgroundColor: "rgba(34, 197, 94, 0.2)", // green-500 with opacity
+              textColor: "rgb(34, 197, 94)", // green-500
+              fontWeight: "bold",
+            },
+          },
+          {
+            key: COLUMN_HEADERS.CHANGE_IN_BTC,
+            condition: "negative",
+            style: {
+              backgroundColor: "rgba(239, 68, 68, 0.2)", // red-500 with opacity
+              textColor: "rgb(239, 68, 68)", // red-500
+              fontWeight: "bold",
+            },
+          },
+        ],
+        columnWidths: {
+          [COLUMN_HEADERS.DATE]: "120px",
+          [COLUMN_HEADERS.DESCRIPTION]: "250px",
+          [COLUMN_HEADERS.CHANGE_IN_BTC]: "140px",
+          [COLUMN_HEADERS.BTC_HELD]: "140px",
+          [COLUMN_HEADERS.EST_FIAT_BALANCE]: "150px",
+          [COLUMN_HEADERS.FD_SHARE_COUNT]: "150px",
+          [COLUMN_HEADERS.SATS_PER_FD_SHARE]: "130px",
+          [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: "130px",
+        },
       },
       {
         id: "history-sqns-h",
-        title: "Historical Performance (SQNS|H)",
+        title: "Historical Performance",
         description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'SQNS|H'!A1:S1000"],
+        ranges: ["'SQNS|H'!A1:T1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",

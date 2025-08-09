@@ -36,7 +36,7 @@ export interface HistoricalPerformanceConfig {
 /**
  * Creates a standardized historical performance chart configuration
  * Shows sats per share, share price, and mNAV metrics over time with multiple axes
- * 
+ *
  * @param config.sharePriceLabel - Optional label for the stock price series (defaults to "Share Price (USD)")
  * @param config.sharePriceAxisTitle - Optional title for the stock price axis (defaults to "Share Price (USD)")
  */
@@ -61,8 +61,8 @@ export function createHistoricalPerformanceChart(
         borderColor: bitcoinOrange,
         backgroundColor: bitcoinOrangeMedium,
         tension: 0,
-        pointRadius: 5,
-        pointHoverRadius: 7,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         yAxisID: "sats",
       },
       {
@@ -75,8 +75,8 @@ export function createHistoricalPerformanceChart(
         backgroundColor: "#f9cc8f",
         borderDash: [5, 5],
         tension: 0,
-        pointRadius: 3,
-        pointHoverRadius: 7,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         yAxisID: "sats",
       },
       {
@@ -103,8 +103,8 @@ export function createHistoricalPerformanceChart(
         backgroundColor: emeraldGreenMedium,
         borderDash: [10, 5],
         tension: 0,
-        pointRadius: 2,
-        pointHoverRadius: 4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         yAxisID: "mnav",
       },
     ],

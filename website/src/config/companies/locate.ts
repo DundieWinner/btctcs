@@ -31,6 +31,7 @@ const COLUMN_HEADERS = {
 
   // Financial columns
   EST_FIAT_BALANCE: "Est. Fiat Balance (AUD)",
+  DEBT_BALANCE: "Debt (AUD)",
   FWD_MNAV: "Fwd mNAV",
 } as const;
 
@@ -54,9 +55,10 @@ const treasuryActionsProcessor = createTreasuryActionsProcessor({
     [COLUMN_HEADERS.CHANGE_IN_BTC]: 2, // Column C
     [COLUMN_HEADERS.BTC_HELD]: 3, // Column D
     [COLUMN_HEADERS.EST_FIAT_BALANCE]: 5, // Column F
-    [COLUMN_HEADERS.FD_SHARE_COUNT]: 11, // Column L
-    [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 13, // Column N
-    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 15, // Column P
+    [COLUMN_HEADERS.DEBT_BALANCE]: 7, // Column H
+    [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
+    [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
+    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 17, // Column R
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
@@ -83,20 +85,19 @@ const locateStatsConfig: CompanyStatsConfig = {
       order: 4,
     },
     {
-      metricName: "BTC Yield 30D",
-      id: "btc-yield-30d",
-      label: "BTC Yield YTD (30D)",
+      metricName: "BTC Yield T30D",
+      id: "btc-yield-t30d",
+      label: "BTC Yield T30D",
       order: 5,
     },
   ],
   combinedMetrics: [
     {
       id: "mnav-combined",
-      label: "mNAV (Basic / Fully Diluted / Fwd)",
+      label: "mNAV (Basic / Fwd)",
       order: 2,
       metrics: [
-        { metricName: "mNAV (Basic)", required: true },
-        { metricName: "mNAV (Fully Diluted)", required: true },
+        { metricName: "mNAV", required: true },
         { metricName: "Forward mNAV", required: true },
       ],
       separator: " / ",
@@ -150,6 +151,29 @@ const locateStatsConfig: CompanyStatsConfig = {
         accentColor: "rgb(249, 115, 22)",
       },
     },
+    {
+      id: "enterprise-combined",
+      label: "Enterprise Value (AUD / USD)",
+      order: 8,
+      metrics: [
+        {
+          metricName: "Enterprise Value (AUD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+        {
+          metricName: "Enterprise Value (USD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+      ],
+      separator: " / ",
+      style: {
+        accentColor: "rgb(249, 115, 22)",
+      },
+    },
   ],
 };
 
@@ -173,7 +197,7 @@ export const locateCompanyConfig: Company = {
         title: "Key Stats",
         description: DESCRIPTIONS.btctcsData(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["Stats!J2:K27"],
+        ranges: ["Stats!J2:K24"],
         processor: locateStatsProcessor,
         renderLocation: "sidebar",
       },
@@ -205,6 +229,12 @@ export const locateCompanyConfig: Company = {
           },
           {
             key: COLUMN_HEADERS.EST_FIAT_BALANCE,
+            type: "currency",
+            decimals: 0,
+            textAlign: "right",
+          },
+          {
+            key: COLUMN_HEADERS.DEBT_BALANCE,
             type: "currency",
             decimals: 0,
             textAlign: "right",
@@ -259,6 +289,7 @@ export const locateCompanyConfig: Company = {
           [COLUMN_HEADERS.CHANGE_IN_BTC]: "140px",
           [COLUMN_HEADERS.BTC_HELD]: "140px",
           [COLUMN_HEADERS.EST_FIAT_BALANCE]: "150px",
+          [COLUMN_HEADERS.DEBT_BALANCE]: "150px",
           [COLUMN_HEADERS.FD_SHARE_COUNT]: "150px",
           [COLUMN_HEADERS.SATS_PER_FD_SHARE]: "130px",
           [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: "130px",
