@@ -68,7 +68,7 @@ const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
     [COLUMN_HEADERS.DEBT_CAD]: 7, // Column H
     [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
     [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
-    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 19, // Column T
+    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 17, // Column R
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
