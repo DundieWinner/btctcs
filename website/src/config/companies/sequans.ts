@@ -142,7 +142,7 @@ export const sequansCompanyConfig: Company = {
         title: "Key Stats",
         description: DESCRIPTIONS.btctcsData(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["Stats!M2:N21"],
+        ranges: ["Stats!M2:N20"],
         processor: sequansStatsProcessor,
         renderLocation: "sidebar",
       },
@@ -247,11 +247,6 @@ export const sequansCompanyConfig: Company = {
             priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
             title: "Bitcoin Acquisitions",
-            height: {
-              default: 400,
-              md: 550,
-              lg: 650,
-            },
           }),
           createHistoricalPerformanceChart({
             dateColumn: COLUMN_HEADERS.DATE,
@@ -265,10 +260,6 @@ export const sequansCompanyConfig: Company = {
             sharePriceAxisTitle: "Share Price (USD)",
             mnavLabel: "Fwd mNAV",
             title: "Historical Performance",
-            height: {
-              default: 350,
-              md: 500,
-            },
           }),
         ],
       },

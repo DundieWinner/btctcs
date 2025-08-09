@@ -24,25 +24,25 @@ const COLUMN_HEADERS = {
   CHANGE_IN_BTC: "Change in BTC",
 
   // Share and Equity columns
+  CLOSING_PRICE_CAD: "Closing Price (CAD)",
   CLOSING_PRICE_USD: "Closing Price (USD)",
   FD_SHARE_COUNT: "FD Share Count",
   SATS_PER_FD_SHARE: "Sats / FD Share",
-  SATS_EQ_PER_FD_SHARE: "Sats Eq. / FD Share",
-  FWD_SATS_EQ_PER_FD_SHARE: "Fwd Sats Eq. / FD Share",
+  FWD_SATS_PER_FD_SHARE: "Fwd Sats / FD Share",
 
   // Financial columns
   EST_CAD_BALANCE: "Est. CAD Balance",
   DEBT_CAD: "Debt (CAD)",
-  FWD_EQ_MNAV: "Fwd Eq. mNAV",
+  FWD_MNAV: "Fwd mNAV",
 } as const;
 
 const blgvHistoricalProcessor = createColumnFilterProcessor({
   requiredColumns: [
     COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+    COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
     COLUMN_HEADERS.SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.CLOSING_PRICE_USD,
-    COLUMN_HEADERS.FWD_EQ_MNAV,
+    COLUMN_HEADERS.CLOSING_PRICE_CAD,
+    COLUMN_HEADERS.FWD_MNAV,
   ],
   dateColumn: COLUMN_HEADERS.DATE,
   startDate: "2025-07-17",
@@ -68,8 +68,7 @@ const blgvTreasuryActionsProcessor = createTreasuryActionsProcessor({
     [COLUMN_HEADERS.DEBT_CAD]: 7, // Column H
     [COLUMN_HEADERS.FD_SHARE_COUNT]: 13, // Column N
     [COLUMN_HEADERS.SATS_PER_FD_SHARE]: 15, // Column P
-    [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: 17, // Column R
-    [COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE]: 19, // Column T
+    [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: 19, // Column T
   },
   dateColumn: COLUMN_HEADERS.DATE,
   descriptionColumn: COLUMN_HEADERS.DESCRIPTION,
@@ -96,20 +95,19 @@ const blgvStatsConfig: CompanyStatsConfig = {
       order: 4,
     },
     {
-      metricName: "BTC Yield 30D",
-      id: "btc-yield-30d",
-      label: "BTC Yield YTD (30D)",
+      metricName: "BTC Yield T30D",
+      id: "btc-yield-t30d",
+      label: "BTC Yield T30D",
       order: 5,
     },
   ],
   combinedMetrics: [
     {
       id: "mnav-combined",
-      label: "mNAV (Basic / Fully Diluted / Fwd)",
+      label: "mNAV (Basic / Fwd)",
       order: 2,
       metrics: [
-        { metricName: "mNAV (Basic)", required: true },
-        { metricName: "mNAV (Fully Diluted)", required: true },
+        { metricName: "mNAV", required: true },
         { metricName: "Forward mNAV", required: true },
       ],
       separator: " / ",
@@ -163,6 +161,29 @@ const blgvStatsConfig: CompanyStatsConfig = {
         accentColor: "rgb(249, 115, 22)",
       },
     },
+    {
+      id: "enterprise-combined",
+      label: "Enterprise Value (CAD / USD)",
+      order: 8,
+      metrics: [
+        {
+          metricName: "Enterprise Value (CAD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+        {
+          metricName: "Enterprise Value (USD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+      ],
+      separator: " / ",
+      style: {
+        accentColor: "rgb(249, 115, 22)",
+      },
+    },
   ],
 };
 
@@ -187,7 +208,7 @@ export const blgvCompanyConfig: Company = {
         title: "Key Stats",
         description: DESCRIPTIONS.btctcsData(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["Stats!D2:E25"],
+        ranges: ["Stats!D2:E23"],
         processor: blgvStatsProcessor,
         renderLocation: "sidebar",
       },
@@ -244,14 +265,7 @@ export const blgvCompanyConfig: Company = {
             textAlign: "right",
           },
           {
-            key: COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE,
-            type: "number",
-            decimals: 1,
-            thousandsSeparator: true,
-            textAlign: "right",
-          },
-          {
-            key: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+            key: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
             type: "number",
             decimals: 1,
             thousandsSeparator: true,
@@ -291,8 +305,7 @@ export const blgvCompanyConfig: Company = {
           [COLUMN_HEADERS.DEBT_CAD]: "130px",
           [COLUMN_HEADERS.FD_SHARE_COUNT]: "150px",
           [COLUMN_HEADERS.SATS_PER_FD_SHARE]: "130px",
-          [COLUMN_HEADERS.SATS_EQ_PER_FD_SHARE]: "130px",
-          [COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE]: "130px",
+          [COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE]: "130px",
         },
       },
       {
@@ -310,11 +323,6 @@ export const blgvCompanyConfig: Company = {
             priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
             title: "Bitcoin Acquisitions",
-            height: {
-              default: 400,
-              md: 550,
-              lg: 650,
-            },
           }),
         ],
       },
@@ -323,25 +331,23 @@ export const blgvCompanyConfig: Company = {
         title: "Historical Performance",
         description: DESCRIPTIONS.historicalPerformance(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'BLGV|H'!A1:S1000"],
+        ranges: ["'BLGV|H'!A1:Y1000"],
         processor: blgvHistoricalProcessor,
         hasHeaders: true,
         renderLocation: "none",
         charts: [
           createHistoricalPerformanceChart({
             dateColumn: COLUMN_HEADERS.DATE,
-            primarySatsColumn: COLUMN_HEADERS.FWD_SATS_EQ_PER_FD_SHARE,
+            primarySatsColumn: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
             secondarySatsColumn: COLUMN_HEADERS.SATS_PER_FD_SHARE,
-            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_USD,
-            mnavColumn: COLUMN_HEADERS.FWD_EQ_MNAV,
-            primarySatsLabel: "Fwd Sats Eq. / FD Share",
+            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_CAD,
+            mnavColumn: COLUMN_HEADERS.FWD_MNAV,
+            primarySatsLabel: "Fwd Sats / FD Share",
             secondarySatsLabel: "Sats / FD Share",
-            mnavLabel: "Fwd Eq. mNAV",
+            mnavLabel: "Fwd mNAV",
+            sharePriceLabel: "Share Price (CAD)",
+            sharePriceAxisTitle: "CAD",
             title: "Historical Performance",
-            height: {
-              default: 350,
-              md: 500,
-            },
           }),
         ],
       },

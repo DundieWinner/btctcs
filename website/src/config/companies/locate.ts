@@ -197,7 +197,7 @@ export const locateCompanyConfig: Company = {
         title: "Key Stats",
         description: DESCRIPTIONS.btctcsData(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["Stats!J2:K24"],
+        ranges: ["Stats!J2:K23"],
         processor: locateStatsProcessor,
         renderLocation: "sidebar",
       },
@@ -310,11 +310,6 @@ export const locateCompanyConfig: Company = {
             priceColumn: COLUMN_HEADERS.BTC_PRICE_AUD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
             title: "Bitcoin Acquisitions",
-            height: {
-              default: 400,
-              md: 550,
-              lg: 650,
-            },
           }),
           createHistoricalPerformanceChart({
             dateColumn: COLUMN_HEADERS.DATE,
@@ -328,10 +323,6 @@ export const locateCompanyConfig: Company = {
             sharePriceAxisTitle: "Share Price (AUD)",
             mnavLabel: "Fwd mNAV",
             title: "Historical Performance",
-            height: {
-              default: 350,
-              md: 500,
-            },
           }),
         ],
       },

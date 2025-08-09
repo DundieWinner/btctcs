@@ -139,7 +139,7 @@ async function CompanyDashboard({ company }: { company: string }) {
             )}
 
             {/* Sidebar - Responsive */}
-            <div className="w-full xl:w-96 2xl:w-130 flex-shrink-0 flex flex-col gap-6">
+            <div className="w-full xl:w-96 2xl:w-auto flex-shrink-0 flex flex-col gap-6">
               {sidebarExtractions.length > 0 && (
                 <GoogleSheetsSection extractions={sidebarExtractions} />
               )}

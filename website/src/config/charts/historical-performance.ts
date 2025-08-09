@@ -47,8 +47,9 @@ export function createHistoricalPerformanceChart(
     type: "line",
     title: config.title || "Historical Performance",
     height: config.height || {
-      default: 350,
-      md: 500,
+      default: 400,
+      md: 550,
+      lg: 650,
     },
     animation: false,
     datasets: [
@@ -144,7 +145,7 @@ export function createHistoricalPerformanceChart(
         position: "right",
         title: {
           display: true,
-          text: config.sharePriceAxisTitle || "Share Price (USD)",
+          text: config.sharePriceAxisTitle || "USD",
           color: white,
         },
         ticks: {
