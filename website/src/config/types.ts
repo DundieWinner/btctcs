@@ -142,6 +142,9 @@ export interface ChartAxis {
   ticks?: {
     color?: string;
     callback?: string; // Function name for custom formatting
+    maxTicksLimit?: number; // Maximum number of ticks to display
+    stepSize?: number; // Fixed step size between ticks
+    precision?: number; // Number of decimal places
   };
   grid?: {
     display?: boolean;

@@ -95,8 +95,9 @@ export function createBitcoinAcquisitionsChart(
         },
         ticks: {
           color: bitcoinOrange,
+          maxTicksLimit: 8,
           callback:
-            "(value) => { if (value >= 1000000) { return '$' + (value / 1000000).toFixed(0) + 'M'; } else if (value >= 1000) { return '$' + (value / 1000).toFixed(0) + 'k'; } else { return '$' + value.toString(); } }",
+            "(value) => { const val = Number(value); if (val >= 1000000) { const millions = val / 1000000; return millions % 1 === 0 ? '$' + millions.toFixed(0) + 'M' : '$' + millions.toFixed(1) + 'M'; } else if (val >= 1000) { const thousands = val / 1000; return thousands % 1 === 0 ? '$' + thousands.toFixed(0) + 'k' : '$' + thousands.toFixed(1) + 'k'; } else { return '$' + val.toLocaleString(); } }",
         },
         grid: {
           color: whiteGrid,

@@ -134,6 +134,7 @@ export function createHistoricalPerformanceChart(
         },
         ticks: {
           color: bitcoinOrange,
+          maxTicksLimit: 8,
         },
         grid: {
           color: whiteGrid,
@@ -150,6 +151,7 @@ export function createHistoricalPerformanceChart(
         },
         ticks: {
           color: white,
+          maxTicksLimit: 8,
         },
         grid: {
           drawOnChartArea: false,
@@ -166,6 +168,7 @@ export function createHistoricalPerformanceChart(
         },
         ticks: {
           color: emeraldGreen,
+          maxTicksLimit: 8,
         },
         grid: {
           drawOnChartArea: false,

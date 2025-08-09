@@ -487,6 +487,9 @@ export const GenericChart: React.FC<GenericChartProps> = ({
         ticks: axis.ticks
           ? {
               color: axis.ticks.color || "#ffffff",
+              maxTicksLimit: axis.ticks.maxTicksLimit,
+              stepSize: axis.ticks.stepSize,
+              precision: axis.ticks.precision,
               callback: axis.ticks.callback
                 ? new Function(
                     "value",
