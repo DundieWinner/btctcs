@@ -90,6 +90,39 @@ export const DESCRIPTIONS = {
 } as const;
 
 /**
+ * Key statistic descriptions for common metrics used across companies
+ */
+export const KEY_STATISTIC_DESCRIPTIONS = {
+  /**
+   * Description for "Fwd Months to Cover mNAV" metric
+   */
+  forwardMonthsToCoverMnav(): string {
+    return "The number of months it would take the company at its current trailing 30D bitcoin yield to close the gap between its current market capitalization and its Bitcoin net asset value.";
+  },
+
+  /**
+   * Description for "Forward P/BYD" metric
+   */
+  forwardPByd(): string {
+    return "P/BYD represents the number of years to earn back the existing mNAV premium if the trailing 30D yield were to hold. The forward metric is computed from Forward mNAV.";
+  },
+
+  /**
+   * Description for "BTC Yield T30D" metric
+   */
+  btcYieldT30d(): string {
+    return "Bitcoin yield performance over the most-recent trailing 30-day period.";
+  },
+
+  /**
+   * Description for combined mNAV metrics
+   */
+  mnavCombined(): string {
+    return "Computed by dividing enterprise value by Bitcoin net asset value. Forward mNAV represents the metric as-if Bitcoin-earmarked fiat were converted to Bitcoin.";
+  },
+} as const;
+
+/**
  * Legacy function names for backward compatibility
  */
 export const createRagnarDescription = DESCRIPTIONS.ragnarStats;

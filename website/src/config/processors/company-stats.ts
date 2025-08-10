@@ -13,6 +13,7 @@ export interface KeyStatConfig {
   order: number;
   unit?: string;
   prefix?: string;
+  description?: string; // Optional description for information icon
 }
 
 // Configuration interface for individual metrics in a combined statistic
@@ -21,6 +22,7 @@ export interface CombinedMetricComponent {
   required?: boolean; // Default: true
   prefix?: string; // Optional prefix for this specific metric
   format?: "shorthand" | "number" | "percentage"; // Optional formatting
+  description?: string; // Optional description for information icon
 }
 
 // Configuration interface for combined metrics (generalized)
@@ -30,6 +32,7 @@ export interface CombinedMetricConfig {
   order: number;
   metrics: CombinedMetricComponent[];
   separator?: string; // Default: " / "
+  description?: string; // Optional description for information icon
   style?: {
     accentColor?: string;
   };
@@ -97,6 +100,7 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
       order: number,
       unit?: string,
       prefix?: string,
+      description?: string,
     ): KeyStatistic | null => {
       const row = pairedRows.find(
         (row) => row[TABLE_COLUMNS.METRIC] === metricName,
@@ -119,6 +123,7 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
           label,
           value: finalValue,
           order,
+          ...(description && { description }),
         };
       }
       return null;
@@ -136,6 +141,7 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
         statConfig.order,
         statConfig.unit,
         statConfig.prefix,
+        statConfig.description,
       );
       if (stat) keyStatistics.push(stat);
     }
@@ -239,6 +245,9 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
               style: combinedConfig.style || {
                 accentColor: "rgb(249, 115, 22)", // Default orange theme
               },
+              ...(combinedConfig.description && {
+                description: combinedConfig.description,
+              }),
             });
           }
         }

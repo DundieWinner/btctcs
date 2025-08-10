@@ -8,7 +8,10 @@ import {
   createTreasuryActionsProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
-import { DESCRIPTIONS } from "@/config/extractions/descriptions";
+import {
+  DESCRIPTIONS,
+  KEY_STATISTIC_DESCRIPTIONS,
+} from "@/config/extractions/descriptions";
 import { DISCLOSURES } from "./disclosures";
 
 // Google Sheet Column Header Names
@@ -87,18 +90,21 @@ const blgvStatsConfig: CompanyStatsConfig = {
       id: "fwd-mtc-mnav",
       label: "Fwd MTC mNAV",
       order: 3,
+      description: KEY_STATISTIC_DESCRIPTIONS.forwardMonthsToCoverMnav(),
     },
     {
       metricName: "Forward P/BYD",
       id: "fwd-p-byd",
       label: "Fwd P/BYD",
       order: 4,
+      description: KEY_STATISTIC_DESCRIPTIONS.forwardPByd(),
     },
     {
       metricName: "BTC Yield T30D",
       id: "btc-yield-t30d",
       label: "BTC Yield T30D",
       order: 5,
+      description: KEY_STATISTIC_DESCRIPTIONS.btcYieldT30d(),
     },
   ],
   combinedMetrics: [
@@ -111,6 +117,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
         { metricName: "Forward mNAV", required: true },
       ],
       separator: " / ",
+      description: KEY_STATISTIC_DESCRIPTIONS.mnavCombined(),
       style: {
         accentColor: "rgb(249, 115, 22)",
       },
