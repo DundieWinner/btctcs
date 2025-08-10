@@ -118,7 +118,7 @@ export const KEY_STATISTIC_DESCRIPTIONS = {
    * Description for combined mNAV metrics
    */
   mnavCombined(): string {
-    return "Computed by dividing enterprise value by Bitcoin net asset value. Forward mNAV represents the metric as-if Bitcoin-earmarked fiat were converted to Bitcoin.";
+    return "Computed by dividing enterprise value by Bitcoin net asset value. Forward mNAV represents the metric as if fiat earmarked for Bitcoin purchases were converted to Bitcoin today.";
   },
 } as const;
 
