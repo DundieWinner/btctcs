@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import { companies } from "@/config/companies";
 import { baseUrl, getAbsoluteUrl } from "@/config/environment";
+import { btctcsOrange } from "@/config/colors";
 
 // Metadata for the homepage
 export const metadata: Metadata = {
@@ -75,7 +76,7 @@ export default function Home() {
         <header className="text-center mb-4 pt-8">
           <h1
             className="text-4xl md:text-6xl font-bold mb-4"
-            style={{ color: "rgb(249, 115, 22)" }}
+            style={{ color: btctcsOrange }}
           >
             BTCTCs
           </h1>

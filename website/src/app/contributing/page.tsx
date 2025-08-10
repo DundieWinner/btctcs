@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { baseUrl, getAbsoluteUrl } from "@/config/environment";
+import { btctcsOrange } from "@/config/colors";
 
 export const metadata: Metadata = {
   title: "Contributing - BTCTCs",
@@ -74,7 +75,7 @@ export default function Contributing() {
 
             <h1
               className="text-4xl md:text-6xl font-bold mb-4"
-              style={{ color: "rgb(249, 115, 22)" }}
+              style={{ color: btctcsOrange }}
             >
               Contributing
             </h1>
@@ -97,7 +98,7 @@ export default function Contributing() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   What is Needed
                 </h2>
@@ -120,7 +121,7 @@ export default function Contributing() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   How to Help
                 </h2>

@@ -6,6 +6,7 @@ import {
   type GoogleSheetData,
   type TableStyle,
 } from "@/config/types";
+import { darkBackground, grayText } from "@/config/colors";
 import {
   formatCellValue,
   getCellStyles,
@@ -98,12 +99,12 @@ export default function DataTable({ extraction }: DataTableProps) {
 
   // Default table styles
   const defaultTableStyle = {
-    headerBackgroundColor: "rgb(31, 41, 55)", // bg-gray-800
-    headerTextColor: "rgb(209, 213, 219)", // text-gray-300
-    rowBackgroundColor: "rgb(3, 7, 18, 0.9)",
-    alternateRowBackgroundColor: "rgb(17, 24, 39, 0.5)", // Slightly lighter
+    headerBackgroundColor: "rgb(17, 24, 39)", // bg-gray-900
+    headerTextColor: grayText, // text-gray-300
+    rowBackgroundColor: darkBackground,
+    alternateRowBackgroundColor: "rgb(31, 41, 55)", // bg-gray-800
     borderColor: "rgb(55, 65, 81)", // border-gray-700
-    textColor: "rgb(209, 213, 219)", // text-gray-300
+    textColor: grayText, // text-gray-300
   };
 
   // Merge with custom table styles

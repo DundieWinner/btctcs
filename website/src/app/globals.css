@@ -3,9 +3,30 @@
 
 :root {
     --background: #000000;
+    --background-rgb: 0, 0, 0;
     --foreground: #ffffff;
+    --foreground-rgb: 255, 255, 255;
     --primary: rgb(249 115 22);
+    --primary-rgb: 249, 115, 22;
     --card-bg: rgb(3 7 18 / 0.9);
+    --card-bg-rgb: 3, 7, 18;
+    
+    /* Centralized BTCTCS Colors */
+    --btctcs-orange: rgb(249, 115, 22);
+    --btctcs-orange-rgb: 249, 115, 22;
+    --bitcoin-orange: #f3991f;
+    --bitcoin-orange-rgb: 243, 153, 31;
+    --dark-background: rgb(3, 7, 18, 0.9);
+    --dark-background-rgb: 3, 7, 18;
+    --dark-background-medium: rgb(3, 7, 18, 0.5);
+    --gray-text: rgb(209, 213, 219);
+    --gray-text-rgb: 209, 213, 219;
+    --white: #ffffff;
+    --white-grid: rgba(255, 255, 255, 0.1);
+    --white-medium: rgba(255, 255, 255, 0.2);
+    --emerald-green: #10b981;
+    --emerald-green-rgb: 16, 185, 129;
+    --emerald-green-medium: rgba(16, 185, 129, 0.2);
 }
 
 @theme inline {

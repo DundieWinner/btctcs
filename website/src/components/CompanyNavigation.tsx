@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { companies } from "@/config/companies";
+import { darkBackgroundMedium } from "@/config/colors";
 
 interface CompanyNavigationProps {
   currentCompanyId: string;
@@ -28,7 +29,7 @@ export default function CompanyNavigation({
               <Link
                 href={`/c/${company.id}`}
                 className="flex items-center p-4 rounded-lg border border-gray-700 hover:border-orange-500 hover:bg-gray-800/30 transition-all duration-200 group"
-                style={{ backgroundColor: "rgb(3, 7, 18, 0.5)" }}
+                style={{ backgroundColor: darkBackgroundMedium }}
               >
                 <span className="mr-3 text-2xl group-hover:scale-110 transition-transform duration-200">
                   {company.emoji}

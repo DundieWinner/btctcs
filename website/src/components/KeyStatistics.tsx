@@ -3,6 +3,7 @@
 import { KeyStatistic } from "@/config/types";
 import { useState } from "react";
 import { HiInformationCircle } from "react-icons/hi2";
+import { btctcsOrange, darkBackground, grayText } from "@/config/colors";
 
 interface KeyStatisticsProps {
   keyStatistics: KeyStatistic[];
@@ -41,9 +42,9 @@ export default function KeyStatistics({ keyStatistics }: KeyStatisticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2 md:gap-4 mb-8">
         {sortedStats.map((stat) => {
           const defaultStyle = {
-            backgroundColor: "rgb(3, 7, 18, 0.9)",
-            textColor: "rgb(209, 213, 219)",
-            accentColor: "rgb(249, 115, 22)", // Orange accent
+            backgroundColor: darkBackground,
+            textColor: grayText,
+            accentColor: btctcsOrange, // Orange accent
           };
 
           const style = { ...defaultStyle, ...stat.style };

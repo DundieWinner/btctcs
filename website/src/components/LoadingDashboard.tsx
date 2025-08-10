@@ -1,3 +1,5 @@
+import { btctcsOrange } from "@/config/colors";
+
 interface LoadingDashboardProps {
   companyName: string;
 }
@@ -12,7 +14,7 @@ export default function LoadingDashboard({
           <div className="text-center">
             <div
               className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-              style={{ borderColor: "rgb(249, 115, 22)" }}
+              style={{ borderColor: btctcsOrange }}
             ></div>
             <p className="text-gray-300">
               Loading the {companyName} dashboard...

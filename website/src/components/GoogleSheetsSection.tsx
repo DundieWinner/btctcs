@@ -8,6 +8,7 @@ import {
   type KeyStatistic,
   type TableStyle,
 } from "@/config/types";
+import { btctcsOrange } from "@/config/colors";
 
 interface ProcessedExtraction {
   id: string;
@@ -52,7 +53,7 @@ export default function GoogleSheetsSection({
           <div className="mb-4">
             <h2
               className="text-2xl font-bold mb-2"
-              style={{ color: "rgb(249, 115, 22)" }}
+              style={{ color: btctcsOrange }}
             >
               {extraction.title}
             </h2>

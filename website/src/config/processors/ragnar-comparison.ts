@@ -1,4 +1,5 @@
 import { KeyStatistic, ProcessorResult } from "../types";
+import { btctcsOrange } from "../colors";
 
 // Ragnar Metric Names
 const RAGNAR_METRICS = {
@@ -131,7 +132,7 @@ export function ragnarProcessor(
         prefix,
         order,
         style: {
-          accentColor: "rgb(249, 115, 22)", // Orange to match theme
+          accentColor: btctcsOrange,
         },
       });
     }
@@ -183,7 +184,7 @@ export function ragnarProcessor(
       value: `${basicValue} / ${dilutedValue} / ${forwardValue}`,
       order: 2,
       style: {
-        accentColor: "rgb(249, 115, 22)", // Orange to match theme
+        accentColor: btctcsOrange,
       },
     });
   }

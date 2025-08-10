@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { baseUrl, getAbsoluteUrl } from "@/config/environment";
+import { btctcsOrange } from "@/config/colors";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - BTCTCs",
@@ -73,7 +74,7 @@ export default function PrivacyPolicy() {
 
             <h1
               className="text-4xl md:text-6xl font-bold mb-4"
-              style={{ color: "rgb(249, 115, 22)" }}
+              style={{ color: btctcsOrange }}
             >
               Privacy Policy
             </h1>
@@ -93,7 +94,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   Information Collection
                 </h2>
@@ -140,7 +141,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   Use of Information
                 </h2>
@@ -155,7 +156,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   Data Protection
                 </h2>
@@ -171,7 +172,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   Changes to Policy
                 </h2>
@@ -185,7 +186,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2
                   className="text-2xl font-bold mb-4"
-                  style={{ color: "rgb(249, 115, 22)" }}
+                  style={{ color: btctcsOrange }}
                 >
                   Contact Us
                 </h2>

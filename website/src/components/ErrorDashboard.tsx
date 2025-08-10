@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { btctcsOrange } from "@/config/colors";
 
 interface ErrorDashboardProps {
   companyName: string;
@@ -15,7 +16,7 @@ export default function ErrorDashboard({
         <div className="text-center">
           <h1
             className="text-4xl font-bold mb-4"
-            style={{ color: "rgb(249, 115, 22)" }}
+            style={{ color: btctcsOrange }}
           >
             Error Loading Dashboard
           </h1>
@@ -29,7 +30,7 @@ export default function ErrorDashboard({
           <Link
             href="/"
             className="inline-flex items-center px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600"
-            style={{ backgroundColor: "rgb(249, 115, 22)", color: "white" }}
+            style={{ backgroundColor: btctcsOrange, color: "white" }}
           >
             ← Back to Home
           </Link>

@@ -3,6 +3,7 @@ import MarkdownLinkParser from "./MarkdownLinkParser";
 import { getCompanyById } from "@/config/companies";
 import React from "react";
 import CuratorsSection from "@/components/CuratorsSection";
+import { btctcsOrange } from "@/config/colors";
 
 interface CompanyHeaderProps {
   company: string;
@@ -29,7 +30,7 @@ export default function CompanyHeader({
       </div>
       <h1
         className="text-3xl sm:text-4xl md:text-6xl font-bold"
-        style={{ color: "rgb(249, 115, 22)" }}
+        style={{ color: btctcsOrange }}
       >
         {companyData?.emoji} {companyName}
       </h1>

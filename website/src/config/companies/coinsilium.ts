@@ -13,6 +13,7 @@ import {
   KEY_STATISTIC_DESCRIPTIONS,
 } from "@/config/extractions/descriptions";
 import { DISCLOSURES } from "./disclosures";
+import { btctcsOrange } from "@/config/colors";
 
 const COLUMN_HEADERS = {
   // Common columns
@@ -107,7 +108,7 @@ const coinsiliumStatsConfig: CompanyStatsConfig = {
       separator: " / ",
       description: KEY_STATISTIC_DESCRIPTIONS.mnavCombined(),
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
     {
@@ -129,7 +130,7 @@ const coinsiliumStatsConfig: CompanyStatsConfig = {
       ],
       separator: " / ",
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
     {
@@ -152,7 +153,7 @@ const coinsiliumStatsConfig: CompanyStatsConfig = {
       ],
       separator: " / ",
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
   ],

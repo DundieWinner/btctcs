@@ -13,6 +13,7 @@ import {
   KEY_STATISTIC_DESCRIPTIONS,
 } from "@/config/extractions/descriptions";
 import { DISCLOSURES } from "./disclosures";
+import { btctcsOrange } from "@/config/colors";
 
 // Google Sheet Column Header Names
 const COLUMN_HEADERS = {
@@ -119,7 +120,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
       separator: " / ",
       description: KEY_STATISTIC_DESCRIPTIONS.mnavCombined(),
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
     {
@@ -142,7 +143,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
       ],
       separator: " / ",
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
     {
@@ -165,7 +166,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
       ],
       separator: " / ",
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
     {
@@ -188,7 +189,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
       ],
       separator: " / ",
       style: {
-        accentColor: "rgb(249, 115, 22)",
+        accentColor: btctcsOrange,
       },
     },
   ],

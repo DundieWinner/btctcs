@@ -1,4 +1,5 @@
 import { KeyStatistic, ProcessorResult } from "../types";
+import { btctcsOrange } from "../colors";
 
 const TABLE_COLUMNS = {
   METRIC: "Metric",
@@ -243,7 +244,7 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
               value: formattedValues.join(separator),
               order: combinedConfig.order,
               style: combinedConfig.style || {
-                accentColor: "rgb(249, 115, 22)", // Default orange theme
+                accentColor: btctcsOrange,
               },
               ...(combinedConfig.description && {
                 description: combinedConfig.description,
@@ -295,7 +296,7 @@ export function createCompanyStatsProcessor(config: CompanyStatsConfig) {
           value: displayValue,
           order: config.combinedMnav.order,
           style: {
-            accentColor: "rgb(249, 115, 22)", // Orange to match theme
+            accentColor: btctcsOrange,
           },
         });
       }
