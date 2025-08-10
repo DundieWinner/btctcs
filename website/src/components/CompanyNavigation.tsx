@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { companies } from "@/config/companies";
-import { darkBackgroundMedium } from "@/config/colors";
 
 interface CompanyNavigationProps {
   currentCompanyId: string;
@@ -22,23 +21,16 @@ export default function CompanyNavigation({
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto mb-8">
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="max-w-7xl mx-auto mb-8">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-4">
           {otherCompanies.map((company) => (
             <li key={company.id}>
               <Link
                 href={`/c/${company.id}`}
-                className="flex items-center p-4 rounded-lg border border-gray-700 hover:border-orange-500 hover:bg-gray-800/30 transition-all duration-200 group"
-                style={{ backgroundColor: darkBackgroundMedium }}
+                className="flex items-center text-lg md:text-xl text-gray-300 hover:text-orange-500 transition-colors duration-200"
               >
-                <span className="mr-3 text-2xl group-hover:scale-110 transition-transform duration-200">
-                  {company.emoji}
-                </span>
-                <div className="flex-1">
-                  <span className="text-lg text-gray-300 group-hover:text-orange-500 transition-colors duration-200">
-                    {company.name}
-                  </span>
-                </div>
+                <span className="mr-3">{company.emoji}</span>
+                <span>{company.name}</span>
               </Link>
             </li>
           ))}
