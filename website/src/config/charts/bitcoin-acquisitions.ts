@@ -26,7 +26,7 @@ export function createBitcoinAcquisitionsChart(
 ): ChartConfiguration {
   return {
     type: "line",
-    title: config.title || "Bitcoin Acquisitions",
+    title: config.title || "Bitcoin Buys",
     height: config.height || {
       default: 400,
       md: 550,

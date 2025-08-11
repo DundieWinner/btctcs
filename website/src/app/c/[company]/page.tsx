@@ -2,7 +2,6 @@ import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import ImageBoard from "@/components/ImageGallery";
-import { GenericChart } from "@/components/GenericChart";
 import KeyStatistics from "@/components/KeyStatistics";
 import GoogleSheetsSection from "@/components/GoogleSheetsSection";
 import CompanyNavigation from "@/components/CompanyNavigation";
@@ -28,7 +27,6 @@ interface CompanyPageProps {
     company: string;
   }>;
 }
-
 
 // Generate metadata for each company page
 export async function generateMetadata({

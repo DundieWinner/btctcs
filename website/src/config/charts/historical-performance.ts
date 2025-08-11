@@ -1,9 +1,7 @@
 import { ChartConfiguration } from "../types";
 import {
   bitcoinOrange,
-  bitcoinOrangeMedium,
   emeraldGreen,
-  emeraldGreenMedium,
   white,
   whiteGrid,
   whiteMedium,
@@ -20,7 +18,12 @@ export interface HistoricalPerformanceConfig {
   sharePriceLabel?: string;
   sharePriceAxisTitle?: string;
   mnavLabel: string;
-  title?: string;
+  title?:
+    | string
+    | {
+        satsAndPrice?: string;
+        mnavAndPrice?: string;
+      };
   height?:
     | number
     | {
@@ -34,18 +37,24 @@ export interface HistoricalPerformanceConfig {
 }
 
 /**
- * Creates a standardized historical performance chart configuration
- * Shows sats per share, share price, and mNAV metrics over time with multiple axes
+ * Creates standardized historical performance chart configurations
+ * Returns two separate charts:
+ * 1. Sats per share metrics and share price over time
+ * 2. mNAV and share price over time
  *
  * @param config.sharePriceLabel - Optional label for the stock price series (defaults to "Share Price (USD)")
  * @param config.sharePriceAxisTitle - Optional title for the stock price axis (defaults to "Share Price (USD)")
  */
-export function createHistoricalPerformanceChart(
+export function createHistoricalPerformanceCharts(
   config: HistoricalPerformanceConfig,
-): ChartConfiguration {
-  return {
+): ChartConfiguration[] {
+  // Chart 1: Sats per share metrics and share price
+  const satsAndPriceChart: ChartConfiguration = {
     type: "line",
-    title: config.title || "Historical Performance",
+    title:
+      typeof config.title === "string"
+        ? `${config.title} - Sats per Share`
+        : config.title?.satsAndPrice || "Sats per Share",
     height: config.height || {
       default: 400,
       md: 550,
@@ -60,7 +69,7 @@ export function createHistoricalPerformanceChart(
           y: config.primarySatsColumn,
         },
         borderColor: bitcoinOrange,
-        backgroundColor: bitcoinOrangeMedium,
+        backgroundColor: bitcoinOrange,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -74,7 +83,6 @@ export function createHistoricalPerformanceChart(
         },
         borderColor: "#f9cc8f",
         backgroundColor: "#f9cc8f",
-        borderDash: [5, 5],
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -88,25 +96,10 @@ export function createHistoricalPerformanceChart(
         },
         borderColor: white,
         backgroundColor: whiteMedium,
-        borderDash: [5, 5],
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
         yAxisID: "price",
-      },
-      {
-        label: config.mnavLabel,
-        mapping: {
-          x: config.dateColumn,
-          y: config.mnavColumn,
-        },
-        borderColor: emeraldGreen,
-        backgroundColor: emeraldGreenMedium,
-        borderDash: [10, 5],
-        tension: 0,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        yAxisID: "mnav",
       },
     ],
     axes: [
@@ -157,25 +150,6 @@ export function createHistoricalPerformanceChart(
           drawOnChartArea: false,
         },
       },
-      {
-        id: "mnav",
-        type: "linear",
-        position: "right",
-        title: {
-          display: true,
-          text: "mNAV",
-          color: emeraldGreen,
-        },
-        ticks: {
-          color: emeraldGreen,
-          maxTicksLimit: 8,
-        },
-        grid: {
-          drawOnChartArea: false,
-        },
-        offset: true,
-        beginAtZero: true,
-      },
     ],
     plugins: {
       legend: {
@@ -191,4 +165,137 @@ export function createHistoricalPerformanceChart(
       },
     },
   };
+
+  // Chart 2: mNAV and share price
+  const mnavAndPriceChart: ChartConfiguration = {
+    type: "line",
+    title:
+      typeof config.title === "string"
+        ? `${config.title} - mNAV vs Share Price`
+        : config.title?.mnavAndPrice || "mNAV vs Share Price",
+    height: config.height || {
+      default: 400,
+      md: 550,
+      lg: 650,
+    },
+    animation: false,
+    datasets: [
+      {
+        label: config.mnavLabel,
+        mapping: {
+          x: config.dateColumn,
+          y: config.mnavColumn,
+        },
+        borderColor: emeraldGreen,
+        backgroundColor: emeraldGreen,
+        tension: 0,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        yAxisID: "mnav",
+      },
+      {
+        label: config.sharePriceLabel || "Share Price (USD)",
+        mapping: {
+          x: config.dateColumn,
+          y: config.sharePriceColumn,
+        },
+        borderColor: white,
+        backgroundColor: whiteMedium,
+        tension: 0,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        yAxisID: "price",
+      },
+    ],
+    axes: [
+      {
+        id: "x",
+        type: "time",
+        position: "bottom",
+        title: {
+          display: true,
+          text: "Date",
+          color: white,
+        },
+        grid: {
+          color: whiteGrid,
+        },
+      },
+      {
+        id: "mnav",
+        type: "linear",
+        position: "left",
+        title: {
+          display: true,
+          text: "mNAV",
+          color: emeraldGreen,
+        },
+        ticks: {
+          color: emeraldGreen,
+          maxTicksLimit: 8,
+        },
+        grid: {
+          color: whiteGrid,
+        },
+        beginAtZero: true,
+      },
+      {
+        id: "price",
+        type: "logarithmic",
+        position: "right",
+        title: {
+          display: true,
+          text: config.sharePriceAxisTitle || "USD",
+          color: white,
+        },
+        ticks: {
+          color: white,
+          maxTicksLimit: 8,
+        },
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    ],
+    plugins: {
+      legend: {
+        display: true,
+        position: "top",
+      },
+      tooltip: {
+        enabled: true,
+      },
+      watermark: {
+        enabled: true,
+        text: "btctcs.com",
+      },
+      annotation: {
+        annotations: {
+          mnavReference: {
+            type: "line",
+            yMin: 1,
+            yMax: 1,
+            borderColor: emeraldGreen,
+            borderWidth: 1,
+            borderDash: [3, 3],
+            label: {
+              display: true,
+              content: "mNAV=1",
+              position: "start",
+              backgroundColor: emeraldGreen,
+              color: "white",
+              padding: 4,
+              font: {
+                size: 11,
+                weight: "bold",
+              },
+              borderRadius: 4,
+            },
+          },
+        },
+      },
+    },
+  };
+
+  return [satsAndPriceChart, mnavAndPriceChart];
 }

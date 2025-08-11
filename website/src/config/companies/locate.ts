@@ -1,6 +1,6 @@
 import { Company } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
-import { createHistoricalPerformanceChart } from "@/config/charts/historical-performance";
+import { createHistoricalPerformanceCharts } from "@/config/charts/historical-performance";
 import {
   type CompanyStatsConfig,
   createColumnFilterProcessor,
@@ -317,9 +317,8 @@ export const locateCompanyConfig: Company = {
             dateColumn: COLUMN_HEADERS.DATE,
             priceColumn: COLUMN_HEADERS.BTC_PRICE_AUD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
-            title: "Bitcoin Acquisitions",
           }),
-          createHistoricalPerformanceChart({
+          ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,
             primarySatsColumn: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
             secondarySatsColumn: COLUMN_HEADERS.SATS_PER_FD_SHARE,
@@ -330,7 +329,6 @@ export const locateCompanyConfig: Company = {
             sharePriceLabel: "Share Price (AUD)",
             sharePriceAxisTitle: "Share Price (AUD)",
             mnavLabel: "Fwd mNAV",
-            title: "Historical Performance",
           }),
         ],
       },

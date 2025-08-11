@@ -15,6 +15,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import annotationPlugin from "chartjs-plugin-annotation";
 import "chartjs-adapter-date-fns";
 import { Bar, Bubble, Line, Scatter } from "react-chartjs-2";
 import {
@@ -35,6 +36,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  annotationPlugin,
 );
 
 export interface GenericChartProps {
@@ -413,6 +415,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           size: 16,
         },
       },
+      annotation: config.plugins?.annotation || undefined,
       tooltip: {
         enabled: config.plugins?.tooltip?.enabled ?? true,
         boxPadding: 4,

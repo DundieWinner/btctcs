@@ -187,6 +187,35 @@ export interface ChartConfiguration {
       enabled?: boolean;
       text?: string;
     };
+    annotation?: {
+      annotations?: {
+        [key: string]: {
+          type: "line" | "box" | "point";
+          xMin?: number | string;
+          xMax?: number | string;
+          yMin?: number | string;
+          yMax?: number | string;
+          borderColor?: string;
+          borderWidth?: number;
+          borderDash?: number[];
+          backgroundColor?: string;
+          label?: {
+            content?: string;
+            enabled?: boolean;
+            display?: boolean;
+            position?: "start" | "center" | "end";
+            backgroundColor?: string;
+            color?: string;
+            padding?: number;
+            borderRadius?: number;
+            font?: {
+              size?: number;
+              weight?: string;
+            };
+          };
+        };
+      };
+    };
   };
 }
 

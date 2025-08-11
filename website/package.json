@@ -12,6 +12,7 @@
     "@aws-sdk/client-s3": "^3.850.0",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-annotation": "^3.1.0",
     "date-fns": "^4.1.0",
     "next": "15.4.4",
     "next-plausible": "^3.12.4",

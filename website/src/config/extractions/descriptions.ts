@@ -121,9 +121,3 @@ export const KEY_STATISTIC_DESCRIPTIONS = {
     return "Computed by dividing enterprise value (market cap + debt - cash) by Bitcoin net asset value. Forward mNAV represents the metric as if fiat earmarked for Bitcoin purchases were converted to Bitcoin today.";
   },
 } as const;
-
-/**
- * Legacy function names for backward compatibility
- */
-export const createRagnarDescription = DESCRIPTIONS.ragnarStats;
-export const createBTCTCSDescription = DESCRIPTIONS.btctcsData;
