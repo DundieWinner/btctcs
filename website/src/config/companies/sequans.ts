@@ -27,7 +27,7 @@ const COLUMN_HEADERS = {
   FD_SHARE_COUNT: "FD Share Count",
   SATS_PER_FD_SHARE: "Sats / FD Share",
   FWD_SATS_PER_FD_SHARE: "Fwd Sats / FD Share",
-  EST_FIAT_BALANCE: "Est. Fiat Balance (USD)",
+  EST_FIAT_BALANCE: "BTC Earmarked Cash (USD)",
   FWD_MNAV: "Fwd mNAV",
 } as const;
 
