@@ -1,6 +1,7 @@
 import { Company } from "@/config/types";
 import { createBitcoinAcquisitionsChart } from "@/config/charts/bitcoin-acquisitions";
 import { createHistoricalPerformanceCharts } from "@/config/charts/historical-performance";
+import { createDaysToCoverChart } from "@/config/charts/days-to-cover";
 import {
   type CompanyStatsConfig,
   createColumnFilterProcessor,
@@ -29,6 +30,8 @@ const COLUMN_HEADERS = {
   FWD_SATS_PER_FD_SHARE: "Fwd Sats / FD Share",
   EST_FIAT_BALANCE: "BTC Earmarked Cash (USD)",
   FWD_MNAV: "Fwd mNAV",
+  FWD_MNAV_1_PRICE: "1 Fwd mNAV Price",
+  FWD_MNAV_3_PRICE: "3 Fwd mNAV Price",
 } as const;
 
 const bitcoinPriceProcessor = createColumnFilterProcessor({
@@ -40,6 +43,8 @@ const bitcoinPriceProcessor = createColumnFilterProcessor({
     COLUMN_HEADERS.SATS_PER_FD_SHARE,
     COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
     COLUMN_HEADERS.FWD_MNAV,
+    COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+    COLUMN_HEADERS.FWD_MNAV_3_PRICE,
   ],
   dateColumn: COLUMN_HEADERS.DATE,
 });
@@ -245,7 +250,7 @@ export const sequansCompanyConfig: Company = {
         title: "Historical Performance",
         description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'SQNS|H'!A1:T1000"],
+        ranges: ["'SQNS|H'!A1:V1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",
@@ -254,6 +259,27 @@ export const sequansCompanyConfig: Company = {
             dateColumn: COLUMN_HEADERS.DATE,
             priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
+          }),
+          createDaysToCoverChart({
+            dateColumn: COLUMN_HEADERS.DATE,
+            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_USD,
+            mnavBands: [
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+                level: 1,
+                label: "1x FmNAV Price",
+                color: "#10b981", // emerald-500
+              },
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+                level: 3,
+                label: "3x FmNAV Price",
+                color: "#059669", // emerald-600
+              },
+            ],
+            title: "mNAV Bands",
+            sharePriceLabel: "Share Price (USD)",
+            sharePriceAxisTitle: "Share Price (USD)",
           }),
           ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,
