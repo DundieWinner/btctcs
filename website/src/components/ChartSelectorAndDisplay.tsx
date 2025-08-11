@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import { GenericChart } from "@/components/GenericChart";
 import { type ProcessedExtraction } from "@/services/googleSheets";
+import { type ChartConfiguration } from "@/config/types";
 
 interface ChartSelectorAndDisplayProps {
   chartExtractions: Array<{
     extraction: ProcessedExtraction;
-    config: any;
+    config: ChartConfiguration;
     chartIndex: number;
   }>;
 }
