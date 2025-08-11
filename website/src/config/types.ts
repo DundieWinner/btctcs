@@ -107,8 +107,8 @@ export interface ChartDataMapping {
   }; // Optional filtering configuration
   pointSize?: {
     column: string; // Column name to use for point sizing
-    minSize: number; // Minimum point radius
-    maxSize: number; // Maximum point radius
+    minSize: number | ResponsiveSize; // Minimum point radius
+    maxSize: number | ResponsiveSize; // Maximum point radius
     scale?: "linear" | "logarithmic" | "sqrt"; // Scaling method (default: linear)
   }; // Optional dynamic point sizing
 }
@@ -158,6 +158,15 @@ export interface ChartAxis {
 // Responsive height configuration
 export interface ResponsiveHeight {
   default: number; // Default height in pixels
+  sm?: number; // Small screens (640px+)
+  md?: number; // Medium screens (768px+)
+  lg?: number; // Large screens (1024px+)
+  xl?: number; // Extra large screens (1280px+)
+  "2xl"?: number; // 2X large screens (1536px+)
+}
+
+export interface ResponsiveSize {
+  default: number; // Default size
   sm?: number; // Small screens (640px+)
   md?: number; // Medium screens (768px+)
   lg?: number; // Large screens (1024px+)

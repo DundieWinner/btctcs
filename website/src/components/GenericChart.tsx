@@ -22,6 +22,7 @@ import {
   ChartConfiguration,
   GoogleSheetData,
   ResponsiveHeight,
+  ResponsiveSize,
 } from "@/config/types";
 
 // Register Chart.js components
@@ -100,6 +101,35 @@ function generateResponsiveCSS(
   }
 
   return css;
+}
+
+// Function to resolve responsive size to actual number based on screen width
+function getResponsiveSize(size: number | ResponsiveSize): number {
+  if (typeof size === "number") {
+    return size;
+  }
+
+  // Get current screen width
+  const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024;
+
+  // Apply responsive breakpoints (same as Tailwind CSS)
+  if (screenWidth >= 1536 && size["2xl"] !== undefined) {
+    return size["2xl"];
+  }
+  if (screenWidth >= 1280 && size.xl !== undefined) {
+    return size.xl;
+  }
+  if (screenWidth >= 1024 && size.lg !== undefined) {
+    return size.lg;
+  }
+  if (screenWidth >= 768 && size.md !== undefined) {
+    return size.md;
+  }
+  if (screenWidth >= 640 && size.sm !== undefined) {
+    return size.sm;
+  }
+
+  return size.default;
 }
 
 export const GenericChart: React.FC<GenericChartProps> = ({
@@ -254,6 +284,11 @@ export const GenericChart: React.FC<GenericChartProps> = ({
 
       if (datasetConfig.mapping.pointSize && mappedData.length > 0) {
         const sizeConfig = datasetConfig.mapping.pointSize;
+        
+        // Resolve responsive sizes to actual numbers
+        const minSize = getResponsiveSize(sizeConfig.minSize);
+        const maxSize = getResponsiveSize(sizeConfig.maxSize);
+        
         const sizeValues = mappedData
           .map((point: { sizeValue?: number }) => point.sizeValue || 0)
           .filter((val) => val > 0);
@@ -288,8 +323,8 @@ export const GenericChart: React.FC<GenericChartProps> = ({
             }
 
             return (
-              sizeConfig.minSize +
-              normalizedValue * (sizeConfig.maxSize - sizeConfig.minSize)
+              minSize +
+              normalizedValue * (maxSize - minSize)
             );
           });
 

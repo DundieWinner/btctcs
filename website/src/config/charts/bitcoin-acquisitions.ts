@@ -56,8 +56,20 @@ export function createBitcoinAcquisitionsChart(
           },
           pointSize: {
             column: config.purchaseColumn,
-            minSize: 8,
-            maxSize: 16,
+            minSize: {
+              default: 4,
+              sm: 5,
+              md: 6,
+              lg: 7,
+              xl: 8,
+            },
+            maxSize: {
+              default: 8,
+              sm: 10,
+              md: 12,
+              lg: 14,
+              xl: 16,
+            },
             scale: "sqrt",
           },
         },
