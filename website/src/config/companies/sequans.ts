@@ -13,6 +13,7 @@ import {
   DESCRIPTIONS,
   KEY_STATISTIC_DESCRIPTIONS,
 } from "@/config/extractions/descriptions";
+import { emeraldGreen, emeraldGreen600 } from "@/config/colors";
 import { btctcsOrange } from "@/config/colors";
 import { DISCLOSURES } from "./disclosures";
 
@@ -268,13 +269,13 @@ export const sequansCompanyConfig: Company = {
                 column: COLUMN_HEADERS.FWD_MNAV_1_PRICE,
                 level: 1,
                 label: "1x FmNAV Price",
-                color: "#10b981", // emerald-500
+                color: emeraldGreen,
               },
               {
                 column: COLUMN_HEADERS.FWD_MNAV_3_PRICE,
                 level: 3,
                 label: "3x FmNAV Price",
-                color: "#059669", // emerald-600
+                color: emeraldGreen600,
               },
             ],
             title: "mNAV Bands",

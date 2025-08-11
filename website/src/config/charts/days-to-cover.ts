@@ -2,6 +2,10 @@ import { ChartConfiguration } from "../types";
 import {
   bitcoinOrange,
   emeraldGreen,
+  emeraldGreen600,
+  emeraldGreen700,
+  emeraldGreen800,
+  emeraldGreen900,
   white,
   whiteGrid,
   whiteMedium,
@@ -45,11 +49,10 @@ export function createDaysToCoverChart(
   // Default colors for mNAV bands (can be overridden)
   const defaultColors = [
     emeraldGreen,
-    "#10b981", // emerald-500
-    "#059669", // emerald-600
-    "#047857", // emerald-700
-    "#065f46", // emerald-800
-    "#064e3b", // emerald-900
+    emeraldGreen600,
+    emeraldGreen700,
+    emeraldGreen800,
+    emeraldGreen900,
   ];
 
   // Create datasets for mNAV bands

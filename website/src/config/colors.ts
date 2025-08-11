@@ -17,9 +17,13 @@ export const white = "#ffffff";
 export const whiteGrid = "rgba(255, 255, 255, 0.1)";
 export const whiteMedium = "rgba(255, 255, 255, 0.2)";
 
-// Green colors
-export const emeraldGreen = "#10b981";
+// Green colors (Emerald palette)
+export const emeraldGreen = "#10b981"; // emerald-500
 export const emeraldGreenMedium = "rgba(16, 185, 129, 0.2)";
+export const emeraldGreen600 = "#059669"; // emerald-600
+export const emeraldGreen700 = "#047857"; // emerald-700
+export const emeraldGreen800 = "#065f46"; // emerald-800
+export const emeraldGreen900 = "#064e3b"; // emerald-900
 
 // CSS Custom Properties object for use in CSS files
 export const cssCustomProperties = {
@@ -33,4 +37,8 @@ export const cssCustomProperties = {
   '--white-medium': whiteMedium,
   '--emerald-green': emeraldGreen,
   '--emerald-green-medium': emeraldGreenMedium,
+  '--emerald-green-600': emeraldGreen600,
+  '--emerald-green-700': emeraldGreen700,
+  '--emerald-green-800': emeraldGreen800,
+  '--emerald-green-900': emeraldGreen900,
 };
