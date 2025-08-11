@@ -8,7 +8,11 @@ export interface TrendlineConfig {
 }
 
 export interface TrendlineProcessorConfig {
-  baseProcessor: (rangeData: any[]) => GoogleSheetData; // Base processor to use first
+  baseProcessor: (rangeData: {
+    range: string;
+    majorDimension: string;
+    values?: string[][];
+  }[]) => GoogleSheetData; // Base processor to use first
   trendlineConfig: TrendlineConfig;
 }
 
@@ -39,26 +43,41 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
       minDataPoints = 2,
     } = config.trendlineConfig;
 
-    // Helper function to calculate linear regression
-    const calculateLinearRegression = (
+    // Helper function to calculate exponential regression
+    const calculateExponentialRegression = (
       xValues: number[],
       yValues: number[],
     ) => {
       const n = xValues.length;
-      if (n < minDataPoints) return { slope: 0, intercept: 0 };
+      if (n < minDataPoints) return { a: 1, b: 0 };
 
-      const sumX = xValues.reduce((a, b) => a + b, 0);
-      const sumY = yValues.reduce((a, b) => a + b, 0);
-      const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
-      const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
+      // Filter out zero or negative values for logarithmic transformation
+      const validIndices = yValues
+        .map((y, i) => ({ y, x: xValues[i], i }))
+        .filter(({ y }) => y > 0);
 
-      const denominator = n * sumXX - sumX * sumX;
-      if (denominator === 0) return { slope: 0, intercept: sumY / n };
+      if (validIndices.length < minDataPoints) {
+        return { a: 1, b: 0 };
+      }
 
-      const slope = (n * sumXY - sumX * sumY) / denominator;
-      const intercept = (sumY - slope * sumX) / n;
+      const validX = validIndices.map(({ x }) => x);
+      const validY = validIndices.map(({ y }) => y);
+      const lnY = validY.map((y) => Math.log(y));
 
-      return { slope, intercept };
+      // Linear regression on ln(y) = ln(a) + b*x
+      const sumX = validX.reduce((a, b) => a + b, 0);
+      const sumLnY = lnY.reduce((a, b) => a + b, 0);
+      const sumXLnY = validX.reduce((sum, x, i) => sum + x * lnY[i], 0);
+      const sumXX = validX.reduce((sum, x) => sum + x * x, 0);
+
+      const denominator = validIndices.length * sumXX - sumX * sumX;
+      if (denominator === 0) return { a: Math.exp(sumLnY / validIndices.length), b: 0 };
+
+      const b = (validIndices.length * sumXLnY - sumX * sumLnY) / denominator;
+      const lnA = (sumLnY - b * sumX) / validIndices.length;
+      const a = Math.exp(lnA);
+
+      return { a, b };
     };
 
     // Helper function to parse dates and convert to numeric values
@@ -76,7 +95,7 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
 
     // Calculate trendlines for each specified column
     const trendlineData: {
-      [key: string]: { slope: number; intercept: number };
+      [key: string]: { a: number; b: number };
     } = {};
 
     columns.forEach((column) => {
@@ -91,7 +110,7 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
       if (validPoints.length >= minDataPoints) {
         const xValues = validPoints.map((p) => p.x);
         const yValues = validPoints.map((p) => p.y);
-        trendlineData[column] = calculateLinearRegression(xValues, yValues);
+        trendlineData[column] = calculateExponentialRegression(xValues, yValues);
       }
     });
 
@@ -117,8 +136,8 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
       // Calculate trendline values for future dates
       columns.forEach((column) => {
         if (trendlineData[column]) {
-          const { slope, intercept } = trendlineData[column];
-          const trendlineValue = slope * futureDateNum + intercept;
+          const { a, b } = trendlineData[column];
+          const trendlineValue = a * Math.exp(b * futureDateNum);
           futureRow[`${column}_trendline`] = Math.max(0, trendlineValue); // Ensure non-negative
         }
       });
@@ -133,8 +152,8 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
 
       columns.forEach((column) => {
         if (trendlineData[column]) {
-          const { slope, intercept } = trendlineData[column];
-          const trendlineValue = slope * rowDateNum + intercept;
+          const { a, b } = trendlineData[column];
+          const trendlineValue = a * Math.exp(b * rowDateNum);
           enhancedRow[`${column}_trendline`] = Math.max(0, trendlineValue);
         }
       });

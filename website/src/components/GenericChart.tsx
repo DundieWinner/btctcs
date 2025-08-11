@@ -405,7 +405,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           color: "#ffffff",
           usePointStyle: true,
           padding: 20,
-          filter: (legendItem: any, chartData: any) => {
+          filter: (legendItem: { datasetIndex: number }) => {
             // Hide datasets that have skipLegend: true
             const datasetIndex = legendItem.datasetIndex;
             const dataset = config.datasets[datasetIndex];

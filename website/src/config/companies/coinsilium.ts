@@ -6,6 +6,7 @@ import {
   createColumnFilterProcessor,
   createCompanyStatsProcessor,
   createTreasuryActionsProcessor,
+  createTrendlineProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/config/extractions/descriptions";
 import { DISCLOSURES } from "./disclosures";
 import { btctcsOrange } from "@/config/colors";
+import { createDaysToCoverChart } from "@/config/charts/days-to-cover";
 
 const COLUMN_HEADERS = {
   // Common columns
@@ -36,19 +38,37 @@ const COLUMN_HEADERS = {
   // Financial columns
   EST_GBP_BALANCE: "Est. Fiat Balance (GBP)",
   FWD_MNAV: "Fwd mNAV",
+  FWD_MNAV_1_PRICE: "1 Fwd mNAV Price",
+  FWD_MNAV_3_PRICE: "3 Fwd mNAV Price",
+  FWD_MNAV_5_PRICE: "5 Fwd mNAV Price",
 } as const;
 
-const bitcoinPriceProcessor = createColumnFilterProcessor({
-  requiredColumns: [
-    COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.BTC_PRICE_USD,
-    COLUMN_HEADERS.BTC_PURCHASE,
-    COLUMN_HEADERS.CLOSING_PRICE_PENCE,
-    COLUMN_HEADERS.SATS_PER_SHARE,
-    COLUMN_HEADERS.FWD_SATS_PER_SHARE,
-    COLUMN_HEADERS.FWD_MNAV,
-  ],
-  dateColumn: COLUMN_HEADERS.DATE,
+const bitcoinPriceProcessor = createTrendlineProcessor({
+  baseProcessor: createColumnFilterProcessor({
+    requiredColumns: [
+      COLUMN_HEADERS.DATE,
+      COLUMN_HEADERS.BTC_PRICE_USD,
+      COLUMN_HEADERS.BTC_PURCHASE,
+      COLUMN_HEADERS.CLOSING_PRICE_PENCE,
+      COLUMN_HEADERS.SATS_PER_SHARE,
+      COLUMN_HEADERS.FWD_SATS_PER_SHARE,
+      COLUMN_HEADERS.FWD_MNAV,
+      COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+    ],
+    dateColumn: COLUMN_HEADERS.DATE,
+  }),
+  trendlineConfig: {
+    columns: [
+      COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+    ],
+    projectionMonths: 2,
+    dateColumn: COLUMN_HEADERS.DATE,
+    minDataPoints: 2,
+  },
 });
 
 const treasuryActionsProcessor = createTreasuryActionsProcessor({
@@ -302,7 +322,7 @@ export const coinsiliumCompanyConfig: Company = {
         title: "Bitcoin Price History",
         description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'Coinsilium|H'!A1:T1000"],
+        ranges: ["'Coinsilium|H'!A1:W1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",
@@ -311,6 +331,30 @@ export const coinsiliumCompanyConfig: Company = {
             dateColumn: COLUMN_HEADERS.DATE,
             priceColumn: COLUMN_HEADERS.BTC_PRICE_USD,
             purchaseColumn: COLUMN_HEADERS.BTC_PURCHASE,
+          }),
+          createDaysToCoverChart({
+            dateColumn: COLUMN_HEADERS.DATE,
+            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_PENCE,
+            mnavBands: [
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+                level: 1,
+                label: "1 Fwd mNAV Price",
+              },
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+                level: 3,
+                label: "3 Fwd mNAV Price",
+              },
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+                level: 5,
+                label: "5 Fwd mNAV Price",
+              },
+            ],
+            title: "mNAV Bands",
+            sharePriceLabel: "Share Price (Pence)",
+            sharePriceAxisTitle: "Share Price (Pence)",
           }),
           ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,

@@ -1,12 +1,13 @@
 import { ChartConfiguration } from "../types";
 import {
-  emeraldGreen,
-  emeraldGreen600,
-  emeraldGreen700,
-  emeraldGreen800,
-  emeraldGreen900,
+  pastelBlue,
+  pastelGreen,
+  pastelPink,
+  pastelYellow,
+  pastelPurple,
   white,
   whiteGrid,
+  bitcoinOrange,
 } from "../colors";
 
 export interface DaysToCoverConfig {
@@ -55,11 +56,11 @@ export function createDaysToCoverChart(
 ): ChartConfiguration {
   // Default colors for mNAV bands (can be overridden)
   const defaultColors = [
-    emeraldGreen,
-    emeraldGreen600,
-    emeraldGreen700,
-    emeraldGreen800,
-    emeraldGreen900,
+    pastelBlue,
+    pastelGreen,
+    pastelPink,
+    pastelYellow,
+    pastelPurple,
   ];
 
   // Create datasets for mNAV bands
@@ -119,8 +120,8 @@ export function createDaysToCoverChart(
       x: config.dateColumn,
       y: config.sharePriceColumn,
     },
-    borderColor: white,
-    backgroundColor: white,
+    borderColor: bitcoinOrange,
+    backgroundColor: bitcoinOrange,
     tension: 0,
     pointRadius: 3,
     pointHoverRadius: 5,
@@ -158,10 +159,10 @@ export function createDaysToCoverChart(
         title: {
           display: true,
           text: config.sharePriceAxisTitle || "Price (USD)",
-          color: white,
+          color: bitcoinOrange,
         },
         ticks: {
-          color: white,
+          color: bitcoinOrange,
           maxTicksLimit: 8,
         },
         grid: {

@@ -1,5 +1,12 @@
 import { ChartConfiguration } from "../types";
-import { bitcoinOrange, emeraldGreen, white, whiteGrid } from "../colors";
+import {
+  bitcoinOrange,
+  emeraldGreen,
+  pastelBlue,
+  pastelGreen,
+  white,
+  whiteGrid,
+} from "../colors";
 
 export interface HistoricalPerformanceConfig {
   dateColumn: string;
@@ -62,8 +69,8 @@ export function createHistoricalPerformanceCharts(
           x: config.dateColumn,
           y: config.primarySatsColumn,
         },
-        borderColor: bitcoinOrange,
-        backgroundColor: bitcoinOrange,
+        borderColor: pastelBlue,
+        backgroundColor: pastelBlue,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -75,8 +82,8 @@ export function createHistoricalPerformanceCharts(
           x: config.dateColumn,
           y: config.secondarySatsColumn,
         },
-        borderColor: "#f9cc8f",
-        backgroundColor: "#f9cc8f",
+        borderColor: pastelGreen,
+        backgroundColor: pastelGreen,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -88,8 +95,8 @@ export function createHistoricalPerformanceCharts(
           x: config.dateColumn,
           y: config.sharePriceColumn,
         },
-        borderColor: white,
-        backgroundColor: white,
+        borderColor: bitcoinOrange,
+        backgroundColor: bitcoinOrange,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -117,10 +124,10 @@ export function createHistoricalPerformanceCharts(
         title: {
           display: true,
           text: "Sats",
-          color: bitcoinOrange,
+          color: white,
         },
         ticks: {
-          color: bitcoinOrange,
+          color: white,
           maxTicksLimit: 8,
         },
         grid: {
@@ -134,10 +141,10 @@ export function createHistoricalPerformanceCharts(
         title: {
           display: true,
           text: config.sharePriceAxisTitle || "USD",
-          color: white,
+          color: bitcoinOrange,
         },
         ticks: {
-          color: white,
+          color: bitcoinOrange,
           maxTicksLimit: 8,
         },
         grid: {
@@ -193,8 +200,8 @@ export function createHistoricalPerformanceCharts(
           x: config.dateColumn,
           y: config.sharePriceColumn,
         },
-        borderColor: white,
-        backgroundColor: white,
+        borderColor: bitcoinOrange,
+        backgroundColor: bitcoinOrange,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -240,10 +247,10 @@ export function createHistoricalPerformanceCharts(
         title: {
           display: true,
           text: config.sharePriceAxisTitle || "USD",
-          color: white,
+          color: bitcoinOrange,
         },
         ticks: {
-          color: white,
+          color: bitcoinOrange,
           maxTicksLimit: 8,
         },
         grid: {

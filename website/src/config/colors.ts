@@ -1,5 +1,12 @@
 export const bitcoinOrange = "#f3991f";
 
+// Pastel colors for charts
+export const pastelBlue = "#6FA3D9";
+export const pastelGreen = "#82CC82"; 
+export const pastelPink = "#F08BC7";
+export const pastelYellow = "#FFE066";
+export const pastelPurple = "#B583E0";
+
 // BTCTCS accent orange (used for company stats, combined metrics, etc)
 export const btctcsOrange = "rgb(249, 115, 22)";
 export const bitcoinOrangeLight = "rgba(243, 153, 31, 0.1)";
