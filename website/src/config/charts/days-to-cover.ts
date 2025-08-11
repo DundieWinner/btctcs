@@ -1,6 +1,5 @@
 import { ChartConfiguration } from "../types";
 import {
-  bitcoinOrange,
   emeraldGreen,
   emeraldGreen600,
   emeraldGreen700,
@@ -8,7 +7,6 @@ import {
   emeraldGreen900,
   white,
   whiteGrid,
-  whiteMedium,
 } from "../colors";
 
 export interface DaysToCoverConfig {
@@ -23,6 +21,11 @@ export interface DaysToCoverConfig {
   title?: string;
   sharePriceLabel?: string;
   sharePriceAxisTitle?: string;
+  trendlines?: {
+    enabled: boolean;
+    opacity?: number; // Opacity for trendline (default: 0.6)
+    dashPattern?: number[]; // Dash pattern for trendlines (default: [5, 5])
+  };
   height?:
     | number
     | {
@@ -38,10 +41,14 @@ export interface DaysToCoverConfig {
 /**
  * Creates a standardized Days to Cover chart configuration
  * Shows share price and forward mNAV price levels over time
- * 
+ *
  * @param config.mnavBands - Array of mNAV bands to display, each with column name, level, optional label and color
  * @param config.sharePriceLabel - Optional label for the stock price series (defaults to "Share Price")
  * @param config.sharePriceAxisTitle - Optional title for the stock price axis (defaults to "Share Price")
+ * @param config.trendlines - Optional trendline configuration to show trend projections for each mNAV band
+ *
+ * Note: When trendlines are enabled, the data processor must calculate and include trendline data columns
+ * with the naming pattern: `${originalColumn}_trendline` for each mNAV band column.
  */
 export function createDaysToCoverChart(
   config: DaysToCoverConfig,
@@ -70,6 +77,41 @@ export function createDaysToCoverChart(
     yAxisID: "price",
   }));
 
+  // Create trendline datasets for mNAV bands (if enabled)
+  const trendlineDatasets =
+    (config.trendlines?.enabled ?? true)
+      ? config.mnavBands.map((band, index) => {
+          const baseColor =
+            band.color || defaultColors[index % defaultColors.length];
+          const opacity = config.trendlines?.opacity || 0.6;
+          const dashPattern = config.trendlines?.dashPattern || [5, 5];
+
+          // Convert hex color to rgba with opacity for better visual separation
+          const trendlineColor = baseColor.startsWith("#")
+            ? `${baseColor}${Math.round(opacity * 255)
+                .toString(16)
+                .padStart(2, "0")}`
+            : baseColor;
+
+          return {
+            label: `${band.label || `${band.level}x mNAV Price`} Trendline`,
+            mapping: {
+              x: config.dateColumn,
+              y: `${band.column}_trendline`,
+            },
+            borderColor: trendlineColor,
+            backgroundColor: "transparent",
+            borderDash: dashPattern,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            yAxisID: "price",
+            showLine: true,
+            skipLegend: true,
+          };
+        })
+      : [];
+
   // Share price dataset
   const sharePriceDataset = {
     label: config.sharePriceLabel || "Share Price",
@@ -77,9 +119,8 @@ export function createDaysToCoverChart(
       x: config.dateColumn,
       y: config.sharePriceColumn,
     },
-    borderColor: bitcoinOrange,
-    backgroundColor: bitcoinOrange,
-    borderDash: [5, 5], // Dotted line to distinguish from mNAV bands
+    borderColor: white,
+    backgroundColor: white,
     tension: 0,
     pointRadius: 3,
     pointHoverRadius: 5,
@@ -95,10 +136,7 @@ export function createDaysToCoverChart(
       lg: 650,
     },
     animation: false,
-    datasets: [
-      sharePriceDataset,
-      ...mnavDatasets,
-    ],
+    datasets: [sharePriceDataset, ...mnavDatasets, ...trendlineDatasets],
     axes: [
       {
         id: "x",

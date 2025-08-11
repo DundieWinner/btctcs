@@ -284,11 +284,11 @@ export const GenericChart: React.FC<GenericChartProps> = ({
 
       if (datasetConfig.mapping.pointSize && mappedData.length > 0) {
         const sizeConfig = datasetConfig.mapping.pointSize;
-        
+
         // Resolve responsive sizes to actual numbers
         const minSize = getResponsiveSize(sizeConfig.minSize);
         const maxSize = getResponsiveSize(sizeConfig.maxSize);
-        
+
         const sizeValues = mappedData
           .map((point: { sizeValue?: number }) => point.sizeValue || 0)
           .filter((val) => val > 0);
@@ -322,10 +322,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
               }
             }
 
-            return (
-              minSize +
-              normalizedValue * (maxSize - minSize)
-            );
+            return minSize + normalizedValue * (maxSize - minSize);
           });
 
           pointHoverRadii = (pointRadii as number[]).map(
@@ -408,6 +405,12 @@ export const GenericChart: React.FC<GenericChartProps> = ({
           color: "#ffffff",
           usePointStyle: true,
           padding: 20,
+          filter: (legendItem: any, chartData: any) => {
+            // Hide datasets that have skipLegend: true
+            const datasetIndex = legendItem.datasetIndex;
+            const dataset = config.datasets[datasetIndex];
+            return !dataset?.skipLegend;
+          },
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onClick: (e: any, legendItem: any, legend: any) => {
@@ -545,6 +548,7 @@ export const GenericChart: React.FC<GenericChartProps> = ({
         },
         beginAtZero: axis.beginAtZero,
         offset: axis.offset,
+        grace: axis.grace,
       };
 
       // Special handling for time axes

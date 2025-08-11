@@ -128,6 +128,7 @@ export interface ChartDataset {
   showLine?: boolean; // Whether to show connecting lines (default: true)
   yAxisID?: string; // Which Y-axis to use
   hidden?: boolean; // Start hidden
+  skipLegend?: boolean; // Exclude from legend display
 }
 
 export interface ChartAxis {
@@ -153,6 +154,8 @@ export interface ChartAxis {
   };
   beginAtZero?: boolean;
   offset?: boolean;
+  grace?: string; // Padding around data range (e.g., "10%")
+  afterDataLimits?: string; // Function string to execute after data limits are calculated
 }
 
 // Responsive height configuration

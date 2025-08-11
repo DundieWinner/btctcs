@@ -1,11 +1,5 @@
 import { ChartConfiguration } from "../types";
-import {
-  bitcoinOrange,
-  emeraldGreen,
-  white,
-  whiteGrid,
-  whiteMedium,
-} from "../colors";
+import { bitcoinOrange, emeraldGreen, white, whiteGrid } from "../colors";
 
 export interface HistoricalPerformanceConfig {
   dateColumn: string;
@@ -95,7 +89,7 @@ export function createHistoricalPerformanceCharts(
           y: config.sharePriceColumn,
         },
         borderColor: white,
-        backgroundColor: whiteMedium,
+        backgroundColor: white,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -200,7 +194,7 @@ export function createHistoricalPerformanceCharts(
           y: config.sharePriceColumn,
         },
         borderColor: white,
-        backgroundColor: whiteMedium,
+        backgroundColor: white,
         tension: 0,
         pointRadius: 4,
         pointHoverRadius: 6,

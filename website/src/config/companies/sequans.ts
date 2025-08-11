@@ -7,14 +7,14 @@ import {
   createColumnFilterProcessor,
   createCompanyStatsProcessor,
   createTreasuryActionsProcessor,
+  createTrendlineProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 import {
   DESCRIPTIONS,
   KEY_STATISTIC_DESCRIPTIONS,
 } from "@/config/extractions/descriptions";
-import { emeraldGreen, emeraldGreen600 } from "@/config/colors";
-import { btctcsOrange } from "@/config/colors";
+import { btctcsOrange, emeraldGreen, emeraldGreen600 } from "@/config/colors";
 import { DISCLOSURES } from "./disclosures";
 
 const COLUMN_HEADERS = {
@@ -35,19 +35,28 @@ const COLUMN_HEADERS = {
   FWD_MNAV_3_PRICE: "3 Fwd mNAV Price",
 } as const;
 
-const bitcoinPriceProcessor = createColumnFilterProcessor({
-  requiredColumns: [
-    COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.BTC_PRICE_USD,
-    COLUMN_HEADERS.BTC_PURCHASE,
-    COLUMN_HEADERS.CLOSING_PRICE_USD,
-    COLUMN_HEADERS.SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.FWD_MNAV,
-    COLUMN_HEADERS.FWD_MNAV_1_PRICE,
-    COLUMN_HEADERS.FWD_MNAV_3_PRICE,
-  ],
-  dateColumn: COLUMN_HEADERS.DATE,
+// Bitcoin price processor with trendline calculations for mNAV bands
+const bitcoinPriceProcessor = createTrendlineProcessor({
+  baseProcessor: createColumnFilterProcessor({
+    requiredColumns: [
+      COLUMN_HEADERS.DATE,
+      COLUMN_HEADERS.BTC_PRICE_USD,
+      COLUMN_HEADERS.BTC_PURCHASE,
+      COLUMN_HEADERS.CLOSING_PRICE_USD,
+      COLUMN_HEADERS.SATS_PER_FD_SHARE,
+      COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
+      COLUMN_HEADERS.FWD_MNAV,
+      COLUMN_HEADERS.FWD_MNAV_1_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+    ],
+    dateColumn: COLUMN_HEADERS.DATE,
+  }),
+  trendlineConfig: {
+    columns: [COLUMN_HEADERS.FWD_MNAV_1_PRICE, COLUMN_HEADERS.FWD_MNAV_3_PRICE],
+    projectionMonths: 1,
+    dateColumn: COLUMN_HEADERS.DATE,
+    minDataPoints: 2,
+  },
 });
 
 const treasuryActionsProcessor = createTreasuryActionsProcessor({
@@ -268,13 +277,13 @@ export const sequansCompanyConfig: Company = {
               {
                 column: COLUMN_HEADERS.FWD_MNAV_1_PRICE,
                 level: 1,
-                label: "1x FmNAV Price",
+                label: "1 Fwd mNAV Price",
                 color: emeraldGreen,
               },
               {
                 column: COLUMN_HEADERS.FWD_MNAV_3_PRICE,
                 level: 3,
-                label: "3x FmNAV Price",
+                label: "3 Fwd mNAV Price",
                 color: emeraldGreen600,
               },
             ],
