@@ -328,7 +328,7 @@ export const locateCompanyConfig: Company = {
             primarySatsLabel: "Fwd Sats / Share",
             secondarySatsLabel: "Sats / Share",
             sharePriceLabel: "Share Price (AUD)",
-            sharePriceAxisTitle: "Share Price (AUD)",
+            sharePriceAxisTitle: "AUD",
             mnavLabel: "Fwd mNAV",
           }),
         ],

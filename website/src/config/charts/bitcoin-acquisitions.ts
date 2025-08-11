@@ -102,7 +102,7 @@ export function createBitcoinAcquisitionsChart(
         position: "left",
         title: {
           display: true,
-          text: "Bitcoin Price (USD)",
+          text: "USD",
           color: bitcoinOrange,
         },
         ticks: {

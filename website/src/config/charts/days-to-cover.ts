@@ -1,13 +1,13 @@
 import { ChartConfiguration } from "../types";
 import {
+  bitcoinOrange,
   pastelBlue,
   pastelGreen,
   pastelPink,
-  pastelYellow,
   pastelPurple,
+  pastelYellow,
   white,
   whiteGrid,
-  bitcoinOrange,
 } from "../colors";
 
 export interface DaysToCoverConfig {

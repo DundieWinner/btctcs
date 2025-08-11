@@ -318,7 +318,7 @@ export const CompanyPerformanceChart: React.FC<
         position: "right",
         title: {
           display: true,
-          text: "Share Price (pence)",
+          text: "Pence",
           color: "#ffffff",
         },
         ticks: {

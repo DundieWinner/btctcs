@@ -287,7 +287,7 @@ export const sequansCompanyConfig: Company = {
             ],
             title: "mNAV Bands",
             sharePriceLabel: "Share Price (USD)",
-            sharePriceAxisTitle: "Share Price (USD)",
+            sharePriceAxisTitle: "USD",
           }),
           ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,
@@ -298,7 +298,7 @@ export const sequansCompanyConfig: Company = {
             primarySatsLabel: "Fwd Sats / Share",
             secondarySatsLabel: "Sats / Share",
             sharePriceLabel: "Share Price (USD)",
-            sharePriceAxisTitle: "Share Price (USD)",
+            sharePriceAxisTitle: "USD",
             mnavLabel: "Fwd mNAV",
           }),
         ],

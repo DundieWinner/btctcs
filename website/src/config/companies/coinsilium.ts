@@ -354,7 +354,7 @@ export const coinsiliumCompanyConfig: Company = {
             ],
             title: "mNAV Bands",
             sharePriceLabel: "Share Price (Pence)",
-            sharePriceAxisTitle: "Share Price (Pence)",
+            sharePriceAxisTitle: "Pence",
           }),
           ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,

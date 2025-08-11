@@ -8,11 +8,13 @@ export interface TrendlineConfig {
 }
 
 export interface TrendlineProcessorConfig {
-  baseProcessor: (rangeData: {
-    range: string;
-    majorDimension: string;
-    values?: string[][];
-  }[]) => GoogleSheetData; // Base processor to use first
+  baseProcessor: (
+    rangeData: {
+      range: string;
+      majorDimension: string;
+      values?: string[][];
+    }[],
+  ) => GoogleSheetData; // Base processor to use first
   trendlineConfig: TrendlineConfig;
 }
 
@@ -71,7 +73,8 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
       const sumXX = validX.reduce((sum, x) => sum + x * x, 0);
 
       const denominator = validIndices.length * sumXX - sumX * sumX;
-      if (denominator === 0) return { a: Math.exp(sumLnY / validIndices.length), b: 0 };
+      if (denominator === 0)
+        return { a: Math.exp(sumLnY / validIndices.length), b: 0 };
 
       const b = (validIndices.length * sumXLnY - sumX * sumLnY) / denominator;
       const lnA = (sumLnY - b * sumX) / validIndices.length;
@@ -110,7 +113,10 @@ export function createTrendlineProcessor(config: TrendlineProcessorConfig) {
       if (validPoints.length >= minDataPoints) {
         const xValues = validPoints.map((p) => p.x);
         const yValues = validPoints.map((p) => p.y);
-        trendlineData[column] = calculateExponentialRegression(xValues, yValues);
+        trendlineData[column] = calculateExponentialRegression(
+          xValues,
+          yValues,
+        );
       }
     });
 
