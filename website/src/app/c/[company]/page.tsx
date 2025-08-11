@@ -9,6 +9,7 @@ import CompanyNavigation from "@/components/CompanyNavigation";
 import CompanyHeader from "@/components/CompanyHeader";
 import LoadingDashboard from "@/components/LoadingDashboard";
 import ErrorDashboard from "@/components/ErrorDashboard";
+import ChartSelectorAndDisplay from "@/components/ChartSelectorAndDisplay";
 import { getCompanyById } from "@/config/companies";
 import { type KeyStatistic } from "@/config/types";
 import {
@@ -27,6 +28,7 @@ interface CompanyPageProps {
     company: string;
   }>;
 }
+
 
 // Generate metadata for each company page
 export async function generateMetadata({
@@ -123,18 +125,8 @@ async function CompanyDashboard({ company }: { company: string }) {
               </div>
             ) : (
               <div className={"flex-1"}>
-                {/* Generic Charts */}
-                {chartExtractions.map(({ extraction, config, chartIndex }) => (
-                  <GenericChart
-                    key={`${extraction.id}-chart-${chartIndex}`}
-                    data={extraction.data!}
-                    config={config}
-                    title={
-                      config.title ||
-                      `${extraction.title} - Chart ${chartIndex + 1}`
-                    }
-                  />
-                ))}
+                {/* Chart Selector and Display */}
+                <ChartSelectorAndDisplay chartExtractions={chartExtractions} />
               </div>
             )}
 
