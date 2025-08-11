@@ -6,6 +6,7 @@ import {
   createColumnFilterProcessor,
   createCompanyStatsProcessor,
   createTreasuryActionsProcessor,
+  createTrendlineProcessor,
 } from "@/config/processors";
 import { GOOGLE_SHEET_IDS } from "@/config/sheets";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/config/extractions/descriptions";
 import { DISCLOSURES } from "./disclosures";
 import { btctcsOrange } from "@/config/colors";
+import { createDaysToCoverChart } from "@/config/charts/days-to-cover";
 
 // Google Sheet Column Header Names
 const COLUMN_HEADERS = {
@@ -38,18 +40,36 @@ const COLUMN_HEADERS = {
   EST_CAD_BALANCE: "Est. CAD Balance",
   DEBT_CAD: "Debt (CAD)",
   FWD_MNAV: "Fwd mNAV",
+  FWD_MNAV_3_PRICE: "3 Fwd mNAV Price",
+  FWD_MNAV_5_PRICE: "5 Fwd mNAV Price",
+  FWD_MNAV_7_PRICE: "7 Fwd mNAV Price",
 } as const;
 
-const blgvHistoricalProcessor = createColumnFilterProcessor({
-  requiredColumns: [
-    COLUMN_HEADERS.DATE,
-    COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.SATS_PER_FD_SHARE,
-    COLUMN_HEADERS.CLOSING_PRICE_CAD,
-    COLUMN_HEADERS.FWD_MNAV,
-  ],
-  dateColumn: COLUMN_HEADERS.DATE,
-  startDate: "2025-07-17",
+const blgvHistoricalProcessor = createTrendlineProcessor({
+  baseProcessor: createColumnFilterProcessor({
+    requiredColumns: [
+      COLUMN_HEADERS.DATE,
+      COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
+      COLUMN_HEADERS.SATS_PER_FD_SHARE,
+      COLUMN_HEADERS.CLOSING_PRICE_CAD,
+      COLUMN_HEADERS.FWD_MNAV,
+      COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_7_PRICE,
+    ],
+    dateColumn: COLUMN_HEADERS.DATE,
+    startDate: "2025-07-17",
+  }),
+  trendlineConfig: {
+    columns: [
+      COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+      COLUMN_HEADERS.FWD_MNAV_7_PRICE,
+    ],
+    projectionMonths: 2,
+    dateColumn: COLUMN_HEADERS.DATE,
+    minDataPoints: 2,
+  },
 });
 
 const blgvBitcoinPriceProcessor = createColumnFilterProcessor({
@@ -339,11 +359,35 @@ export const blgvCompanyConfig: Company = {
         title: "Historical Performance",
         description: DESCRIPTIONS.historicalPerformance(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'BLGV|H'!A1:Y1000"],
+        ranges: ["'BLGV|H'!A1:AB1000"],
         processor: blgvHistoricalProcessor,
         hasHeaders: true,
         renderLocation: "none",
         charts: [
+          createDaysToCoverChart({
+            dateColumn: COLUMN_HEADERS.DATE,
+            sharePriceColumn: COLUMN_HEADERS.CLOSING_PRICE_CAD,
+            mnavBands: [
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_3_PRICE,
+                level: 3,
+                label: "3 Fwd mNAV Price",
+              },
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_5_PRICE,
+                level: 5,
+                label: "5 Fwd mNAV Price",
+              },
+              {
+                column: COLUMN_HEADERS.FWD_MNAV_7_PRICE,
+                level: 7,
+                label: "7 Fwd mNAV Price",
+              },
+            ],
+            title: "mNAV Bands",
+            sharePriceLabel: "Share Price (CAD)",
+            sharePriceAxisTitle: "CAD",
+          }),
           ...createHistoricalPerformanceCharts({
             dateColumn: COLUMN_HEADERS.DATE,
             primarySatsColumn: COLUMN_HEADERS.FWD_SATS_PER_FD_SHARE,
