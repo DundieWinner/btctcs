@@ -104,7 +104,7 @@ export const KEY_STATISTIC_DESCRIPTIONS = {
    * Description for "Forward P/BYD" metric
    */
   forwardPByd(): string {
-    return "P/BYD represents the number of years to earn back the existing mNAV premium if the trailing 30D yield were to hold. The forward metric is computed from Forward mNAV.";
+    return "The number of years to earn back the existing mNAV premium if the trailing 30D yield were to hold. The forward metric is computed from Forward mNAV.";
   },
 
   /**
