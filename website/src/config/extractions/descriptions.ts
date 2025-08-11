@@ -111,14 +111,14 @@ export const KEY_STATISTIC_DESCRIPTIONS = {
    * Description for "BTC Yield T30D" metric
    */
   btcYieldT30d(): string {
-    return "Bitcoin yield performance over the most-recent trailing 30-day period.";
+    return "The percent increase of Bitcoin per fully diluted share over the most-recent 30-day period.";
   },
 
   /**
    * Description for combined mNAV metrics
    */
   mnavCombined(): string {
-    return "Computed by dividing enterprise value by Bitcoin net asset value. Forward mNAV represents the metric as if fiat earmarked for Bitcoin purchases were converted to Bitcoin today.";
+    return "Computed by dividing enterprise value (market cap + debt - cash) by Bitcoin net asset value. Forward mNAV represents the metric as if fiat earmarked for Bitcoin purchases were converted to Bitcoin today.";
   },
 } as const;
 
