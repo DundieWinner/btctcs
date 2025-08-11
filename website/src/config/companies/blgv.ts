@@ -173,6 +173,7 @@ const blgvStatsConfig: CompanyStatsConfig = {
       id: "enterprise-combined",
       label: "Enterprise Value (CAD / USD)",
       order: 8,
+      description: KEY_STATISTIC_DESCRIPTIONS.enterpriseValue(),
       metrics: [
         {
           metricName: "Enterprise Value (CAD)",

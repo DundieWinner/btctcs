@@ -156,6 +156,30 @@ const coinsiliumStatsConfig: CompanyStatsConfig = {
         accentColor: btctcsOrange,
       },
     },
+    {
+      id: "enterprise-combined",
+      label: "Enterprise Value (GBP / USD)",
+      order: 8,
+      metrics: [
+        {
+          metricName: "Enterprise Value (GBP)",
+          required: true,
+          prefix: "£",
+          format: "shorthand",
+        },
+        {
+          metricName: "Enterprise Value (USD)",
+          required: true,
+          prefix: "$",
+          format: "shorthand",
+        },
+      ],
+      description: KEY_STATISTIC_DESCRIPTIONS.enterpriseValue(),
+      separator: " / ",
+      style: {
+        accentColor: btctcsOrange,
+      },
+    },
   ],
 };
 
@@ -278,7 +302,7 @@ export const coinsiliumCompanyConfig: Company = {
         title: "Bitcoin Price History",
         description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'Coinsilium|H'!A1:S1000"],
+        ranges: ["'Coinsilium|H'!A1:T1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",

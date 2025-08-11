@@ -163,6 +163,7 @@ const locateStatsConfig: CompanyStatsConfig = {
       id: "enterprise-combined",
       label: "Enterprise Value (AUD / USD)",
       order: 8,
+      description: KEY_STATISTIC_DESCRIPTIONS.enterpriseValue(),
       metrics: [
         {
           metricName: "Enterprise Value (AUD)",
@@ -308,7 +309,7 @@ export const locateCompanyConfig: Company = {
         title: "Bitcoin Price History",
         description: DESCRIPTIONS.bitcoinPriceHistory(),
         spreadsheetId: GOOGLE_SHEET_IDS.BTCTCS_COMMUNITY,
-        ranges: ["'Locate|H'!A1:S1000"],
+        ranges: ["'Locate|H'!A1:W1000"],
         processor: bitcoinPriceProcessor,
         hasHeaders: true,
         renderLocation: "none",

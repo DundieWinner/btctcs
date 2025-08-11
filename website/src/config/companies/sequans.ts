@@ -107,6 +107,7 @@ const sequansStatsConfig: CompanyStatsConfig = {
       id: "enterprise-value-usd",
       label: "Enterprise Value (USD)",
       order: 8,
+      description: KEY_STATISTIC_DESCRIPTIONS.enterpriseValue(),
       prefix: "$",
     },
   ],
